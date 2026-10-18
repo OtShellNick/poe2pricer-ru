@@ -51,7 +51,9 @@ ratings of the island rumours from Gnejs PoE Tools and a public Google sheet, an
 2. Run the setup, or unpack the zip and start `poe2pricer.exe`. The setup installs to
    `%LOCALAPPDATA%\poe2pricer-app` (another folder only from the command line:
    `poe2pricer-app-win-Setup.exe --installto <folder>`); settings, log and diagnoses are in
-   `%LOCALAPPDATA%\poe2pricer` for both ways. Apart from that, the program writes to the registry only the entry that
+   `%LOCALAPPDATA%\poe2pricer` for both ways. The installed folder holds the program in `current\`
+   (replaced by every update), the updater `Update.exe` and a starter `poe2pricer.exe` that
+   always starts the current version; the Start menu entry does the same. Apart from that, the program writes to the registry only the entry that
    starts it with Windows, if you tick that.
 3. At the first start the program checks whether Windows has its **English (United States)
    text recognition**. If it is missing, the program offers to install it: Windows asks for
