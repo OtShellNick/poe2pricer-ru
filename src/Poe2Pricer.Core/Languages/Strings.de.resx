@@ -1,0 +1,544 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- German: the first language pack beside English, translated from the
+     English wording of Strings.resx, with the same names. One term per thing as there:
+     Tastenkürzel (hotkey), Infobereich (tray), Overlay, Fenster (window), Auto-Scan,
+     aktualisieren (refresh), Wertung (tier), eigene Wertung (custom tier), Einstellungen
+     (settings), Sicherung (backup), Diagnose (diagnostics), Beenden (exit). Game terms as the German
+     client has them: Gaben (Favours), Relikte (Remnants), Gerüchte von
+     der Insel (Island Rumours), Truhe (Stash). Numbers put into a text follow the
+     language: decimal comma, point between thousands. -->
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Subtitle" xml:space="preserve">
+    <value>Marktpreise von poe.ninja · Gaben · Relikte · Gerüchte von der Insel · Truhen-Tabs</value>
+  </data>
+  <data name="TipClose" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="TipMinimize" xml:space="preserve">
+    <value>Minimieren</value>
+  </data>
+  <data name="Exit" xml:space="preserve">
+    <value>Beenden</value>
+  </data>
+  <data name="Help" xml:space="preserve">
+    <value>Hilfe</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Kopieren</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="TabSettings" xml:space="preserve">
+    <value>Einstellungen</value>
+  </data>
+  <data name="TabRumours" xml:space="preserve">
+    <value>Gerüchte</value>
+  </data>
+  <data name="GroupLeague" xml:space="preserve">
+    <value>LIGA</value>
+  </data>
+  <data name="GroupDisplay" xml:space="preserve">
+    <value>ANZEIGE</value>
+  </data>
+  <data name="GroupHotkeys" xml:space="preserve">
+    <value>TASTENKÜRZEL</value>
+  </data>
+  <data name="GroupAutoScan" xml:space="preserve">
+    <value>AUTO-SCAN</value>
+  </data>
+  <data name="GroupStartup" xml:space="preserve">
+    <value>START</value>
+  </data>
+  <data name="LeagueAuto" xml:space="preserve">
+    <value>Auto ({0})</value>
+  </data>
+  <data name="LeagueAutoCurrent" xml:space="preserve">
+    <value>Auto (aktuelle Liga)</value>
+  </data>
+  <data name="RefreshPrices" xml:space="preserve">
+    <value>Preisupdate</value>
+  </data>
+  <data name="HidePricesBelow" xml:space="preserve">
+    <value>Preise ausblenden unter</value>
+  </data>
+  <data name="ToggleOverlay" xml:space="preserve">
+    <value>Overlay ein/aus</value>
+  </data>
+  <data name="SaveDiagnostics" xml:space="preserve">
+    <value>Diagnose speichern</value>
+  </data>
+  <data name="SwitchRitual" xml:space="preserve">
+    <value>Ritual (Gaben)</value>
+  </data>
+  <data name="SwitchExpedition" xml:space="preserve">
+    <value>Expedition (Gerüchte / Relikte)</value>
+  </data>
+  <data name="SwitchStash" xml:space="preserve">
+    <value>Truhe</value>
+  </data>
+  <data name="ScanIntervalIdle" xml:space="preserve">
+    <value>Scan-Intervall (Leerlauf)</value>
+  </data>
+  <data name="ScanIntervalOpen" xml:space="preserve">
+    <value>Scan-Intervall (Fenster offen)</value>
+  </data>
+  <data name="Seconds" xml:space="preserve">
+    <value>s</value>
+  </data>
+  <data name="StartWithWindows" xml:space="preserve">
+    <value>Mit Windows starten</value>
+  </data>
+  <data name="CloseHint" xml:space="preserve">
+    <value>Schließen legt das Fenster in den Infobereich. Mit „Beenden“ wird das Programm beendet.</value>
+  </data>
+  <data name="TipFloor" xml:space="preserve">
+    <value>Gilt für Gaben, Relikt-Belohnungen (Wert der ganzen Zeile) und Truhen-Tabs (Preis je Gegenstand). Unter dem Schwellenwert zeigen Gaben und Truhen-Gegenstände ein graues „&lt;“; Relikte zeigen nichts. Hat keinen Einfluss auf die grüne Hervorhebung des höchsten Preises.</value>
+  </data>
+  <data name="TipHotkey" xml:space="preserve">
+    <value>Feld anklicken, dann eine Taste oder Tastenkombination drücken. Nur aktiv, solange PoE 2 im Vordergrund ist.</value>
+  </data>
+  <data name="TipAutoScan" xml:space="preserve">
+    <value>Zeigt die Preise der angehakten Fenster automatisch, solange sie offen sind. Das Tastenkürzel zeigt immer alle; ist keines angehakt, erscheinen Preise nur per Tastenkürzel.</value>
+  </data>
+  <data name="TipIntervals" xml:space="preserve">
+    <value>Ruckelt das Spiel, beide Intervalle erhöhen. Das erste gilt, solange kein Fenster gezeigt wird, das zweite, solange eines gezeigt wird (die Preise verschwinden dann entsprechend später). Minimum: {0} s und {1} s; Maximum für das zweite: {2} s. Werte außerhalb dieser Grenzen werden beim Speichern angepasst.</value>
+  </data>
+  <data name="TipStartWithWindows" xml:space="preserve">
+    <value>Trägt poe2pricer für dieses Benutzerkonto in den Windows-Autostart ein; es startet dann im Infobereich, ohne Fenster. Wird beim Speichern gesetzt oder entfernt.</value>
+  </data>
+  <data name="CheckForUpdates" xml:space="preserve">
+    <value>Nach Updates suchen</value>
+  </data>
+  <data name="TipCheckForUpdates" xml:space="preserve">
+    <value>Fragt bei jedem Start einmal bei github.com an, ob eine neuere Version auf der Release-Seite liegt; sonst wird nichts gesendet, und nichts wird von selbst installiert. Eine neuere Version steht dann in der Statuszeile und als Tray-Meldung.</value>
+  </data>
+  <data name="UpdateAvailable" xml:space="preserve">
+    <value>Version {0} ist verfügbar. Hier klicken für die Download-Seite.</value>
+  </data>
+  <data name="UpdateAvailableTray" xml:space="preserve">
+    <value>poe2pricer {0} ist verfügbar. Klicken öffnet die Download-Seite.</value>
+  </data>
+  <data name="UpdateReady" xml:space="preserve">
+    <value>Version {0} ist heruntergeladen. Hier klicken, um sie zu installieren und poe2pricer neu zu starten; sonst wird sie beim Beenden installiert.</value>
+  </data>
+  <data name="UpdateReadyTray" xml:space="preserve">
+    <value>poe2pricer {0} ist heruntergeladen. Klicken installiert jetzt; sonst beim Beenden.</value>
+  </data>
+  <data name="GroupIslandRumours" xml:space="preserve">
+    <value>GERÜCHTE VON DER INSEL</value>
+  </data>
+  <data name="ColumnRumour" xml:space="preserve">
+    <value>Gerücht</value>
+  </data>
+  <data name="ColumnIsland" xml:space="preserve">
+    <value>Insel</value>
+  </data>
+  <data name="ColumnMods" xml:space="preserve">
+    <value>Mods</value>
+  </data>
+  <data name="ColumnTier" xml:space="preserve">
+    <value>Wertung</value>
+  </data>
+  <data name="ColumnCustom" xml:space="preserve">
+    <value>Eigene</value>
+  </data>
+  <data name="ColumnNote" xml:space="preserve">
+    <value>Notiz</value>
+  </data>
+  <data name="AddCustomRow" xml:space="preserve">
+    <value>+ Eigene Zeile hinzufügen</value>
+  </data>
+  <data name="TipDeleteRow" xml:space="preserve">
+    <value>Zeile löschen (wirksam mit dem Speichern)</value>
+  </data>
+  <data name="CustomTierHint" xml:space="preserve">
+    <value>Eigene Wertungen überschreiben die der Community und sind im Spiel mit * markiert. Wirksam mit dem Speichern.</value>
+  </data>
+  <data name="GroupCommunityData" xml:space="preserve">
+    <value>COMMUNITY-DATEN</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>Aktualisieren</value>
+  </data>
+  <data name="Source" xml:space="preserve">
+    <value>Quelle: {0} · {1} · {2}</value>
+  </data>
+  <data name="SourceGnejs" xml:space="preserve">
+    <value>Gnejs PoE Tools (Wertungen &amp; Notizen: Jestra1220)</value>
+  </data>
+  <data name="SourceSheet" xml:space="preserve">
+    <value>Expedition Cheatsheet (Google Sheets)</value>
+  </data>
+  <data name="SourceNone" xml:space="preserve">
+    <value>noch keine</value>
+  </data>
+  <data name="SourceUpdated" xml:space="preserve">
+    <value>Stand {0:dd.MM.yyyy HH:mm}</value>
+  </data>
+  <data name="SourceNotLoaded" xml:space="preserve">
+    <value>noch nicht geladen</value>
+  </data>
+  <data name="Entries_one" xml:space="preserve">
+    <value>{0:N0} Eintrag</value>
+  </data>
+  <data name="Entries_other" xml:space="preserve">
+    <value>{0:N0} Einträge</value>
+  </data>
+  <data name="CreditsBy" xml:space="preserve">
+    <value>Wertungen und Notizen von </value>
+  </data>
+  <data name="CreditsSheet" xml:space="preserve">
+    <value>Jestra1220 (Expedition Cheatsheet)</value>
+  </data>
+  <data name="CreditsCompiled" xml:space="preserve">
+    <value>, aufbereitet von </value>
+  </data>
+  <data name="CreditsTools" xml:space="preserve">
+    <value>Gnejs PoE Tools</value>
+  </data>
+  <data name="CreditsThanks" xml:space="preserve">
+    <value>. Danke!</value>
+  </data>
+  <data name="HotkeysSwapped" xml:space="preserve">
+    <value>Tastenkürzel getauscht</value>
+  </data>
+  <data name="InvalidHotkeysIdentical" xml:space="preserve">
+    <value>Ungültige Eingabe: beide Tastenkürzel sind gleich</value>
+  </data>
+  <data name="InvalidUnknownKey" xml:space="preserve">
+    <value>Ungültige Eingabe: unbekannte Taste „{0}“</value>
+  </data>
+  <data name="InvalidNotANumber" xml:space="preserve">
+    <value>Ungültige Eingabe: das markierte Feld ist keine Zahl</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>Gespeichert</value>
+  </data>
+  <data name="SavedAdjusted" xml:space="preserve">
+    <value>Gespeichert · Intervalle außerhalb der Grenzen wurden angepasst</value>
+  </data>
+  <data name="SettingsNotSaved" xml:space="preserve">
+    <value>Einstellungen konnten nicht gespeichert werden ({0})</value>
+  </data>
+  <data name="CustomTiersNotSaved" xml:space="preserve">
+    <value>Einstellungen gespeichert, die eigenen Rumour-Wertungen aber nicht ({0})</value>
+  </data>
+  <data name="CustomTiersNotSavedKept" xml:space="preserve">
+    <value>Einstellungen gespeichert. Eigene Rumour-Wertungen werden nicht gespeichert, weil die Datei beim Start nicht lesbar war: {0}</value>
+  </data>
+  <data name="StartupNotChanged" xml:space="preserve">
+    <value>Windows-Autostart konnte nicht geändert werden: {0}</value>
+  </data>
+  <data name="GameNotFound" xml:space="preserve">
+    <value>Path of Exile 2 nicht gefunden</value>
+  </data>
+  <data name="NoWindowDetected" xml:space="preserve">
+    <value>Kein Gaben-, Relikt- oder Gerüchte-Fenster und kein Truhen-Tab erkannt</value>
+  </data>
+  <data name="DiagnosticsNeedForeground" xml:space="preserve">
+    <value>Diagnose nur, wenn Path of Exile 2 im Vordergrund ist</value>
+  </data>
+  <data name="DiagnosticsSaved" xml:space="preserve">
+    <value>Diagnose gespeichert: {0}</value>
+  </data>
+  <data name="DiagnosticsSavedTray" xml:space="preserve">
+    <value>Diagnose gespeichert</value>
+  </data>
+  <data name="LoadingPrices" xml:space="preserve">
+    <value>Preise werden geladen…</value>
+  </data>
+  <data name="Ready" xml:space="preserve">
+    <value>Bereit · {0} · {1}</value>
+  </data>
+  <data name="ItemImagesLoading" xml:space="preserve">
+    <value>Gegenstandsbilder werden geladen ({0:N0} von {1:N0})…</value>
+  </data>
+  <data name="ItemImagesLoaded" xml:space="preserve">
+    <value>Gegenstandsbilder geladen</value>
+  </data>
+  <data name="LoadingCommunityData" xml:space="preserve">
+    <value>Community-Daten werden geladen…</value>
+  </data>
+  <data name="CommunityDataLoaded" xml:space="preserve">
+    <value>Community-Daten geladen · {0}</value>
+  </data>
+  <data name="CommunityDataNotLoaded" xml:space="preserve">
+    <value>Community-Daten konnten nicht geladen werden. Der letzte Stand gilt weiter.</value>
+  </data>
+  <data name="HotkeysUnavailable" xml:space="preserve">
+    <value>Tastenkürzel sind nicht verfügbar: Windows hat den Tastatur-Hook abgelehnt (Fehler {0})</value>
+  </data>
+  <data name="UnexpectedError" xml:space="preserve">
+    <value>Unerwarteter Fehler: {0}</value>
+  </data>
+  <data name="NinjaFailed" xml:space="preserve">
+    <value>poe.ninja: {0}</value>
+  </data>
+  <data name="NinjaRefreshFailed" xml:space="preserve">
+    <value>poe.ninja-Aktualisierung fehlgeschlagen: {0} · alte Preise bleiben</value>
+  </data>
+  <data name="NinjaNoPrices" xml:space="preserve">
+    <value>keine Preise für die Liga „{0}“</value>
+  </data>
+  <data name="NinjaNotReachable" xml:space="preserve">
+    <value>nicht erreichbar ({0})</value>
+  </data>
+  <data name="NinjaHttp" xml:space="preserve">
+    <value>HTTP {0} ({1})</value>
+  </data>
+  <data name="NinjaUnreadable" xml:space="preserve">
+    <value>Antwort nicht lesbar ({0})</value>
+  </data>
+  <data name="NinjaRateMissing" xml:space="preserve">
+    <value>Kurs exalted/divine fehlt</value>
+  </data>
+  <data name="NoReferenceImages" xml:space="preserve">
+    <value>Keine Referenzbilder gefunden</value>
+  </data>
+  <data name="ModelMismatch" xml:space="preserve">
+    <value>recognition-model.json passt nicht zur Katalogversion</value>
+  </data>
+  <data name="MissingFile" xml:space="preserve">
+    <value>Datei fehlt: {0}</value>
+  </data>
+  <data name="StashTabsEmpty" xml:space="preserve">
+    <value>stash-tabs.json ist leer</value>
+  </data>
+  <data name="RumourLinesDamaged" xml:space="preserve">
+    <value>rumour-lines.json ist beschädigt</value>
+  </data>
+  <data name="FileEmpty" xml:space="preserve">
+    <value>{0} ist leer</value>
+  </data>
+  <data name="CannotDrawRumourLines" xml:space="preserve">
+    <value>Gerüchte-Zeilen können nicht gezeichnet werden: {0}</value>
+  </data>
+  <data name="FontMissing" xml:space="preserve">
+    <value>Eingebaute Schrift fehlt</value>
+  </data>
+  <data name="OcrMissing" xml:space="preserve">
+    <value>Windows-OCR für {0} ist nicht installiert. Vorhanden: {1}</value>
+  </data>
+  <data name="TextRecognitionOffer" xml:space="preserve">
+    <value>poe2pricer braucht die englische Texterkennung von Windows (Sprachfunktion „Englisch (USA)“). Sie ist auf diesem Rechner nicht installiert.
+
+Jetzt installieren? Windows fragt nach Administratorrechten und lädt sie herunter; das braucht eine Internetverbindung und kann einige Minuten dauern.
+
+Ohne sie kann poe2pricer nicht starten.</value>
+  </data>
+  <data name="TextRecognitionFailed" xml:space="preserve">
+    <value>Die Texterkennung konnte nicht installiert werden ({0}).
+
+Sie lässt sich von Hand installieren: Windows-Einstellungen → Zeit und Sprache → Sprache und Region → Sprache hinzufügen → Englisch (USA), mit Haken bei „Optische Zeichenerkennung“. Danach poe2pricer neu starten.</value>
+  </data>
+  <data name="TextRecognitionRestart" xml:space="preserve">
+    <value>Die Texterkennung ist installiert. Bitte poe2pricer neu starten.</value>
+  </data>
+  <data name="TextRecognitionWindowsRestart" xml:space="preserve">
+    <value>Die Texterkennung ist installiert, Windows braucht aber einen Neustart, um sie abzuschließen. Windows über Einstellungen → Windows Update → Jetzt neu starten neu starten (ein Neustart aus dem Startmenü kann sie weiter aufschieben), danach poe2pricer erneut starten.</value>
+  </data>
+  <data name="TextRecognitionRestartPending" xml:space="preserve">
+    <value>Windows wartet auf einen Neustart, um ein Update abzuschließen; bis dahin kann es die englische Texterkennung nicht installieren. Windows über Einstellungen → Windows Update → Jetzt neu starten neu starten, danach poe2pricer erneut starten. Fehlt die Texterkennung dann noch, bietet poe2pricer die Installation an.</value>
+  </data>
+  <data name="TextRecognitionInstalling" xml:space="preserve">
+    <value>Die englische Texterkennung wird installiert. Windows prüft erst seine optionalen Funktionen (der lange Teil), lädt die Funktion dann herunter und installiert sie; gemessen 3 bis 10 Minuten. poe2pricer startet danach von selbst. Dieses Fenster kann minimiert werden.</value>
+  </data>
+  <data name="TextRecognitionInstallingFor" xml:space="preserve">
+    <value>Läuft seit {0}</value>
+  </data>
+  <data name="TextRecognitionCancelled" xml:space="preserve">
+    <value>Die Installation läuft möglicherweise im Hintergrund weiter. Bitte poe2pricer später neu starten.</value>
+  </data>
+  <data name="Items_one" xml:space="preserve">
+    <value>{0:N0} Gegenstand</value>
+  </data>
+  <data name="Items_other" xml:space="preserve">
+    <value>{0:N0} Gegenstände</value>
+  </data>
+  <data name="Prices_one" xml:space="preserve">
+    <value>{0:N0} Preis</value>
+  </data>
+  <data name="Prices_other" xml:space="preserve">
+    <value>{0:N0} Preise</value>
+  </data>
+  <data name="Rows_one" xml:space="preserve">
+    <value>{0:N0} Zeile</value>
+  </data>
+  <data name="Rows_other" xml:space="preserve">
+    <value>{0:N0} Zeilen</value>
+  </data>
+  <data name="FavoursStatus" xml:space="preserve">
+    <value>{0} · {1} · {2}</value>
+  </data>
+  <data name="AllBelowThreshold_one" xml:space="preserve">
+    <value>Der einzige Gegenstand liegt unter dem Schwellenwert ({1} {2})</value>
+  </data>
+  <data name="AllBelowThreshold_other" xml:space="preserve">
+    <value>Alle {0:N0} Gegenstände liegen unter dem Schwellenwert ({1} {2})</value>
+  </data>
+  <data name="StashStatus" xml:space="preserve">
+    <value>{0}-Tab · {1} · {2} · {3}</value>
+  </data>
+  <data name="StashAllBelowThreshold_one" xml:space="preserve">
+    <value>{3}-Tab · der einzige Gegenstand liegt unter dem Schwellenwert ({1} {2})</value>
+  </data>
+  <data name="StashAllBelowThreshold_other" xml:space="preserve">
+    <value>{3}-Tab · alle {0:N0} Gegenstände liegen unter dem Schwellenwert ({1} {2})</value>
+  </data>
+  <data name="RemnantStatus" xml:space="preserve">
+    <value>Relikte · {0} · {1} · {2}</value>
+  </data>
+  <data name="RumourStatus" xml:space="preserve">
+    <value>Gerüchte · {0}</value>
+  </data>
+  <data name="SettingsUnreadableBackup" xml:space="preserve">
+    <value>Einstellungen konnten nicht gelesen werden. Es gelten die Standardwerte. Sicherung gespeichert: {0}</value>
+  </data>
+  <data name="SettingsUnreadableNoBackup" xml:space="preserve">
+    <value>Einstellungen konnten nicht gelesen werden ({0}). Es gelten die Standardwerte. Sicherung fehlgeschlagen: {1}</value>
+  </data>
+  <data name="SettingsUnreadable" xml:space="preserve">
+    <value>Einstellungen konnten nicht gelesen werden ({0}). Es gelten die Standardwerte.</value>
+  </data>
+  <data name="KeyUnreadable" xml:space="preserve">
+    <value>Die Taste „{0}“ aus den Einstellungen lässt sich nicht lesen. Es gilt {1}.</value>
+  </data>
+  <data name="CustomTiersUnreadableBackup" xml:space="preserve">
+    <value>Eigene Gerüchte-Wertungen konnten nicht gelesen werden. Sicherung gespeichert: {0}</value>
+  </data>
+  <data name="CustomTiersUnreadableNoBackup" xml:space="preserve">
+    <value>Eigene Gerüchte-Wertungen konnten nicht gelesen werden, und die Sicherung ist fehlgeschlagen ({0}). Speichern ist gesperrt. Datei: {1}</value>
+  </data>
+  <data name="CustomTiersLocked" xml:space="preserve">
+    <value>Eigene Rumour-Wertungen konnten nicht gelesen werden ({0}). In diesem Lauf wird nicht gespeichert. Datei: {1}</value>
+  </data>
+  <data name="StartFailed" xml:space="preserve">
+    <value>poe2pricer kann nicht starten: {0}
+
+Einzelheiten: {1}</value>
+  </data>
+  <data name="GameSettingsNotFound" xml:space="preserve">
+    <value>Spieleinstellungen nicht gefunden ({0}). Popup Size wird als Standard angenommen.</value>
+  </data>
+  <data name="RunningInTray" xml:space="preserve">
+    <value>Läuft im Infobereich. {0} im Spiel zeigt die Preise.</value>
+  </data>
+  <data name="GameSettingsFile" xml:space="preserve">
+    <value>Datei der Spieleinstellungen</value>
+  </data>
+  <data name="Browse" xml:space="preserve">
+    <value>Suchen…</value>
+  </data>
+  <data name="TipGameSettingsFile" xml:space="preserve">
+    <value>Die Datei, in der Path of Exile 2 seine Optionen ablegt (poe2_production_Config.ini). poe2pricer liest daraus Popup Size und die Sprache des Spiels. Wirksam mit dem Speichern.</value>
+  </data>
+  <data name="InvalidFileNotFound" xml:space="preserve">
+    <value>Ungültige Eingabe: Datei der Spieleinstellungen nicht gefunden</value>
+  </data>
+  <data name="PickGameSettingsFile" xml:space="preserve">
+    <value>Datei der Spieleinstellungen wählen</value>
+  </data>
+  <data name="GameSettingsFileFilter" xml:space="preserve">
+    <value>Spieleinstellungen (*.ini)</value>
+  </data>
+  <data name="OverlayRumour" xml:space="preserve">
+    <value>Gerücht</value>
+  </data>
+  <data name="OverlayIsland" xml:space="preserve">
+    <value>Insel</value>
+  </data>
+  <data name="OverlayMods" xml:space="preserve">
+    <value>Mods</value>
+  </data>
+  <data name="OverlayTier" xml:space="preserve">
+    <value>Wertung</value>
+  </data>
+  <data name="OverlayNote" xml:space="preserve">
+    <value>Notiz</value>
+  </data>
+  <data name="KeyCtrl" xml:space="preserve">
+    <value>Strg</value>
+  </data>
+  <data name="KeyShift" xml:space="preserve">
+    <value>Umschalt</value>
+  </data>
+  <data name="KeyCapsLock" xml:space="preserve">
+    <value>Feststelltaste</value>
+  </data>
+  <data name="LanguageTip" xml:space="preserve">
+    <value>Sprache des Programms</value>
+  </data>
+  <data name="KeyPageDown" xml:space="preserve">
+    <value>Bild ab</value>
+  </data>
+  <data name="KeyPageUp" xml:space="preserve">
+    <value>Bild auf</value>
+  </data>
+  <data name="KeyEnter" xml:space="preserve">
+    <value>Eingabe</value>
+  </data>
+  <data name="KeyBackspace" xml:space="preserve">
+    <value>Rücktaste</value>
+  </data>
+  <data name="KeyEsc" xml:space="preserve">
+    <value>Esc</value>
+  </data>
+  <data name="KeySpace" xml:space="preserve">
+    <value>Leertaste</value>
+  </data>
+  <data name="KeyDelete" xml:space="preserve">
+    <value>Entf</value>
+  </data>
+  <data name="KeyInsert" xml:space="preserve">
+    <value>Einfg</value>
+  </data>
+  <data name="KeyHome" xml:space="preserve">
+    <value>Pos1</value>
+  </data>
+  <data name="KeyEnd" xml:space="preserve">
+    <value>Ende</value>
+  </data>
+  <data name="KeyLeft" xml:space="preserve">
+    <value>Links</value>
+  </data>
+  <data name="KeyRight" xml:space="preserve">
+    <value>Rechts</value>
+  </data>
+  <data name="KeyUp" xml:space="preserve">
+    <value>Oben</value>
+  </data>
+  <data name="KeyDown" xml:space="preserve">
+    <value>Unten</value>
+  </data>
+  <data name="KeyPrintScreen" xml:space="preserve">
+    <value>Druck</value>
+  </data>
+  <data name="KeyScrollLock" xml:space="preserve">
+    <value>Rollen</value>
+  </data>
+  <data name="KeyPause" xml:space="preserve">
+    <value>Pause</value>
+  </data>
+  <data name="KeyNumLock" xml:space="preserve">
+    <value>Num</value>
+  </data>
+  <data name="GameTextSizeNotDefault" xml:space="preserve">
+    <value>Die UI-Textgröße des Spiels steht auf „{0}“, nicht auf Standard. Das wird nicht unterstützt: Truhen-Tabs zeigen weniger Preise, und der Tribut-Dialog im Ritual wird nicht erkannt.</value>
+  </data>
+</root>

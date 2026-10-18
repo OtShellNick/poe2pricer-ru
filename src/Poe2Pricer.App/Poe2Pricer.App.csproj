@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <UseWPF>true</UseWPF>
+    <!-- Only for the notification area icon (NotifyIcon); WPF has none of its own. -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- The mirror before a wreath of rays: 16 to 256, from 48 on with the
+         wreath, below only the mirror. The same file for the window, the taskbar and the
+         notification area. -->
+    <ApplicationIcon>../../assets/poe2pricer.ico</ApplicationIcon>
+    <AssemblyName>poe2pricer</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Poe2Pricer.Core/Poe2Pricer.Core.csproj" />
+    <ProjectReference Include="../Poe2Pricer.Ui/Poe2Pricer.Ui.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Setup, uninstall and self-updates of an installed copy (Updates.cs, Program.Main). The
+         version must match the vpk tool that packs the release (tools/build_release.py). -->
+    <PackageReference Include="Velopack" Version="1.2.161" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="../../data/ui/**" LinkBase="data/ui" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../data/rumours/**" LinkBase="data/rumours" CopyToOutputDirectory="PreserveNewest" />
+    <!-- The guide "Help" opens, with its pictures. -->
+    <None Include="../../data/guide/**" LinkBase="data/guide" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Recognition data (catalog, item pictures, recognition model), read from data/catalog
+         beside the program (Settings.ShippedDataPath). -->
+    <None Include="../../data/catalog/**" LinkBase="data/catalog" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../assets/poe2pricer.ico" Link="poe2pricer.ico" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <!-- OpenCV's FFmpeg wrapper (opencv_videoio_ffmpeg*.dll, LGPL) is loaded only to read or write
+       video files; poe2pricer opens none. It is not shipped (THIRD_PARTY_NOTICES.md). The
+       package copies it on every build, so it is removed after each. -->
+  <Target Name="DropFfmpegWrapper" AfterTargets="Build;Publish">
+    <ItemGroup>
+      <!-- Self-contained for one platform, the native files lie at the root. -->
+      <FfmpegWrapper Include="$(OutDir)runtimes/**/opencv_videoio_ffmpeg*.dll;$(PublishDir)runtimes/**/opencv_videoio_ffmpeg*.dll;$(OutDir)opencv_videoio_ffmpeg*.dll;$(PublishDir)opencv_videoio_ffmpeg*.dll" />
+    </ItemGroup>
+    <Delete Files="@(FfmpegWrapper)" />
+  </Target>
+</Project>

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Only for drawing rumour lines from the font (glyph outlines, RumourLineArt). -->
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- The WPF SDK drops these two from the implicit usings. -->
+    <Using Include="System.IO" />
+    <Using Include="System.Net.Http" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Built into the assembly: no loose file beside the program, nothing fetched at run time. -->
+    <EmbeddedResource Include="../../data/fonts/Caveat-Bold.ttf" LogicalName="Caveat-Bold.ttf" />
+    <EmbeddedResource Include="../../data/names/de.json" LogicalName="Names.de.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="OpenCvSharp4" Version="4.11.0.20250507" />
+    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.11.0.20250507" />
+  </ItemGroup>
+</Project>

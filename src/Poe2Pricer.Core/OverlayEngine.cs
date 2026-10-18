@@ -1,0 +1,693 @@
+using System.Collections.Concurrent;
+using System.Diagnostics;
+using OpenCvSharp;
+using Poe2Pricer.Core.Market;
+
+namespace Poe2Pricer.Core;
+
+// What the overlay draws now. Screen: the game's part of the screen. Labels and Rumours are in
+// the coordinates of the reference picture (GameView); Scale: screen pixels per pixel of it.
+public sealed record Scene(Box Screen, Label[] Labels, (Box Panel, RumourLine[] Lines)? Rumours, double Scale = 1);
+
+// The overlay's control for every window: key, automatic scan, glance (still there?) every
+// 50 ms, follow (changed?) every second, foreground changes, diagnosis. Inputs are queued and
+// handled one after another on the control's own thread; image work runs on the thread pool,
+// and a result from before a hide or a tab switch is dropped (generation). Nothing is captured
+// while the game is not in front. Outputs: Draw (a scene, null = hide), Status, Diagnosed; all
+// raised on the control's thread, the caller marshals to its UI.
+public sealed class OverlayEngine : IDisposable
+{
+    private readonly GameWindows windows;
+    private readonly IGameScreen screen;
+    private readonly IPrices prices;
+    private readonly TimeProvider time;
+    private readonly Func<RumourBook> rumours;
+    private readonly Action<string> log;
+    private readonly EngineLoop loop = new();
+    private readonly ITimer glance;
+    private readonly ITimer follow;
+    private readonly ITimer auto;
+    private Settings settings;
+
+    // Only touched on the control's thread.
+    private IOpenWindow? open;
+    private Label[] lastLabels = [];
+    private (Box Panel, RumourLine[] Lines)? lastRumours;
+    private Picture? lastPicture;
+    private Box? lastScreen;
+    private double lastScale = 1;
+    private GameCapture.Frame? lastFrame;
+    private bool visible;
+    private bool busy; // a look or follow is running
+    private bool glanceBusy;
+    private bool readAgain; // the window changed while a follow was running
+    private bool hiddenByKey; // the automatic scan leaves it hidden until no window is open
+    private bool keyWaiting; // the key came while a look or follow was running
+    private bool rebindWaiting; // own ratings changed while a look or follow was running
+    private int generation; // each show, hide and tab switch; older results are dropped
+    private Stopwatch? showStarted;
+    private int inFlight;
+
+    public event Action<Scene?>? Draw;
+    public event Action<StatusMessage>? Status;
+    public event Action<string?>? Diagnosed;
+
+    public OverlayEngine(GameWindows windows, IGameScreen screen, IPrices prices, Func<RumourBook> rumours, Settings settings, TimeProvider time, Action<string> log)
+    {
+        this.windows = windows;
+        this.screen = screen;
+        this.prices = prices;
+        this.rumours = rumours;
+        this.settings = settings;
+        this.log = log;
+        this.time = time;
+        glance = time.CreateTimer(_ => Enqueue(GlanceAsync), null, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+        follow = time.CreateTimer(_ => Enqueue(FollowAsync), null, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+        auto = time.CreateTimer(_ => Enqueue(AutoAsync), null, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+        SetAuto(settings);
+    }
+
+    // For tests and diagnosis; read on the control's thread or after IdleAsync.
+    public IOpenWindow? Open => open;
+    public Scene? Shown => visible && lastScreen is { } b ? new Scene(b, lastLabels, lastRumours, lastScale) : null;
+    public Picture? LastPicture => lastPicture;
+
+    public void Toggle() => Enqueue(ToggleAsync);
+
+    public void ForegroundChanged() => Enqueue(() => { OnForeground(); return Task.CompletedTask; });
+
+    public void Apply(Settings s) =>
+        Enqueue(() =>
+        {
+            // Another league: the prices on the screen are no longer the ones asked for. They
+            // go at once and come back with the next follow, once the new book is there; they
+            // must not stand through the load, nor for good when it fails. Rumour ratings do
+            // not depend on the league.
+            bool otherLeague = s.League != settings.League;
+            settings = s;
+            SetAuto(s);
+            if (otherLeague && open is not null)
+            {
+                // A follow still running reckons with the old book: its result is dropped,
+                // the checks started below read anew.
+                generation++;
+                lastLabels = [];
+                if (visible && lastScreen is { } b)
+                    Show(new Scene(b, [], lastRumours, lastScale));
+            }
+            if (open is not null)
+                StartChecks();
+            return Task.CompletedTask;
+        });
+
+    public void RumoursChanged() => Enqueue(RebindAsync);
+
+    public void Diagnose(string folder) => Enqueue(() => DiagnoseAsync(folder));
+
+    // Every queued input handled and every image job it started finished (tests).
+    public async Task IdleAsync()
+    {
+        while (Volatile.Read(ref inFlight) > 0)
+            await Task.Delay(5);
+    }
+
+    private readonly Dictionary<string, DateTimeOffset> logged = []; // failures and when they were logged; only on the loop
+
+    // The one place where a failure ends up: logged and shown, the control keeps running.
+    private void Enqueue(Func<Task> work)
+    {
+        Interlocked.Increment(ref inFlight);
+        loop.Post(async () =>
+        {
+            try
+            {
+                await work();
+            }
+            catch (Exception e)
+            {
+                // A failure is logged unless the same one was logged within SameErrorEvery:
+                // prices that cannot be loaded fail at every look of the automatic scan.
+                // Told by kind and message: thrown again, the same failure has a longer
+                // trace. Neither work without a failure in between nor another failure in
+                // between makes it new. The
+                // price: a failure that is over and comes back within that time is not
+                // logged a second time; the status line shows it all the same.
+                string kind = e.GetType().FullName + ": " + e.Message;
+                var now = time.GetUtcNow();
+                foreach (var old in logged.Where(p => now - p.Value >= Tuning.Control.SameErrorEvery).Select(p => p.Key).ToArray())
+                    logged.Remove(old);
+                if (logged.TryAdd(kind, now))
+                    log("Error: " + e);
+                Status?.Invoke(StatusMessage.Error(Texts.Shown(e)));
+            }
+            finally
+            {
+                Interlocked.Decrement(ref inFlight);
+            }
+        });
+    }
+
+    private LookContext Context() => new(rumours(), settings, log, Keep);
+
+    // Where the pictures go that a window hands over as evidence (LookContext.Keep); null:
+    // they are not kept.
+    public string? EvidenceFolder { get; set; }
+
+    // Called from the thread that reads the picture: copied there, written beside it. A
+    // picture that cannot be written is logged and nothing else.
+    private void Keep(string what, Mat picture)
+    {
+        if (EvidenceFolder is not { } folder)
+            return;
+        var copy = picture.Clone();
+        var file = Path.Combine(folder, $"{DateTime.Now:yyyy-MM-dd_HHmmss_fff}_{what}.png");
+        Interlocked.Increment(ref inFlight);
+        Task.Run(() =>
+        {
+            try
+            {
+                Directory.CreateDirectory(folder);
+                if (!Cv2.ImWrite(file, copy))
+                    throw new IOException("cannot write " + file);
+                log("evidence saved: " + Path.GetFileName(file));
+            }
+            catch (Exception e)
+            {
+                log("evidence not saved: " + e.Message);
+            }
+            finally
+            {
+                copy.Dispose();
+                Interlocked.Decrement(ref inFlight);
+            }
+        });
+    }
+
+    private void SetAuto(Settings s)
+    {
+        // NaN (a settings file changed by hand) compares false with everything: the minimum then.
+        double seconds = s.AutoIntervalSeconds >= Tuning.Control.AutoMinimumSeconds ? Math.Min(Tuning.Control.AutoMaximumSeconds, s.AutoIntervalSeconds) : Tuning.Control.AutoMinimumSeconds;
+        var every = TimeSpan.FromSeconds(seconds);
+        if (s.AutoAny)
+            auto.Change(every, every);
+        else
+            auto.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+    }
+
+    // The key again while it is still waiting takes it back. A look still running (automatic
+    // scan) is dropped: the key looks for every window.
+    private async Task ToggleAsync()
+    {
+        if (open is not null)
+        {
+            hiddenByKey = true;
+            Hide();
+        }
+        else if (busy)
+        {
+            keyWaiting = !keyWaiting;
+            hiddenByKey = false;
+            generation++;
+        }
+        else
+        {
+            hiddenByKey = false;
+            await ShowAsync(quiet: false, _ => true);
+        }
+    }
+
+    private void Release()
+    {
+        busy = false;
+        if (rebindWaiting)
+        {
+            rebindWaiting = false;
+            Enqueue(RebindAsync);
+        }
+        if (!keyWaiting)
+            return;
+        keyWaiting = false;
+        if (open is null)
+            Enqueue(() => ShowAsync(quiet: false, _ => true));
+    }
+
+    // Hidden by key: the automatic scan leaves it hidden until the window has been closed once
+    // (15:17 test: auto scan brought it back 2 s after Alt+F).
+    private async Task AutoAsync()
+    {
+        if (open is not null || busy || !screen.InFront)
+            return;
+        if (!hiddenByKey)
+        {
+            await ShowAsync(quiet: true, w => w.Profile.Auto.Get(settings));
+            return;
+        }
+        busy = true;
+        try
+        {
+            bool there = await Task.Run(() =>
+            {
+                using var frame = screen.Capture();
+                return frame is not null && windows.AnyThere(frame);
+            });
+            if (!there)
+                hiddenByKey = false;
+        }
+        finally
+        {
+            Release();
+        }
+    }
+
+    private async Task ShowAsync(bool quiet, Func<IGameWindow, bool> wanted)
+    {
+        if (busy)
+            return;
+        busy = true;
+        int started = ++generation;
+        try
+        {
+            var total = Stopwatch.StartNew();
+            var context = Context();
+            var (frame, found) = await Task.Run(async () =>
+            {
+                var w = Stopwatch.StartNew();
+                var captured = screen.Capture();
+                long capture = w.ElapsedMilliseconds;
+                try
+                {
+                    var seen = captured is null ? null : await windows.LookAsync(captured, context, wanted);
+                    // Not the look of the automatic scan that finds nothing: it comes twice a
+                    // second while the game is in front and would fill the log.
+                    if (!quiet || seen is not null)
+                        log($"Time: capture {capture} ms, detection {w.ElapsedMilliseconds - capture} ms");
+                    return (captured, seen);
+                }
+                catch
+                {
+                    captured?.Dispose();
+                    throw;
+                }
+            });
+            showStarted = total;
+            if (frame is null || found is null)
+            {
+                frame?.Dispose();
+                if (!quiet)
+                    Status?.Invoke(new(Texts.Get(frame is null ? "GameNotFound" : "NoWindowDetected")));
+                return;
+            }
+            if (started != generation)
+            {
+                frame.Dispose();
+                return;
+            }
+            open = found;
+            try
+            {
+                await LabelAsync(frame, started);
+            }
+            catch when (started == generation)
+            {
+                // Nothing shown (prices failed, a window threw): not "open", so the key and the
+                // automatic scan look again instead of hiding what is not there (code review).
+                open = null;
+                throw;
+            }
+            if (started == generation)
+                StartChecks();
+        }
+        finally
+        {
+            Release();
+        }
+    }
+
+    // Labels for the open window on this frame, drawn when the game is in front (else kept:
+    // OnForeground shows them on return).
+    private async Task LabelAsync(GameCapture.Frame frame, int started)
+    {
+        var window = open!;
+        var book = prices.GetAsync();
+        var context = Context();
+        Picture picture;
+        try
+        {
+            picture = await Task.Run(() => window.LabelAsync(frame, book, context));
+        }
+        catch
+        {
+            frame.Dispose();
+            throw;
+        }
+        if (started != generation || open is null)
+        {
+            frame.Dispose();
+            return;
+        }
+        open = picture.Next;
+        lastPicture = picture;
+        lastLabels = picture.Labels;
+        lastRumours = picture.Rumours;
+        lastScreen = frame.ScreenBounds;
+        lastScale = frame.Scale;
+        lastFrame?.Dispose();
+        lastFrame = frame;
+        if (!screen.InFront)
+            return;
+        Show(new Scene(frame.ScreenBounds, picture.Labels, picture.Rumours, frame.Scale));
+        if (showStarted is { } t)
+        {
+            log($"Time: hotkey to overlay {t.ElapsedMilliseconds} ms");
+            showStarted = null;
+        }
+        log("shown: " + picture.Shown);
+        Status?.Invoke(new(picture.Status));
+    }
+
+    // Every Profile.Follow: still there, changed (read again) or kept; labels drawn anew.
+    private async Task FollowAsync()
+    {
+        if (busy || open is null)
+            return;
+        if (!screen.InFront)
+        {
+            if (visible)
+                log("hidden: game not in foreground");
+            HideOverlay();
+            return;
+        }
+        busy = true;
+        try
+        {
+            do
+            {
+                readAgain = false;
+                await FollowOnceAsync(generation);
+            } while (readAgain && open is not null);
+        }
+        finally
+        {
+            Release();
+        }
+    }
+
+    private async Task FollowOnceAsync(int started)
+    {
+        var window = open!;
+        var context = Context();
+        var (frame, next) = await Task.Run(async () =>
+        {
+            var captured = screen.Capture();
+            try
+            {
+                return captured is null ? (captured, (IOpenWindow?)null) : (captured, await window.FollowAsync(captured, context));
+            }
+            catch
+            {
+                captured?.Dispose();
+                throw;
+            }
+        });
+        if (started != generation)
+        {
+            frame?.Dispose();
+            return;
+        }
+        if (frame is null)
+        {
+            log("hidden: capture failed");
+            Hide();
+            return;
+        }
+        if (next is null)
+        {
+            frame.Dispose();
+            Hide();
+            return;
+        }
+        open = next;
+        await LabelAsync(frame, started);
+    }
+
+    // Every Settings.GlanceIntervalSeconds while shown: closed → hide at once (the once-a-second
+    // follow alone would leave prices standing up to 1.5 s); another tab or a moved list →
+    // follow now; a tooltip beside the remnant list → labels anew. Runs also while a follow is
+    // busy.
+    private async Task GlanceAsync()
+    {
+        if (glanceBusy || open is null || !screen.InFront)
+            return;
+        glanceBusy = true;
+        int started = generation;
+        try
+        {
+            var window = open;
+            var ready = prices.Ready;
+            var context = Context();
+            long capture = 0,
+                check = 0;
+            var (frame, seen) = await Task.Run(() =>
+            {
+                var watch = Stopwatch.StartNew();
+                var captured = screen.Capture(window.GlanceArea);
+                capture = watch.ElapsedMilliseconds;
+                try
+                {
+                    var glanced = captured is null ? Glance.Unchanged : window.Glance(captured.Image, ready, context);
+                    check = watch.ElapsedMilliseconds - capture;
+                    return (captured, glanced);
+                }
+                catch
+                {
+                    captured?.Dispose();
+                    throw;
+                }
+            });
+            if (frame is null)
+                return; // no picture is no proof; the follow decides
+            // What the glance says holds for the window it looked at. A follow may have read
+            // the window anew meanwhile; taking the glance's word then put the old reading
+            // back, and glance and follow would undo each other for up to a second after every
+            // scroll of the remnant list. The next glance looks again.
+            if (started != generation || !ReferenceEquals(open, window))
+            {
+                frame.Dispose();
+                return;
+            }
+            switch (seen)
+            {
+                case Glance.Gone gone:
+                    frame.Dispose();
+                    log($"Time: quick check capture {capture} ms, check {check} ms");
+                    log("hidden (quick check): " + gone.Why);
+                    Hide();
+                    break;
+                case Glance.Reread reread:
+                    frame.Dispose();
+                    open = reread.Next;
+                    if (reread.ClearNow)
+                    {
+                        generation++; // a follow still running read the old window
+                        lastLabels = [];
+                        lastRumours = null;
+                        if (lastScreen is { } b)
+                            Show(new Scene(b, [], null, lastScale));
+                    }
+                    glanceBusy = false;
+                    if (busy)
+                        readAgain = true;
+                    else
+                        await FollowAsync();
+                    break;
+                // (A window that needs prices for its labels asks for this only when they are
+                // there; the rumour panel needs none.)
+                case Glance.Relabel relabel when !busy:
+                    using (frame)
+                    {
+                        var picture = await relabel.Next.LabelAsync(frame, ready is null ? prices.GetAsync() : Task.FromResult(ready), context);
+                        open = picture.Next;
+                        lastPicture = picture;
+                        lastLabels = picture.Labels;
+                        lastRumours = picture.Rumours;
+                        lastScreen = frame.ScreenBounds;
+                        lastScale = frame.Scale;
+                        Show(new Scene(frame.ScreenBounds, picture.Labels, picture.Rumours, frame.Scale));
+                    }
+                    break;
+                default:
+                    frame.Dispose();
+                    break;
+            }
+        }
+        finally
+        {
+            glanceBusy = false;
+        }
+    }
+
+    // Foreground changed: follow at once with what was shown last; the next follow refreshes.
+    private void OnForeground()
+    {
+        if (open is null)
+            return;
+        if (!screen.InFront)
+        {
+            if (visible)
+                log("hidden: game not in foreground");
+            HideOverlay();
+        }
+        else if (!visible && lastScreen is { } b)
+        {
+            Show(new Scene(b, lastLabels, lastRumours, lastScale));
+            log("shown again: game in foreground");
+        }
+    }
+
+    // Own ratings changed in the settings window: shown at once.
+    private async Task RebindAsync()
+    {
+        if (busy)
+        {
+            rebindWaiting = true; // a follow in flight would write back the old ratings (code review)
+            return;
+        }
+        if (open is null || lastFrame is null)
+            return;
+        var next = open.Rebind(Context());
+        if (ReferenceEquals(next, open))
+            return;
+        open = next;
+        var picture = await next.LabelAsync(lastFrame, prices.GetAsync(), Context());
+        lastRumours = picture.Rumours;
+        if (visible && lastScreen is { } b)
+            Show(new Scene(b, lastLabels, lastRumours, lastScale));
+    }
+
+    // Diagnosis key: the screen, what was shown, and what each window reads on it now. Only
+    // with the game itself in front: this is the one picture that is saved.
+    private async Task DiagnoseAsync(string folder)
+    {
+        if (!screen.GameInFront)
+        {
+            log("diagnostics not saved: game not in foreground");
+            Status?.Invoke(new(Texts.Get("DiagnosticsNeedForeground")));
+            return;
+        }
+        var shown = lastPicture;
+        var labels = lastLabels;
+        var ready = prices.Ready;
+        var context = Context() with { Log = _ => { } };
+        var current = settings;
+        var file = await Task.Run(async () =>
+        {
+            // Saved: the window as it is on the screen. Read: the same picture as a capture
+            // gives it (reference size), so the two cannot differ by a moment.
+            using var shot = screen.Snapshot();
+            if (shot is null)
+                return null;
+            using var frame = GameCapture.Stored(shot.Picture, shot.Pointer, null, shot.Popup, shot.Language);
+            Directory.CreateDirectory(folder);
+            var name = Path.Combine(folder, DateTime.Now.ToString("yyyy-MM-dd_HHmmss"));
+            Cv2.ImWrite(name + ".png", shot.Picture);
+            var fresh = new List<object>();
+            foreach (var window in windows.All)
+            {
+                if (await window.LookAsync(frame, context) is not { } found)
+                    continue;
+                // Without prices yet: an empty book, so the reading is recorded all the same (a
+                // diagnosis at 00:04 on 30.09. held nothing but "prices not loaded").
+                fresh.Add((await found.LabelAsync(frame, Task.FromResult(ready ?? new PriceBook("")), context)).Description);
+            }
+            // Pointer: on the saved picture. Scale: of the saved picture against what was
+            // read (Shown, Fresh and the labels are in reference coordinates).
+            JsonFiles.Write(name + ".json", new { Settings = current, Pointer = shot.Pointer is { } p ? new[] { p.X, p.Y } : null, frame.Scale, frame.Popup, GameLanguage = shot.Language, shot.TextSize, Shown = shown?.Description, ShownLabels = labels, Fresh = fresh });
+            return name;
+        });
+        Diagnosed?.Invoke(file);
+    }
+
+    private void StartChecks()
+    {
+        var profile = open!.Window.Profile;
+        follow.Change(profile.Follow, profile.Follow);
+        // Not faster than a glance takes, not slower than the follow, which hides as well.
+        var every = TimeSpan.FromSeconds(Math.Clamp(settings.GlanceIntervalSeconds, GameWindows.GlanceEvery.TotalSeconds, profile.Follow.TotalSeconds));
+        glance.Change(every, every);
+    }
+
+    private void Hide()
+    {
+        log(hiddenByKey ? "hidden: hotkey" : "hidden");
+        generation++;
+        follow.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+        glance.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+        HideOverlay();
+        open = null;
+        // Nothing of this window may come back with a foreground change while the next one is
+        // still being labelled (code review).
+        lastScreen = null;
+        lastLabels = [];
+        lastRumours = null;
+    }
+
+    private void Show(Scene scene)
+    {
+        visible = true;
+        Draw?.Invoke(scene);
+    }
+
+    private void HideOverlay()
+    {
+        visible = false;
+        Draw?.Invoke(null);
+    }
+
+    public void Dispose()
+    {
+        glance.Dispose();
+        follow.Dispose();
+        auto.Dispose();
+        loop.Post(() =>
+        {
+            lastFrame?.Dispose();
+            lastFrame = null;
+        });
+        loop.Dispose();
+    }
+
+    // The control's own thread: runs posted work one after another, and the continuations of
+    // awaits started there (it is their SynchronizationContext).
+    private sealed class EngineLoop : SynchronizationContext, IDisposable
+    {
+        private readonly BlockingCollection<(SendOrPostCallback Work, object? State)> queue = new();
+
+        public EngineLoop()
+        {
+            new Thread(Run) { IsBackground = true, Name = "Overlay control" }.Start();
+        }
+
+        public void Post(Action work) => Post(_ => work(), null);
+
+        public override void Post(SendOrPostCallback d, object? state)
+        {
+            try
+            {
+                queue.Add((d, state));
+            }
+            catch (InvalidOperationException) { } // disposed: the overlay is closing
+
+        }
+
+        public override void Send(SendOrPostCallback d, object? state) => throw new NotSupportedException();
+
+        private void Run()
+        {
+            SetSynchronizationContext(this);
+            foreach (var (work, state) in queue.GetConsumingEnumerable())
+                work(state);
+        }
+
+        public void Dispose() => queue.CompleteAdding();
+    }
+}

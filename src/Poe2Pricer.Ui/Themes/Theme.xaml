@@ -1,0 +1,612 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:ui="clr-namespace:Poe2Pricer.Ui"
+                    xmlns:views="clr-namespace:Poe2Pricer.Ui.Views"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+  <!-- The look of the program window: templates and named styles. Colours come from the
+       class Theme (Palette), by name. -->
+  <ResourceDictionary.MergedDictionaries>
+    <ui:Palette/>
+  </ResourceDictionary.MergedDictionaries>
+
+  <!-- One width for every button of the window (Exit, Save, Refresh prices, Browse…, Refresh):
+       that of the longest text in any language of the window, "Refresh prices" — the same in
+       every language, so that nothing moves when the language is changed; a text of a language
+       pack has to fit it (German: "Preisupdate", "Suchen…" instead of longer words). A
+       smallest width instead would let a longer text make its button wider than the others.
+       A button that is a row of a list ("+ Add custom row") sets its own. The tabs have this
+       width too. -->
+  <sys:Double x:Key="ButtonWidth">116</sys:Double>
+
+  <!-- Dark combo boxes and scroll bars; the Windows defaults stayed light next to the dark
+       input fields. -->
+  <Style TargetType="ComboBoxItem">
+    <Setter Property="Foreground" Value="{StaticResource Text}"/>
+    <Setter Property="Background" Value="{StaticResource Field}"/>
+    <Setter Property="Padding" Value="6,3"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ComboBoxItem">
+          <Border x:Name="Bd" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+            <ContentPresenter/>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsHighlighted" Value="True">
+              <Setter TargetName="Bd" Property="Background" Value="{StaticResource Accent}"/>
+              <Setter Property="Foreground" Value="{StaticResource OnAccent}"/>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="ComboBox">
+    <Setter Property="Foreground" Value="{StaticResource Text}"/>
+    <Setter Property="MinHeight" Value="28"/>
+    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ComboBox">
+          <Grid>
+            <ToggleButton Focusable="False" ClickMode="Press"
+                          IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+              <ToggleButton.Template>
+                <ControlTemplate TargetType="ToggleButton">
+                  <Border x:Name="B" Background="{StaticResource Field}" BorderBrush="{StaticResource Line}" BorderThickness="1">
+                    <Path HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,7,0"
+                          Data="M0,0 L4,4 L8,0" Stroke="{StaticResource Accent}" StrokeThickness="1.5"/>
+                  </Border>
+                  <ControlTemplate.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                      <Setter TargetName="B" Property="BorderBrush" Value="{StaticResource LineLight}"/>
+                    </Trigger>
+                    <Trigger Property="IsChecked" Value="True">
+                      <Setter TargetName="B" Property="BorderBrush" Value="{StaticResource Accent}"/>
+                    </Trigger>
+                    <DataTrigger Binding="{Binding IsKeyboardFocusWithin, RelativeSource={RelativeSource AncestorType=ComboBox}}" Value="True">
+                      <Setter TargetName="B" Property="BorderBrush" Value="{StaticResource Accent}"/>
+                    </DataTrigger>
+                  </ControlTemplate.Triggers>
+                </ControlTemplate>
+              </ToggleButton.Template>
+            </ToggleButton>
+            <ContentPresenter IsHitTestVisible="False" Margin="6,3,22,3" VerticalAlignment="Center"
+                              Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"/>
+            <Popup IsOpen="{TemplateBinding IsDropDownOpen}" Placement="Bottom" AllowsTransparency="True" Focusable="False">
+              <Border Background="{StaticResource Field}" BorderBrush="{StaticResource Line}" BorderThickness="1"
+                      MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}" MaxHeight="300">
+                <ScrollViewer><ItemsPresenter/></ScrollViewer>
+              </Border>
+            </Popup>
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter Property="Opacity" Value="0.5"/>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="ScrollBar">
+    <Setter Property="Width" Value="10"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ScrollBar">
+          <Border Background="{StaticResource Field}">
+            <Track x:Name="PART_Track" IsDirectionReversed="True">
+              <!-- The lane above and below the grip: a click there rolls by a page. Nothing
+                   to see. -->
+              <Track.DecreaseRepeatButton>
+                <RepeatButton Command="ScrollBar.PageUpCommand" Focusable="False">
+                  <RepeatButton.Template>
+                    <ControlTemplate TargetType="RepeatButton">
+                      <Border Background="Transparent"/>
+                    </ControlTemplate>
+                  </RepeatButton.Template>
+                </RepeatButton>
+              </Track.DecreaseRepeatButton>
+              <Track.IncreaseRepeatButton>
+                <RepeatButton Command="ScrollBar.PageDownCommand" Focusable="False">
+                  <RepeatButton.Template>
+                    <ControlTemplate TargetType="RepeatButton">
+                      <Border Background="Transparent"/>
+                    </ControlTemplate>
+                  </RepeatButton.Template>
+                </RepeatButton>
+              </Track.IncreaseRepeatButton>
+              <Track.Thumb>
+                <Thumb>
+                  <Thumb.Template>
+                    <ControlTemplate TargetType="Thumb">
+                      <Border x:Name="T" Background="{StaticResource Line}" Margin="2"/>
+                      <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                          <Setter TargetName="T" Property="Background" Value="{StaticResource LineLight}"/>
+                        </Trigger>
+                      </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                  </Thumb.Template>
+                </Thumb>
+              </Track.Thumb>
+            </Track>
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- The default tab look (white selected tab, dark text on dark tabs) was hard to read. -->
+  <Style x:Key="Tab" TargetType="TabItem">
+    <Setter Property="Foreground" Value="{StaticResource Text}"/>
+    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="TabItem">
+          <Border x:Name="B" Width="{StaticResource ButtonWidth}" Background="{StaticResource TabIdle}" BorderBrush="{StaticResource Line}" BorderThickness="1,1,1,0" Padding="4,5" Margin="0,0,3,0">
+            <Grid>
+              <ContentPresenter x:Name="C" ContentSource="Header" HorizontalAlignment="Center" TextElement.Foreground="{StaticResource Text}" TextElement.FontWeight="SemiBold"/>
+              <!-- The tab the keyboard is on: a thin dark frame just inside its edge — the
+                   golden frame of the buttons would not show on the golden tab. It lies over
+                   the padding and takes no room. -->
+              <Border x:Name="F" Margin="-2,-3,-2,-3" BorderBrush="Transparent" BorderThickness="1" IsHitTestVisible="False"/>
+            </Grid>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="B" Property="Background" Value="{StaticResource Hover}"/>
+            </Trigger>
+            <Trigger Property="IsSelected" Value="True">
+              <Setter TargetName="B" Property="Background" Value="{StaticResource Accent}"/>
+              <Setter TargetName="C" Property="TextElement.Foreground" Value="{StaticResource OnAccent}"/>
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+              <Setter TargetName="F" Property="BorderBrush" Value="{StaticResource OnAccent}"/>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- One height for what stands in a row: buttons, fields and lists are 28 high, like the tab
+       titles. A button is ButtonWidth (116) wide, so the short ones are alike. Only the fields
+       and lists in the rows of the rumour list stay lower.
+       Buttons, fields and check boxes have their own templates: the Windows templates paint
+       their own light blue under the mouse and with the focus, whatever colours the control
+       has. The same everywhere: under the mouse the lighter line (a button: the hover ground),
+       with the keyboard focus brass, switched off at half strength. -->
+
+  <!-- A button beside a field or in the foot ("Preise neu laden", "Beenden"). -->
+  <Style x:Key="PlainButton" TargetType="Button">
+    <Setter Property="Padding" Value="14,0,14,0"/>
+    <Setter Property="Height" Value="28"/>
+    <Setter Property="Width" Value="{StaticResource ButtonWidth}"/>
+    <Setter Property="Margin" Value="10,0,0,0"/>
+    <Setter Property="Background" Value="{StaticResource Panel}"/>
+    <Setter Property="Foreground" Value="{StaticResource Text}"/>
+    <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border x:Name="B" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+            <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True"/>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="B" Property="Background" Value="{StaticResource Hover}"/>
+              <Setter TargetName="B" Property="BorderBrush" Value="{StaticResource LineLight}"/>
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter TargetName="B" Property="Background" Value="{StaticResource Field}"/>
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+              <Setter TargetName="B" Property="BorderBrush" Value="{StaticResource Accent}"/>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="B" Property="Opacity" Value="0.5"/>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <!-- The main action, in brass. -->
+  <Style x:Key="SaveButton" TargetType="Button">
+    <Setter Property="Padding" Value="14,0,14,0"/>
+    <Setter Property="Height" Value="28"/>
+    <Setter Property="Width" Value="{StaticResource ButtonWidth}"/>
+    <Setter Property="Background" Value="{StaticResource Accent}"/>
+    <Setter Property="Foreground" Value="{StaticResource OnAccent}"/>
+    <Setter Property="BorderBrush" Value="{StaticResource AccentDark}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border x:Name="B" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+            <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True"/>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="B" Property="Background" Value="{StaticResource AccentHover}"/>
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter TargetName="B" Property="Background" Value="{StaticResource AccentDark}"/>
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+              <Setter TargetName="B" Property="BorderBrush" Value="{StaticResource Text}"/>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="B" Property="Opacity" Value="0.5"/>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- An input field; width and distance are set where it stands. -->
+  <Style x:Key="Input" TargetType="TextBox">
+    <Setter Property="Background" Value="{StaticResource Field}"/>
+    <Setter Property="Foreground" Value="{StaticResource Text}"/>
+    <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CaretBrush" Value="{StaticResource Text}"/>
+    <Setter Property="SelectionBrush" Value="{StaticResource Accent}"/>
+    <Setter Property="Padding" Value="4,2,4,2"/>
+    <Setter Property="MinHeight" Value="28"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="TextBox">
+          <Border x:Name="B" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+            <!-- The text box lays its Padding into the content host by itself. -->
+            <ScrollViewer x:Name="PART_ContentHost" Focusable="False" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                          HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="B" Property="BorderBrush" Value="{StaticResource LineLight}"/>
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+              <Setter TargetName="B" Property="BorderBrush" Value="{StaticResource Accent}"/>
+            </Trigger>
+            <!-- Could not be read when saving: red, whatever else holds, until it is changed. -->
+            <Trigger Property="views:Field.Invalid" Value="True">
+              <Setter TargetName="B" Property="BorderBrush" Value="{StaticResource Warning}"/>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="B" Property="Opacity" Value="0.5"/>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style x:Key="Check" TargetType="CheckBox">
+    <Setter Property="Foreground" Value="{StaticResource Text}"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="CheckBox">
+          <StackPanel x:Name="P" Orientation="Horizontal" Background="Transparent">
+            <Border x:Name="B" Width="16" Height="16" VerticalAlignment="Center" Background="{StaticResource Field}" BorderBrush="{StaticResource LineLight}" BorderThickness="1">
+              <Path x:Name="Tick" Data="M2.5,7 L6,10.5 L11.5,3.5" Stroke="{StaticResource Accent}" StrokeThickness="2" Visibility="Collapsed"/>
+            </Border>
+            <ContentPresenter Margin="6,0,0,0" VerticalAlignment="Center" RecognizesAccessKey="True"/>
+          </StackPanel>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsChecked" Value="True">
+              <Setter TargetName="Tick" Property="Visibility" Value="Visible"/>
+            </Trigger>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="B" Property="BorderBrush" Value="{StaticResource Text}"/>
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+              <Setter TargetName="B" Property="BorderBrush" Value="{StaticResource Accent}"/>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="P" Property="Opacity" Value="0.5"/>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- Corner fittings in antique brass: fine metal fittings, not a game frame. Each geometry
+       is drawn for the upper left corner; the others are mirrored. Vectors, so they stay sharp
+       at every scaling. The window's edges are square: an angle does not sit cleanly on a
+       round corner. -->
+  <!-- 48: angle, lozenge, sickle, fine lines — the lower corners of the window. -->
+  <Geometry x:Key="CornerLarge">F1 M0,0 L48,0 L40,2 L2,2 L2,40 L0,48 Z M6,1 L11,6 L6,11 L1,6 Z M6,26 Q8,8 26,6 Q11,11 6,26 Z M5.5,26 L6.5,26 L6.5,36 L5.5,36 Z M26,5.5 L36,5.5 L36,6.5 L26,6.5 Z</Geometry>
+  <!-- 48: only angle and lozenge — the upper corners, where symbol and buttons stand. -->
+  <Geometry x:Key="CornerTitle">F1 M0,0 L48,0 L40,2 L2,2 L2,40 L0,48 Z M6,1 L11,6 L6,11 L1,6 Z</Geometry>
+  <!-- 14: the boxes. -->
+  <Geometry x:Key="CornerSmall">F1 M0,0 L14,0 L12,1.5 L1.5,1.5 L1.5,12 L0,14 Z M4.5,2.5 L6.5,4.5 L4.5,6.5 L2.5,4.5 Z</Geometry>
+
+  <Style x:Key="CornerLargePath" TargetType="Path">
+    <Setter Property="Data" Value="{StaticResource CornerLarge}"/>
+    <Setter Property="Fill" Value="{StaticResource Ornament}"/>
+    <Setter Property="Width" Value="48"/>
+    <Setter Property="Height" Value="48"/>
+    <Setter Property="Stretch" Value="None"/>
+    <Setter Property="IsHitTestVisible" Value="False"/>
+    <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+  </Style>
+  <Style x:Key="CornerTitlePath" TargetType="Path" BasedOn="{StaticResource CornerLargePath}">
+    <Setter Property="Data" Value="{StaticResource CornerTitle}"/>
+  </Style>
+  <Style x:Key="CornerSmallPath" TargetType="Path">
+    <Setter Property="Data" Value="{StaticResource CornerSmall}"/>
+    <Setter Property="Fill" Value="{StaticResource Accent}"/>
+    <Setter Property="Opacity" Value="0.75"/>
+    <Setter Property="Width" Value="14"/>
+    <Setter Property="Height" Value="14"/>
+    <Setter Property="Stretch" Value="None"/>
+    <Setter Property="IsHitTestVisible" Value="False"/>
+    <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+  </Style>
+
+  <!-- A box with its caption and a small fitting in every corner; the content takes what is
+       left below the caption. Section is one of several below each other. -->
+  <Style x:Key="Box" TargetType="GroupBox">
+    <Setter Property="Background" Value="{StaticResource Panel}"/>
+    <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="Foreground" Value="{StaticResource Text}"/>
+    <Setter Property="Padding" Value="12,10,12,10"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="GroupBox">
+          <Grid>
+            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"/>
+            <DockPanel Margin="{TemplateBinding Padding}">
+              <ContentPresenter DockPanel.Dock="Top" ContentSource="Header" Margin="0,0,0,6" TextElement.FontSize="11.5" TextElement.FontWeight="Bold"/>
+              <ContentPresenter/>
+            </DockPanel>
+            <Path Style="{StaticResource CornerSmallPath}" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            <Path Style="{StaticResource CornerSmallPath}" HorizontalAlignment="Right" VerticalAlignment="Top">
+              <Path.RenderTransform>
+                <ScaleTransform ScaleX="-1"/>
+              </Path.RenderTransform>
+            </Path>
+            <Path Style="{StaticResource CornerSmallPath}" HorizontalAlignment="Left" VerticalAlignment="Bottom">
+              <Path.RenderTransform>
+                <ScaleTransform ScaleY="-1"/>
+              </Path.RenderTransform>
+            </Path>
+            <Path Style="{StaticResource CornerSmallPath}" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+              <Path.RenderTransform>
+                <ScaleTransform ScaleX="-1" ScaleY="-1"/>
+              </Path.RenderTransform>
+            </Path>
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style x:Key="Section" TargetType="GroupBox" BasedOn="{StaticResource Box}">
+    <Setter Property="Margin" Value="0,0,0,10"/>
+  </Style>
+  <Style x:Key="Hint" TargetType="TextBlock">
+    <Setter Property="Foreground" Value="{StaticResource Muted}"/>
+    <Setter Property="FontSize" Value="11.5"/>
+    <Setter Property="TextWrapping" Value="Wrap"/>
+    <Setter Property="MaxWidth" Value="600"/>
+    <Setter Property="Margin" Value="0,4,0,0"/>
+  </Style>
+
+  <!-- The buttons of the title bar: neutral, brass only under the mouse. -->
+  <Style x:Key="ChromeButton" TargetType="Button">
+    <Setter Property="Width" Value="40"/>
+    <Setter Property="Height" Value="28"/>
+    <Setter Property="Foreground" Value="{StaticResource Muted}"/>
+    <Setter Property="Focusable" Value="False"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border x:Name="B" Background="Transparent">
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="B" Property="Background" Value="{StaticResource Hover}"/>
+              <Setter Property="Foreground" Value="{StaticResource Accent}"/>
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter TargetName="B" Property="Background" Value="{StaticResource Field}"/>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- Tooltips in the window's colours, wrapped at a limited width. -->
+  <Style TargetType="ToolTip">
+    <Setter Property="Background" Value="{StaticResource Panel}"/>
+    <Setter Property="BorderBrush" Value="{StaticResource LineLight}"/>
+    <Setter Property="Foreground" Value="{StaticResource Text}"/>
+    <Setter Property="Padding" Value="10,7"/>
+    <Setter Property="MaxWidth" Value="340"/>
+    <Setter Property="HasDropShadow" Value="True"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ToolTip">
+          <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" Padding="{TemplateBinding Padding}">
+            <ContentPresenter>
+              <ContentPresenter.Resources>
+                <Style TargetType="TextBlock">
+                  <Setter Property="TextWrapping" Value="Wrap"/>
+                </Style>
+              </ContentPresenter.Resources>
+            </ContentPresenter>
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- The "i" in a circle beside a setting: its explanation as a tooltip, in place of long
+       texts below the settings. Reached with the keyboard too; shown for half a minute. -->
+  <Style x:Key="InfoIcon" TargetType="ContentControl">
+    <Setter Property="Width" Value="16"/>
+    <Setter Property="Height" Value="16"/>
+    <Setter Property="Margin" Value="8,0,0,0"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="Focusable" Value="True"/>
+    <Setter Property="IsTabStop" Value="True"/>
+    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+    <Setter Property="Foreground" Value="{StaticResource LineLight}"/>
+    <Setter Property="ToolTipService.InitialShowDelay" Value="200"/>
+    <Setter Property="ToolTipService.ShowDuration" Value="30000"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ContentControl">
+          <Grid Background="Transparent">
+            <Ellipse Stroke="{TemplateBinding Foreground}" StrokeThickness="1"/>
+            <TextBlock Text="i" FontSize="11" FontWeight="SemiBold" Foreground="{TemplateBinding Foreground}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter Property="Foreground" Value="{StaticResource Accent}"/>
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+              <Setter Property="Foreground" Value="{StaticResource Accent}"/>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- The "✕" at a row of the player's own in the rumour list: neutral, red under the mouse. -->
+  <Style x:Key="RowDelete" TargetType="Button">
+    <Setter Property="Width" Value="20"/>
+    <Setter Property="Height" Value="20"/>
+    <Setter Property="Foreground" Value="{StaticResource Muted}"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="HorizontalAlignment" Value="Left"/>
+    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border x:Name="B" Background="Transparent" BorderBrush="Transparent" BorderThickness="1">
+            <Path Data="M0,0 L8,8 M8,0 L0,8" StrokeThickness="1.2" Stroke="{TemplateBinding Foreground}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter Property="Foreground" Value="{StaticResource Warning}"/>
+              <Setter TargetName="B" Property="Background" Value="{StaticResource Hover}"/>
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter TargetName="B" Property="Background" Value="{StaticResource Field}"/>
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+              <Setter TargetName="B" Property="BorderBrush" Value="{StaticResource Accent}"/>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="B" Property="Opacity" Value="0.5"/>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- A row of a section: caption at a fixed width, then its fields. -->
+  <Style x:Key="Row" TargetType="StackPanel">
+    <Setter Property="Orientation" Value="Horizontal"/>
+    <Setter Property="Margin" Value="0,3,0,3"/>
+  </Style>
+  <Style x:Key="RowCaption" TargetType="TextBlock">
+    <Setter Property="Width" Value="170"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+  </Style>
+  <!-- A word in a row ("s" behind a time). -->
+  <Style x:Key="RowText" TargetType="TextBlock">
+    <Setter Property="VerticalAlignment" Value="Center"/>
+  </Style>
+  <!-- Small grey text: column heads, the source line, the credits. -->
+  <Style x:Key="Small" TargetType="TextBlock">
+    <Setter Property="Foreground" Value="{StaticResource Muted}"/>
+    <Setter Property="FontSize" Value="11.5"/>
+  </Style>
+
+  <!-- The rumour list: a text that ends with "…" when it does not fit, and a field in a row. -->
+  <Style x:Key="RumourLabel" TargetType="TextBlock">
+    <Setter Property="views:TrimmedTip.Only" Value="True"/>
+    <Setter Property="Margin" Value="0,0,10,0"/>
+    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+  </Style>
+  <Style x:Key="Cell" TargetType="TextBox" BasedOn="{StaticResource Input}">
+    <Setter Property="MinHeight" Value="22"/>
+    <Setter Property="Height" Value="22"/>
+    <Setter Property="Margin" Value="0,0,10,0"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+  </Style>
+
+  <!-- The overlay's rating colours read on dark ground only; a small dark chip keeps them. -->
+  <Style x:Key="RatingChip" TargetType="Border">
+    <Setter Property="Width" Value="38"/>
+    <Setter Property="Height" Value="20"/>
+    <Setter Property="HorizontalAlignment" Value="Center"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="Background" Value="{StaticResource Chip}"/>
+  </Style>
+  <Style x:Key="RatingChipText" TargetType="TextBlock">
+    <Setter Property="FontWeight" Value="Bold"/>
+    <Setter Property="HorizontalAlignment" Value="Center"/>
+  </Style>
+
+  <!-- The menu of the right mouse button (status line, warnings: "Copy"), in the look of the
+       lists: Windows' own would be light grey. Font as the window, which a menu does not inherit. -->
+  <Style TargetType="ContextMenu">
+    <Setter Property="Background" Value="{StaticResource Panel}"/>
+    <Setter Property="BorderBrush" Value="{StaticResource LineLight}"/>
+    <Setter Property="Foreground" Value="{StaticResource Text}"/>
+    <Setter Property="FontFamily" Value="Segoe UI"/>
+    <Setter Property="FontSize" Value="13"/>
+    <Setter Property="HasDropShadow" Value="True"/>
+    <Setter Property="SnapsToDevicePixels" Value="True"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ContextMenu">
+          <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" Padding="0,2">
+            <ItemsPresenter/>
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style TargetType="MenuItem">
+    <Setter Property="Foreground" Value="{StaticResource Text}"/>
+    <Setter Property="Padding" Value="12,5"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="MenuItem">
+          <Border x:Name="Bd" Background="Transparent" Padding="{TemplateBinding Padding}">
+            <ContentPresenter ContentSource="Header" RecognizesAccessKey="False"/>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsHighlighted" Value="True">
+              <Setter TargetName="Bd" Property="Background" Value="{StaticResource Accent}"/>
+              <Setter Property="Foreground" Value="{StaticResource OnAccent}"/>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

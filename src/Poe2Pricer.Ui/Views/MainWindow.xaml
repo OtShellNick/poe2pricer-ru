@@ -1,0 +1,466 @@
+<!-- Program window in the slate palette, tabs Settings and Rumours at one fixed size, taken
+     from Settings. -->
+<Window x:Class="Poe2Pricer.Ui.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:core="clr-namespace:Poe2Pricer.Core;assembly=Poe2Pricer.Core"
+        xmlns:vm="clr-namespace:Poe2Pricer.Ui.ViewModels"
+        xmlns:views="clr-namespace:Poe2Pricer.Ui.Views"
+        Title="poe2pricer"
+        SizeToContent="WidthAndHeight" ResizeMode="CanResize" WindowStartupLocation="CenterScreen"
+        FontFamily="Segoe UI" FontSize="13" UseLayoutRounding="True" SnapsToDevicePixels="True">
+  <!-- The Windows title bar is gone, the window draws every part of itself.
+       WindowChrome, not AllowsTransparency: moving, resizing, snapping and the shadow stay the
+       system's. GlassFrameThickness 0,0,0,1 instead of 0 keeps the shadow. -->
+  <WindowChrome.WindowChrome>
+    <WindowChrome CaptionHeight="58" GlassFrameThickness="0,0,0,1" CornerRadius="0" ResizeBorderThickness="5" UseAeroCaptionButtons="False"/>
+  </WindowChrome.WindowChrome>
+  <Window.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Poe2Pricer.Ui;component/Themes/Theme.xaml"/>
+      </ResourceDictionary.MergedDictionaries>
+
+      <views:RatingBrush x:Key="RatingBrush"/>
+
+      <!-- "Copy" with the right mouse button on the status line and on a warning: the whole
+           text, also where the line shows only its beginning. -->
+      <ContextMenu x:Key="CopyMenu">
+        <MenuItem Header="{views:Text Copy}" Click="CopyText"/>
+      </ContextMenu>
+
+      <!-- A language of the window: its flag, drawn here (Windows has no flag symbols in its
+           fonts), and its country code. English is the flag of the United Kingdom, the
+           language's home, simplified to what 24 × 12 can show. -->
+      <DataTemplate x:Key="LanguageItem" DataType="{x:Type vm:LanguageChoice}">
+        <StackPanel Orientation="Horizontal">
+          <Border Width="24" Height="12" VerticalAlignment="Center" BorderBrush="{StaticResource Line}" BorderThickness="0" SnapsToDevicePixels="True">
+            <Grid>
+              <Canvas x:Name="en" Width="24" Height="12" ClipToBounds="True" Visibility="Collapsed">
+                <Rectangle Width="24" Height="12" Fill="#012169"/>
+                <Line X1="0" Y1="0" X2="24" Y2="12" Stroke="White" StrokeThickness="2.6"/>
+                <Line X1="24" Y1="0" X2="0" Y2="12" Stroke="White" StrokeThickness="2.6"/>
+                <Line X1="0" Y1="0" X2="24" Y2="12" Stroke="#C8102E" StrokeThickness="0.9"/>
+                <Line X1="24" Y1="0" X2="0" Y2="12" Stroke="#C8102E" StrokeThickness="0.9"/>
+                <Rectangle Canvas.Left="9.6" Width="4.8" Height="12" Fill="White"/>
+                <Rectangle Canvas.Top="3.8" Width="24" Height="4.4" Fill="White"/>
+                <Rectangle Canvas.Left="10.6" Width="2.8" Height="12" Fill="#C8102E"/>
+                <Rectangle Canvas.Top="4.7" Width="24" Height="2.6" Fill="#C8102E"/>
+              </Canvas>
+              <Canvas x:Name="de" Width="24" Height="12" ClipToBounds="True" Visibility="Collapsed">
+                <Rectangle Width="24" Height="4" Fill="#000000"/>
+                <Rectangle Canvas.Top="4" Width="24" Height="4" Fill="#DD0000"/>
+                <Rectangle Canvas.Top="8" Width="24" Height="4" Fill="#FFCE00"/>
+              </Canvas>
+            </Grid>
+          </Border>
+          <TextBlock Text="{Binding Label}" Margin="7,0,0,0" VerticalAlignment="Center"/>
+        </StackPanel>
+        <DataTemplate.Triggers>
+          <DataTrigger Binding="{Binding Code}" Value="en">
+            <Setter TargetName="en" Property="Visibility" Value="Visible"/>
+          </DataTrigger>
+          <DataTrigger Binding="{Binding Code}" Value="de">
+            <Setter TargetName="de" Property="Visibility" Value="Visible"/>
+          </DataTrigger>
+        </DataTemplate.Triggers>
+      </DataTemplate>
+
+      <!-- Where the checkboxes of AUTO-SCAN and STARTUP begin: the row of the LEAGUE box
+           (list 230, gap 10, button) and a gap. -->
+      <GridLength x:Key="LeftColumn">380</GridLength>
+
+      <!-- Rumour, Island, Mods, Tier, Custom, Note, and a narrow place for the "✕" of an own
+           row; one grid per row keeps the columns aligned. Text columns share the width: the
+           note gets half as much again at the cost of Island and Mods, the name keeps its
+           width — with the same share for all four, names would be cut off ("Nothing to
+           dri…"). Tier and Custom are fixed and alike. A text shows its tooltip only while
+           it is cut off (RumourLabel). -->
+      <DataTemplate x:Key="SheetRow" DataType="{x:Type vm:RumourRowViewModel}">
+        <Grid Height="28">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="2.5*"/>
+            <ColumnDefinition Width="2.5*"/>
+            <ColumnDefinition Width="66"/>
+            <ColumnDefinition Width="66"/>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="24"/>
+          </Grid.ColumnDefinitions>
+          <TextBlock x:Name="name" Grid.Column="0" Text="{Binding Name}" ToolTip="{Binding NameTip}" Foreground="{StaticResource Text}" Style="{StaticResource RumourLabel}"/>
+          <TextBlock Grid.Column="1" Text="{Binding Map}" ToolTip="{Binding Map}" Foreground="{StaticResource Muted}" Style="{StaticResource RumourLabel}"/>
+          <TextBlock Grid.Column="2" Text="{Binding Mods}" ToolTip="{Binding Mods}" Foreground="{StaticResource Muted}" Style="{StaticResource RumourLabel}"/>
+          <Border Grid.Column="3" ToolTip="{Binding RemarkTip}" Style="{StaticResource RatingChip}">
+            <TextBlock Text="{Binding Rating}" Foreground="{Binding Rating, Converter={StaticResource RatingBrush}}" Style="{StaticResource RatingChipText}"/>
+          </Border>
+          <ComboBox Grid.Column="4" Width="50" MinHeight="24" HorizontalAlignment="Left" VerticalAlignment="Center"
+                    ItemsSource="{x:Static vm:RumourRowViewModel.OwnChoices}" SelectedItem="{Binding Own}"/>
+          <TextBox Grid.Column="5" Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Cell}"/>
+        </Grid>
+        <DataTemplate.Triggers>
+          <!-- Red name with the warning as tooltip, like the source shows it. -->
+          <DataTrigger Binding="{Binding HasWarning}" Value="True">
+            <Setter TargetName="name" Property="Foreground" Value="{StaticResource Warning}"/>
+            <Setter TargetName="name" Property="FontWeight" Value="SemiBold"/>
+            <Setter TargetName="name" Property="views:TrimmedTip.Only" Value="False"/>
+          </DataTrigger>
+        </DataTemplate.Triggers>
+      </DataTemplate>
+      <DataTemplate x:Key="OwnRow" DataType="{x:Type vm:RumourRowViewModel}">
+        <Grid Height="28">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="2.5*"/>
+            <ColumnDefinition Width="2.5*"/>
+            <ColumnDefinition Width="66"/>
+            <ColumnDefinition Width="66"/>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="24"/>
+          </Grid.ColumnDefinitions>
+          <TextBox Grid.Column="0" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Cell}"/>
+          <TextBox Grid.Column="1" Text="{Binding Map, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Cell}"/>
+          <TextBox Grid.Column="2" Text="{Binding Mods, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Cell}"/>
+          <Border Grid.Column="3" ToolTip="{Binding RemarkTip}" Style="{StaticResource RatingChip}">
+            <TextBlock Text="{Binding Rating}" Foreground="{Binding Rating, Converter={StaticResource RatingBrush}}" Style="{StaticResource RatingChipText}"/>
+          </Border>
+          <ComboBox Grid.Column="4" Width="50" MinHeight="24" HorizontalAlignment="Left" VerticalAlignment="Center"
+                    ItemsSource="{x:Static vm:RumourRowViewModel.OwnChoices}" SelectedItem="{Binding Own}"/>
+          <TextBox Grid.Column="5" Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Cell}"/>
+          <Button Grid.Column="6" Style="{StaticResource RowDelete}" ToolTip="{views:Text TipDeleteRow}"
+                  Command="{Binding DataContext.RemoveRowCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}"/>
+        </Grid>
+      </DataTemplate>
+      <views:RumourRowTemplates x:Key="RumourRows" Sheet="{StaticResource SheetRow}" Own="{StaticResource OwnRow}"/>
+    </ResourceDictionary>
+  </Window.Resources>
+  <Window.Background>
+    <StaticResource ResourceKey="Back"/>
+  </Window.Background>
+  <Window.Foreground>
+    <StaticResource ResourceKey="Text"/>
+  </Window.Foreground>
+
+  <!-- The title bar stands in the content, not in a template of the window: so it is part of
+       the picture the window is compared by (WindowPicture). -->
+  <Grid x:Name="frame">
+  <Border BorderBrush="{StaticResource LineLight}" BorderThickness="1">
+  <DockPanel LastChildFill="True">
+    <!-- Title bar: symbol, name, below it the subtitle; at the right minimize and close.
+         58 high: lower, symbol and two lines of text stand only 5 to 7 from the upper edge
+         and look stuck to it. -->
+    <DockPanel DockPanel.Dock="Top" Height="58" Margin="18,0,14,0">
+      <Button DockPanel.Dock="Right" Style="{StaticResource ChromeButton}" Command="{x:Static SystemCommands.CloseWindowCommand}" ToolTip="{views:Text TipClose}">
+        <Path Data="M0,0 L10,10 M10,0 L0,10" StrokeThickness="1" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+      </Button>
+      <Button DockPanel.Dock="Right" Style="{StaticResource ChromeButton}" Command="{x:Static SystemCommands.MinimizeWindowCommand}" ToolTip="{views:Text TipMinimize}">
+        <Path Data="M0,0 L10,0" StrokeThickness="1" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+      </Button>
+      <Image x:Name="titleIcon" DockPanel.Dock="Left" Width="36" Height="36" Margin="0,0,10,0" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality"/>
+      <StackPanel VerticalAlignment="Center">
+        <StackPanel Orientation="Horizontal">
+          <TextBlock Text="poe2pricer" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource Text}"/>
+          <TextBlock Text="{Binding Version}" FontSize="10.5" Foreground="{StaticResource Muted}" Margin="8,0,0,2" VerticalAlignment="Bottom"/>
+        </StackPanel>
+        <TextBlock Text="{views:Text Subtitle}" FontSize="10.5" Foreground="{StaticResource Muted}" TextTrimming="CharacterEllipsis"/>
+      </StackPanel>
+    </DockPanel>
+
+  <DockPanel Margin="18,4,18,18" LastChildFill="True">
+    <!-- The foot: "Exit" at the left, the main action at the right, between them the
+         status line at their height, so that the lower edge is not left empty. Two lines at
+         most; the whole text is its tooltip. -->
+    <DockPanel DockPanel.Dock="Bottom" Margin="0,14,0,0" LastChildFill="True">
+      <Button DockPanel.Dock="Left" Content="{views:Text Exit}" Command="{Binding QuitCommand}" Style="{StaticResource PlainButton}" Margin="0"/>
+      <!-- The guide shipped with the program, in the browser. -->
+      <Button DockPanel.Dock="Left" Content="{views:Text Help}" Click="OpenGuide" Style="{StaticResource PlainButton}" Margin="10,0,0,0"/>
+      <Button DockPanel.Dock="Right" Content="{views:Text Save}" Command="{Binding Settings.SaveCommand}" Style="{StaticResource SaveButton}"/>
+      <!-- A dot in the colour of what the line says: green — loaded, saved; red — an error or
+           a refused input, then the text is red too; grey otherwise. -->
+      <DockPanel Margin="14,0,14,0" VerticalAlignment="Center" LastChildFill="True">
+        <Ellipse DockPanel.Dock="Left" Width="8" Height="8" Margin="0,1,8,0" VerticalAlignment="Center">
+          <Ellipse.Style>
+            <Style TargetType="Ellipse">
+              <Setter Property="Fill" Value="{StaticResource Muted}"/>
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding StatusKind}" Value="{x:Static core:StatusKind.Ok}">
+                  <Setter Property="Fill" Value="{StaticResource Ok}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding StatusKind}" Value="{x:Static core:StatusKind.Error}">
+                  <Setter Property="Fill" Value="{StaticResource Warning}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Status}" Value="">
+                  <Setter Property="Visibility" Value="Collapsed"/>
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Ellipse.Style>
+        </Ellipse>
+        <Grid>
+          <TextBlock x:Name="status" Text="{Binding Status}" ToolTip="{Binding Status}" ContextMenu="{StaticResource CopyMenu}" VerticalAlignment="Center" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxHeight="35">
+            <TextBlock.Style>
+              <Style TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{StaticResource Muted}"/>
+                <Setter Property="Visibility" Value="Collapsed"/>
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding StatusKind}" Value="{x:Static core:StatusKind.Error}">
+                    <Setter Property="Foreground" Value="{StaticResource Warning}"/>
+                  </DataTrigger>
+                  <DataTrigger Binding="{Binding Status}" Value="">
+                    <Setter Property="ContextMenuService.IsEnabled" Value="False"/>
+                  </DataTrigger>
+                  <!-- A line that leads somewhere is the link below instead. -->
+                  <DataTrigger Binding="{Binding StatusClickable}" Value="False">
+                    <Setter Property="Visibility" Value="Visible"/>
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </TextBlock.Style>
+          </TextBlock>
+          <TextBlock x:Name="statusLink" ToolTip="{Binding Status}" VerticalAlignment="Center" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxHeight="35">
+            <Hyperlink Foreground="{StaticResource Accent}" Click="StatusClicked"><Run Text="{Binding Status, Mode=OneWay}"/></Hyperlink>
+            <TextBlock.Style>
+              <Style TargetType="TextBlock">
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding StatusClickable}" Value="False">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </TextBlock.Style>
+          </TextBlock>
+        </Grid>
+      </DockPanel>
+    </DockPanel>
+
+    <!-- Warnings that last (MainViewModel.Warn), one line each, above the foot; nothing
+         stands here without one. Red as every warning, the sign before it
+         tells it from an error of the status line. -->
+    <views:NoWider x:Name="warnings" DockPanel.Dock="Bottom">
+    <ItemsControl ItemsSource="{Binding Warnings}" Focusable="False">
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+          <DockPanel Margin="0,10,0,0" LastChildFill="True">
+            <TextBlock DockPanel.Dock="Left" Text="⚠" Foreground="{StaticResource Warning}" Margin="0,0,8,0"/>
+            <TextBlock Text="{Binding}" ToolTip="{Binding}" ContextMenu="{StaticResource CopyMenu}" Foreground="{StaticResource Warning}" TextWrapping="Wrap"/>
+          </DockPanel>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+    </views:NoWider>
+
+    <!-- The tabs, and at their height at the right the language of the window: flag and
+         country code; choosing one counts at once. -->
+    <Grid>
+    <ComboBox Panel.ZIndex="1" HorizontalAlignment="Right" VerticalAlignment="Top" Width="78" MinHeight="24" Margin="0,2,0,0"
+              ItemsSource="{Binding Languages}" SelectedItem="{Binding Language}" ToolTip="{views:Text LanguageTip}" ItemTemplate="{StaticResource LanguageItem}"/>
+    <TabControl x:Name="tabs" Background="{StaticResource Back}" BorderBrush="{StaticResource Line}" Padding="10,0,10,0">
+      <TabItem Header="{views:Text TabSettings}" Style="{StaticResource Tab}">
+        <!-- Rolls when the screen is lower than the tab (1920×1080 at 150 %: 672 of the 706
+             the window wants); with room enough there is no bar and nothing differs. -->
+        <ScrollViewer x:Name="generalScroll" Margin="-1,0,-1,0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False" FocusVisualStyle="{x:Null}">
+        <!-- A pixel of room at either side: the roll area cuts at its edge, and the corner
+             fittings of the boxes lie on it. -->
+        <StackPanel x:Name="general" Margin="1,10,1,0" DataContext="{Binding Settings}">
+          <GroupBox Header="{views:Text GroupLeague}" Style="{StaticResource Section}">
+            <StackPanel>
+              <!-- No label before the list: the caption of the box says it. -->
+              <StackPanel Style="{StaticResource Row}">
+                <ComboBox Width="230" ItemsSource="{Binding Leagues}" SelectedItem="{Binding League}"/>
+                <Button Content="{views:Text RefreshPrices}" Command="{Binding ReloadPricesCommand}" Style="{StaticResource PlainButton}"/>
+              </StackPanel>
+            </StackPanel>
+          </GroupBox>
+
+          <!-- One floor for everything: items from rituals and remnants are worth the same.
+               Remnant rows compare the value of the whole row. -->
+          <GroupBox Header="{views:Text GroupDisplay}" Style="{StaticResource Section}">
+            <StackPanel>
+              <StackPanel Style="{StaticResource Row}">
+                <TextBlock Text="{views:Text HidePricesBelow}" Style="{StaticResource RowCaption}"/>
+                <TextBox Width="70" Text="{Binding Floor, UpdateSourceTrigger=PropertyChanged}" views:Field.Invalid="{Binding FloorInvalid}" Style="{StaticResource Input}"/>
+                <ComboBox Width="80" Margin="8,0,0,0" ItemsSource="{Binding Units}" SelectedItem="{Binding Unit}"/>
+                <ContentControl Style="{StaticResource InfoIcon}"
+                                ToolTip="{views:Text TipFloor}"/>
+              </StackPanel>
+            </StackPanel>
+          </GroupBox>
+
+          <GroupBox Header="{views:Text GroupHotkeys}" Style="{StaticResource Section}">
+            <StackPanel>
+              <StackPanel Style="{StaticResource Row}">
+                <TextBlock Text="{views:Text ToggleOverlay}" Style="{StaticResource RowCaption}"/>
+                <views:KeyBox Width="158" Text="{Binding ToggleKey, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input}"/>
+                <ContentControl Style="{StaticResource InfoIcon}" ToolTip="{views:Text TipHotkey}"/>
+              </StackPanel>
+              <StackPanel Style="{StaticResource Row}">
+                <TextBlock Text="{views:Text SaveDiagnostics}" Style="{StaticResource RowCaption}"/>
+                <views:KeyBox Width="158" Text="{Binding DiagnoseKey, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input}"/>
+                <ContentControl Style="{StaticResource InfoIcon}" ToolTip="{views:Text TipHotkey}"/>
+              </StackPanel>
+            </StackPanel>
+          </GroupBox>
+
+          <!-- The automatic scan runs as soon as one of the three windows is ticked; a main
+               switch would be superfluous beside three switches.
+               AUTO-SCAN and STARTUP share one pattern: input fields at the left, checkboxes at
+               the right, and the checkboxes of both boxes begin at the same vertical line
+               (LeftColumn). -->
+          <GroupBox Header="{views:Text GroupAutoScan}" Style="{StaticResource Section}">
+            <Grid>
+              <!-- The first column of checkboxes is as wide in every language as the longest text
+                   needs (English "Expedition (Rumours / Remnants)"): the window keeps its
+                   width when the language is changed. -->
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="{StaticResource LeftColumn}"/>
+                <ColumnDefinition Width="Auto" MinWidth="214"/>
+                <ColumnDefinition Width="Auto" MinWidth="102"/>
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+              </Grid.RowDefinitions>
+              <!-- The two times stand in line with the fields of the boxes above, as wide as
+                   the number field there. -->
+              <StackPanel Grid.Row="0" Grid.Column="0" Style="{StaticResource Row}">
+                <TextBlock Text="{views:Text ScanIntervalIdle}" Style="{StaticResource RowCaption}"/>
+                <TextBox Width="70" Text="{Binding Interval, UpdateSourceTrigger=PropertyChanged}" views:Field.Invalid="{Binding IntervalInvalid}" Style="{StaticResource Input}"/>
+                <TextBlock Text="{views:Text Seconds}" Margin="6,0,0,0" Style="{StaticResource RowText}"/>
+                <ContentControl Style="{StaticResource InfoIcon}" ToolTip="{Binding TimesHint}"/>
+              </StackPanel>
+              <StackPanel Grid.Row="1" Grid.Column="0" Style="{StaticResource Row}">
+                <TextBlock Text="{views:Text ScanIntervalOpen}" Style="{StaticResource RowCaption}"/>
+                <TextBox Width="70" Text="{Binding Glance, UpdateSourceTrigger=PropertyChanged}" views:Field.Invalid="{Binding GlanceInvalid}" Style="{StaticResource Input}"/>
+                <TextBlock Text="{views:Text Seconds}" Margin="6,0,0,0" Style="{StaticResource RowText}"/>
+                <ContentControl Style="{StaticResource InfoIcon}" ToolTip="{Binding TimesHint}"/>
+              </StackPanel>
+              <!-- The three switches of the automatic scan (AutoSwitch.All, in that order): two
+                   below each other, the third beside the first. -->
+              <CheckBox Grid.Row="0" Grid.Column="1" DataContext="{Binding Switches[0]}" Content="{Binding Label}" IsChecked="{Binding On}" Style="{StaticResource Check}"/>
+              <CheckBox Grid.Row="1" Grid.Column="1" DataContext="{Binding Switches[1]}" Content="{Binding Label}" IsChecked="{Binding On}" Style="{StaticResource Check}"/>
+              <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal" Margin="18,0,0,0">
+                <CheckBox DataContext="{Binding Switches[2]}" Content="{Binding Label}" IsChecked="{Binding On}" Style="{StaticResource Check}"/>
+                <ContentControl Style="{StaticResource InfoIcon}" ToolTip="{views:Text TipAutoScan}"/>
+              </StackPanel>
+            </Grid>
+          </GroupBox>
+
+          <GroupBox Header="{views:Text GroupStartup}" Style="{StaticResource Section}">
+            <StackPanel>
+              <!-- Left where the game keeps its settings file, set out like the LEAGUE box
+                   (field, then button); right the switches of the start. The field always
+                   shows a path: the standard place when none is set — an empty field would ask
+                   for an input. -->
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="{StaticResource LeftColumn}"/>
+                  <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Row="0" Grid.Column="0" Style="{StaticResource Row}">
+                  <TextBlock Text="{views:Text GameSettingsFile}" Style="{StaticResource RowText}"/>
+                  <ContentControl Style="{StaticResource InfoIcon}" ToolTip="{views:Text TipGameSettingsFile}"/>
+                </StackPanel>
+                <StackPanel Grid.Row="1" Grid.Column="0" Style="{StaticResource Row}">
+                  <TextBox Width="230" Text="{Binding GameConfigFile, UpdateSourceTrigger=PropertyChanged}" ToolTip="{Binding GameConfigFile}" views:Field.Invalid="{Binding GameConfigFileInvalid}" Style="{StaticResource Input}"/>
+                  <Button Content="{views:Text Browse}" Command="{Binding BrowseGameConfigCommand}" Style="{StaticResource PlainButton}"/>
+                </StackPanel>
+                <StackPanel Grid.Row="0" Grid.Column="1" Style="{StaticResource Row}">
+                  <CheckBox Content="{views:Text StartWithWindows}" IsChecked="{Binding StartWithWindows}" Style="{StaticResource Check}"/>
+                  <ContentControl Style="{StaticResource InfoIcon}" ToolTip="{views:Text TipStartWithWindows}"/>
+                </StackPanel>
+                <StackPanel Grid.Row="1" Grid.Column="1" Style="{StaticResource Row}">
+                  <CheckBox Content="{views:Text CheckForUpdates}" IsChecked="{Binding CheckForUpdates}" Style="{StaticResource Check}"/>
+                  <ContentControl Style="{StaticResource InfoIcon}" ToolTip="{views:Text TipCheckForUpdates}"/>
+                </StackPanel>
+              </Grid>
+              <!-- Stays visible: it explains something unexpected. -->
+              <TextBlock Style="{StaticResource Hint}" HorizontalAlignment="Left" Text="{views:Text CloseHint}"/>
+            </StackPanel>
+          </GroupBox>
+        </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <!-- The rumour section takes the remaining height; its list scrolls, buttons stay visible.
+           Two boxes: the rumour list (header fixed, rows scroll, "+ Add custom row" as last row,
+           hint below) and the community sheet (reload, source and date). -->
+      <TabItem Header="{views:Text TabRumours}" Style="{StaticResource Tab}">
+        <DockPanel x:Name="expedition" Margin="0,10,0,0" LastChildFill="True" DataContext="{Binding Rumours}">
+          <DockPanel LastChildFill="True">
+            <!-- Same bottom gap as every other box. -->
+            <GroupBox DockPanel.Dock="Bottom" Header="{views:Text GroupCommunityData}" Style="{StaticResource Section}" Margin="0,10,0,10">
+              <StackPanel>
+                <DockPanel LastChildFill="True">
+                  <Button DockPanel.Dock="Left" Content="{views:Text Refresh}" Command="{Binding ReloadCommand}" Style="{StaticResource PlainButton}" Margin="0" HorizontalAlignment="Left"/>
+                  <TextBlock Text="{Binding Source}" Style="{StaticResource Small}" TextWrapping="Wrap" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                </DockPanel>
+                <!-- Credits with links: ratings and notes by Jestra1220,
+                     game texts and notes as shown by Gnejs PoE Tools. -->
+                <TextBlock Style="{StaticResource Small}" TextWrapping="Wrap" Margin="0,8,0,0"><Run Text="{views:Text CreditsBy}"/><Hyperlink NavigateUri="{Binding Source={x:Static core:RumourBook.SheetLink}}" Foreground="{StaticResource Accent}" RequestNavigate="OpenLink"><Run Text="{views:Text CreditsSheet}"/></Hyperlink><Run Text="{views:Text CreditsCompiled}"/><Hyperlink NavigateUri="{Binding Source={x:Static core:RumourBook.GnejsPage}}" Foreground="{StaticResource Accent}" RequestNavigate="OpenLink"><Run Text="{views:Text CreditsTools}"/></Hyperlink><Run Text="{views:Text CreditsThanks}"/></TextBlock>
+              </StackPanel>
+            </GroupBox>
+            <GroupBox Header="{views:Text GroupIslandRumours}" Style="{StaticResource Box}">
+              <DockPanel LastChildFill="True">
+                <StackPanel DockPanel.Dock="Top">
+                  <!-- The right margin is the width of the scroll bar beside the rows. -->
+                  <Grid Height="20" Margin="0,0,10,0">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="3*"/>
+                      <ColumnDefinition Width="2.5*"/>
+                      <ColumnDefinition Width="2.5*"/>
+                      <ColumnDefinition Width="66"/>
+                      <ColumnDefinition Width="66"/>
+                      <ColumnDefinition Width="3*"/>
+                      <ColumnDefinition Width="24"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="{views:Text ColumnRumour}" Style="{StaticResource Small}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="1" Text="{views:Text ColumnIsland}" Style="{StaticResource Small}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="2" Text="{views:Text ColumnMods}" Style="{StaticResource Small}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="3" Text="{views:Text ColumnTier}" Style="{StaticResource Small}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="4" Text="{views:Text ColumnCustom}" Style="{StaticResource Small}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="5" Text="{views:Text ColumnNote}" Style="{StaticResource Small}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                  </Grid>
+                </StackPanel>
+                <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource Small}" TextWrapping="Wrap" Margin="0,8,0,0"
+                           Text="{views:Text CustomTierHint}"/>
+                <!-- No dotted focus frame; scroll bar always there, so header and rows keep the
+                     same width. -->
+                <ScrollViewer x:Name="rumourScroll" VerticalScrollBarVisibility="Visible" Margin="0,4,0,0" Focusable="False" FocusVisualStyle="{x:Null}">
+                  <StackPanel>
+                    <ItemsControl ItemsSource="{Binding Rows}" ItemTemplateSelector="{StaticResource RumourRows}" Focusable="False"/>
+                    <Button Content="{views:Text AddCustomRow}" Command="{Binding AddRowCommand}" Style="{StaticResource PlainButton}" Width="NaN" Margin="0,6,0,2" HorizontalAlignment="Left"/>
+                  </StackPanel>
+                </ScrollViewer>
+              </DockPanel>
+            </GroupBox>
+          </DockPanel>
+        </DockPanel>
+      </TabItem>
+    </TabControl>
+    </Grid>
+  </DockPanel>
+  </DockPanel>
+  </Border>
+    <!-- Corner fittings of the window: plain above, where symbol and buttons stand, full
+         below. -->
+    <Path Style="{StaticResource CornerTitlePath}" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+    <Path Style="{StaticResource CornerTitlePath}" HorizontalAlignment="Right" VerticalAlignment="Top">
+      <Path.RenderTransform>
+        <ScaleTransform ScaleX="-1"/>
+      </Path.RenderTransform>
+    </Path>
+    <Path Style="{StaticResource CornerLargePath}" HorizontalAlignment="Left" VerticalAlignment="Bottom">
+      <Path.RenderTransform>
+        <ScaleTransform ScaleY="-1"/>
+      </Path.RenderTransform>
+    </Path>
+    <Path Style="{StaticResource CornerLargePath}" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+      <Path.RenderTransform>
+        <ScaleTransform ScaleX="-1" ScaleY="-1"/>
+      </Path.RenderTransform>
+    </Path>
+  </Grid>
+</Window>
