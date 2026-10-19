@@ -147,18 +147,42 @@ public sealed class OverlayEngine : IDisposable
         });
     }
 
-    private LookContext Context() => new(rumours(), settings, log, Keep);
+    // Keep only when pictures are kept: a window with a Keep clones its picture for it
+    // (FavoursGameWindow, the first look), which is pure cost otherwise (review 19.10.).
+    private LookContext Context() => new(rumours(), settings, log, KeepsEvidence ? Keep : null);
 
-    // Where the pictures go that a window hands over as evidence (LookContext.Keep); null:
-    // they are not kept.
+    // Where the pictures go that a window hands over as evidence (LookContext.Keep). Kept
+    // only with Settings.ExtendedDiagnostics on — a user's program writes nothing by itself
+    // (19.10.2026); the switch is judged here, from the settings the engine holds.
     public string? EvidenceFolder { get; set; }
+    private bool KeepsEvidence => EvidenceFolder is not null && settings.ExtendedDiagnostics;
 
     // Called from the thread that reads the picture: copied there, written beside it. A
-    // picture that cannot be written is logged and nothing else.
+    // picture that cannot be written is logged and nothing else. Of each kind only the newest
+    // Tuning.Control.EvidenceKept stay (review 19.10.: every roll in the Ritual window wrote
+    // two full pictures, without end — four hundred megabytes for a map of fifty rolls).
+    // Of the pictures of one kind ("<time>_<what>.png") only the newest keep stay. A file
+    // that cannot be deleted is left; it is tried again with the next picture.
+    public static void PruneEvidence(string folder, string what, int keep)
+    {
+        var old = Directory.GetFiles(folder, $"*_{what}.png").OrderDescending(StringComparer.Ordinal).Skip(keep);
+        foreach (var file in old)
+        {
+            try
+            {
+                File.Delete(file);
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+            {
+            }
+        }
+    }
+
     private void Keep(string what, Mat picture)
     {
-        if (EvidenceFolder is not { } folder)
+        if (!KeepsEvidence)
             return;
+        string folder = EvidenceFolder!;
         var copy = picture.Clone();
         var file = Path.Combine(folder, $"{DateTime.Now:yyyy-MM-dd_HHmmss_fff}_{what}.png");
         Interlocked.Increment(ref inFlight);
@@ -170,6 +194,7 @@ public sealed class OverlayEngine : IDisposable
                 if (!Cv2.ImWrite(file, copy))
                     throw new IOException("cannot write " + file);
                 log("evidence saved: " + Path.GetFileName(file));
+                PruneEvidence(folder, what, Tuning.Control.EvidenceKept);
             }
             catch (Exception e)
             {
@@ -188,10 +213,32 @@ public sealed class OverlayEngine : IDisposable
         // NaN (a settings file changed by hand) compares false with everything: the minimum then.
         double seconds = s.AutoIntervalSeconds >= Tuning.Control.AutoMinimumSeconds ? Math.Min(Tuning.Control.AutoMaximumSeconds, s.AutoIntervalSeconds) : Tuning.Control.AutoMinimumSeconds;
         var every = TimeSpan.FromSeconds(seconds);
+        autoEvery = every;
+        autoPace = every;
+        scanSmoothed = 0;
         if (s.AutoAny)
             auto.Change(every, every);
         else
             auto.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+    }
+
+    // The automatic scan's pace, as the glance's (PaceGlance): its own interval, or slower when
+    // the capture of the whole picture takes long — at most GlanceLoad of the time (at
+    // 3840×2160 the whole picture takes 93 ms; at the shortest interval of .2 s that was
+    // half the time). Smoothed, in steps of ScanPaceStep (Paced).
+    private TimeSpan autoEvery = TimeSpan.FromSeconds(Tuning.Control.AutoMinimumSeconds),
+        autoPace = TimeSpan.FromSeconds(Tuning.Control.AutoMinimumSeconds);
+    private double scanSmoothed;
+
+    private void PaceScan(long captureMs)
+    {
+        scanSmoothed = scanSmoothed == 0 ? captureMs : scanSmoothed + Tuning.Control.CaptureSmoothing * (captureMs - scanSmoothed);
+        var wanted = Paced(autoPace, scanSmoothed / Tuning.Control.GlanceLoad, autoEvery, Tuning.Control.ScanPaceStep, TimeSpan.FromSeconds(Tuning.Control.AutoMaximumSeconds));
+        if (wanted == autoPace || !settings.AutoAny)
+            return;
+        autoPace = wanted;
+        auto.Change(wanted, wanted);
+        log($"scan every {wanted.TotalMilliseconds:0} ms: its capture takes {scanSmoothed:0} ms");
     }
 
     // The key again while it is still waiting takes it back. A look still running (automatic
@@ -274,6 +321,8 @@ public sealed class OverlayEngine : IDisposable
                 var w = Stopwatch.StartNew();
                 var captured = screen.Capture();
                 long capture = w.ElapsedMilliseconds;
+                if (quiet && captured is not null)
+                    PaceScan(capture);
                 try
                 {
                     var seen = captured is null ? null : await windows.LookAsync(captured, context, wanted);
@@ -469,12 +518,14 @@ public sealed class OverlayEngine : IDisposable
             // What the glance says holds for the window it looked at. A follow may have read
             // the window anew meanwhile; taking the glance's word then put the old reading
             // back, and glance and follow would undo each other for up to a second after every
-            // scroll of the remnant list. The next glance looks again.
+            // scroll of the remnant list. The next glance looks again. (The pace too: after a
+            // Hide the timer stands still and must not be started again; review 19.10.)
             if (started != generation || !ReferenceEquals(open, window))
             {
                 frame.Dispose();
                 return;
             }
+            PaceGlance(capture, window);
             switch (seen)
             {
                 case Glance.Gone gone:
@@ -612,8 +663,54 @@ public sealed class OverlayEngine : IDisposable
         var profile = open!.Window.Profile;
         follow.Change(profile.Follow, profile.Follow);
         // Not faster than a glance takes, not slower than the follow, which hides as well.
-        var every = TimeSpan.FromSeconds(Math.Clamp(settings.GlanceIntervalSeconds, GameWindows.GlanceEvery.TotalSeconds, profile.Follow.TotalSeconds));
-        glance.Change(every, every);
+        glanceEvery = TimeSpan.FromSeconds(Math.Clamp(settings.GlanceIntervalSeconds, GameWindows.GlanceEvery.TotalSeconds, profile.Follow.TotalSeconds));
+        glancePace = glanceEvery;
+        captureSmoothed = 0;
+        glance.Change(glanceEvery, glanceEvery);
+    }
+
+    // The glance's pace: its own interval, or slower when its capture takes long — it may
+    // keep at most GlanceLoad of the time (measured 19.10.2026 at 3840×2160: the capture of a
+    // part takes 47 ms, median, against 20 ms at 2560×1440; at every 50 ms the glance was
+    // busy without a pause). The capture time is smoothed over the last glances (single
+    // captures swing between 40 and 120 ms) and the pace moves in steps of GlancePaceStep
+    // (Paced), so that it settles instead of following every swing (first run 19.10.: 250
+    // changes in ten minutes).
+    private TimeSpan glanceEvery = GameWindows.GlanceEvery,
+        glancePace = GameWindows.GlanceEvery;
+    private double captureSmoothed;
+
+    private void PaceGlance(long captureMs, IOpenWindow window)
+    {
+        captureSmoothed = captureSmoothed == 0 ? captureMs : captureSmoothed + Tuning.Control.CaptureSmoothing * (captureMs - captureSmoothed);
+        var wanted = Paced(glancePace, captureSmoothed / Tuning.Control.GlanceLoad, glanceEvery, Tuning.Control.GlancePaceStep, window.Window.Profile.Follow);
+        if (wanted == glancePace)
+            return;
+        glancePace = wanted;
+        glance.Change(wanted, wanted);
+        log($"glance every {wanted.TotalMilliseconds:0} ms: its capture takes {captureSmoothed:0} ms");
+    }
+
+    // The pace a check needs for a capture time: from the pace it has, up to the next step
+    // that holds the time, and down a step only when that step still holds it with a fifth
+    // of a step to spare — a time right on a boundary does not flip the pace back and forth
+    // (seen 19.10. at 2160: the slack alone had only moved the boundary; review 19.10.).
+    // Never faster than least, never slower than most.
+    public static TimeSpan Paced(TimeSpan pace, double neededMs, TimeSpan least, TimeSpan step, TimeSpan most)
+    {
+        double ms = Math.Clamp(pace.TotalMilliseconds, least.TotalMilliseconds, most.TotalMilliseconds),
+            s = step.TotalMilliseconds;
+        if (neededMs > ms)
+            ms = Math.Min(most.TotalMilliseconds, Math.Ceiling(neededMs / s) * s);
+        else
+            while (true)
+            {
+                double lower = Math.Max(least.TotalMilliseconds, ms - s);
+                if (lower >= ms || neededMs > lower - s / 5)
+                    break;
+                ms = lower;
+            }
+        return TimeSpan.FromMilliseconds(ms);
     }
 
     private void Hide()

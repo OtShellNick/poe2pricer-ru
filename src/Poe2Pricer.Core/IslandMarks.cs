@@ -191,11 +191,15 @@ public static class IslandMarks
         (double Score, int Evidence, double Scale) best = (0, 0, 1);
         double from = Math.Log(Tune.ScaleFrom),
             to = Math.Log(Tune.ScaleTo);
+        // Each print's points in a grid, so that a point of the other looks at a few cells
+        // instead of every point (review 19.10.: 41 scales × 200 × 200 pairs per island).
+        var gridA = Grid(a);
+        var gridB = Grid(b);
         for (int i = 0; i < Tune.ScaleSteps; i++)
         {
             double scale = Math.Exp(from + (to - from) * i / (Tune.ScaleSteps - 1));
-            var (seenA, hitA) = Side(a, b, scale);
-            var (seenB, hitB) = Side(b, a, 1 / scale);
+            var (seenA, hitA) = Side(a, b, gridB, scale);
+            var (seenB, hitB) = Side(b, a, gridA, 1 / scale);
             if (seenA == 0 || seenB == 0)
                 continue;
             double score = Math.Min(hitA / (double)seenA, hitB / (double)seenB);
@@ -206,9 +210,27 @@ public static class IslandMarks
         return best;
     }
 
+    // The cell of the grid is the widest reach — Side is run both ways round, at ScaleTo and
+    // at 1/ScaleFrom (review 19.10.: with ScaleTo alone a hit at 1/ScaleFrom could lie two
+    // cells away): a point within reach lies in the same cell or one beside it.
+    private static readonly double Cell = Tune.Reach * Math.Max(Tune.ScaleTo, 1 / Tune.ScaleFrom);
+
+    private static Dictionary<(int, int), List<Point2d>> Grid(IslandPrint print)
+    {
+        var grid = new Dictionary<(int, int), List<Point2d>>();
+        foreach (var p in print.Points)
+        {
+            var key = ((int)Math.Floor(p.X / Cell), (int)Math.Floor(p.Y / Cell));
+            if (!grid.TryGetValue(key, out var cell))
+                grid[key] = cell = [];
+            cell.Add(p);
+        }
+        return grid;
+    }
+
     // A's points brought to B's scale: how many lie where B can see, and how many of those
     // have a point of B within reach.
-    private static (int Seen, int Hit) Side(IslandPrint a, IslandPrint b, double scale)
+    private static (int Seen, int Hit) Side(IslandPrint a, IslandPrint b, Dictionary<(int, int), List<Point2d>> gridB, double scale)
     {
         int seen = 0,
             hit = 0;
@@ -220,12 +242,23 @@ public static class IslandMarks
             if (!b.Visible(b.Marker.X + x, b.Marker.Y + y))
                 continue;
             seen++;
-            foreach (var q in b.Points)
-                if (Math.Abs(q.X - x) <= reach && Math.Abs(q.Y - y) <= reach && (q.X - x) * (q.X - x) + (q.Y - y) * (q.Y - y) <= reach * reach)
-                {
-                    hit++;
-                    break;
-                }
+            int cx = (int)Math.Floor(x / Cell),
+                cy = (int)Math.Floor(y / Cell);
+            bool found = false;
+            for (int dy = -1; dy <= 1 && !found; dy++)
+            for (int dx = -1; dx <= 1 && !found; dx++)
+            {
+                if (!gridB.TryGetValue((cx + dx, cy + dy), out var cell))
+                    continue;
+                foreach (var q in cell)
+                    if ((q.X - x) * (q.X - x) + (q.Y - y) * (q.Y - y) <= reach * reach)
+                    {
+                        found = true;
+                        break;
+                    }
+            }
+            if (found)
+                hit++;
         }
         return (seen, hit);
     }

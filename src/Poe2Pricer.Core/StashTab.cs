@@ -62,7 +62,6 @@ public sealed class StashTabReader
     // always rests on a slot — must not hide it (Orbs tab under a tooltip: .22 on the whole
     // area, .99 this way). Thresholds and measures: Tuning.Stash.
     public const double MinimumScore = Tune.MinimumScore;
-    public const double KeepScore = Tune.KeepScore;
     private const int Scale = Tune.Shrink,
         TilesAcross = Tune.TilesAcross;
 

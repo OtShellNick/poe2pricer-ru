@@ -206,7 +206,10 @@ public static class Program
                 else
                     overlay.Show(scene.Screen, scene.Labels, scene.Rumours, scene.Scale);
             });
-        engine.EvidenceFolder = Path.Combine(Settings.Folder, "diagnostics");
+        // Evidence pictures (a detected reroll in the Ritual window) go beside the diagnoses;
+        // the engine writes them only with "Extended diagnostics" on (Settings).
+        string diagnosticsFolder = Path.Combine(Settings.Folder, "diagnostics");
+        engine.EvidenceFolder = diagnosticsFolder;
         engine.Diagnosed += file =>
         {
             if (file is null)
@@ -224,7 +227,7 @@ public static class Program
         {
             keys.Clear();
             keys.Bind(s.ToggleKey, engine.Toggle);
-            keys.Bind(s.DiagnoseKey, () => engine.Diagnose(Path.Combine(Settings.Folder, "diagnostics")));
+            keys.Bind(s.DiagnoseKey, () => engine.Diagnose(diagnosticsFolder));
         }
         Bind(settings);
         // "Mit Windows starten": the entry follows the setting — now, where an entry naming

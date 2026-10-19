@@ -45,6 +45,12 @@ public sealed record Settings
     // Start with Windows (Autostart); off by default.
     public bool StartWithWindows { get; init; }
 
+    // Extended diagnostics: the program keeps pictures of what it detected on its own (a
+    // reroll in the Ritual window) in the diagnostics folder, at most a few of each kind — for
+    // reporting a wrong price. Off by default: a user's program writes nothing by itself, the
+    // diagnostics key is the one active step (19.10.2026).
+    public bool ExtendedDiagnostics { get; init; }
+
     // Ask github.com once per start whether a newer release is out (UpdateCheck); on by default,
     // the one request the program makes that is not for prices or rumour ratings.
     public bool CheckForUpdates { get; init; } = true;

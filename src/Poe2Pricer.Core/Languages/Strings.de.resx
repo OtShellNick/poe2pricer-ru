@@ -83,6 +83,15 @@
   <data name="TipPriceUnit" xml:space="preserve">
     <value>Die Einheit, in der Preise stehen: Exalted oder Chaos Orbs. Ab einem Divine Orb immer in Divine. Die Schwelle darüber hat ihre eigene Einheit.</value>
   </data>
+  <data name="TipVersion" xml:space="preserve">
+    <value>Was sich in dieser Version geändert hat: das Changelog auf github.com (öffnet im Browser).</value>
+  </data>
+  <data name="ExtendedDiagnostics" xml:space="preserve">
+    <value>Erweiterte Diagnose</value>
+  </data>
+  <data name="TipExtendedDiagnostics" xml:space="preserve">
+    <value>Für Fehlermeldungen: das Programm hebt zusätzlich Bilder von Momenten auf, in denen es selbst entschieden hat, wenige je Art, im Diagnoseordner. Aus: nur die Diagnose-Taste schreibt dort. Gesendet wird so oder so nichts.</value>
+  </data>
   <data name="ToggleOverlay" xml:space="preserve">
     <value>Overlay ein/aus</value>
   </data>

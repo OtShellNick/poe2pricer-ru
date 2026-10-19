@@ -80,6 +80,15 @@
   <data name="TipPriceUnit" xml:space="preserve">
     <value>The unit prices are written in: Exalted or Chaos Orbs. From one Divine Orb on they are always in Divine. The price floor above has its own unit.</value>
   </data>
+  <data name="TipVersion" xml:space="preserve">
+    <value>What changed in this version: the changelog on github.com (opens in your browser).</value>
+  </data>
+  <data name="ExtendedDiagnostics" xml:space="preserve">
+    <value>Extended diagnostics</value>
+  </data>
+  <data name="TipExtendedDiagnostics" xml:space="preserve">
+    <value>For bug reports: the program also keeps pictures of moments it decided on its own, a few of each kind, in the diagnostics folder. Off: only the diagnostics key writes there. Nothing is sent anywhere either way.</value>
+  </data>
   <data name="ToggleOverlay" xml:space="preserve">
     <value>Toggle overlay</value>
   </data>

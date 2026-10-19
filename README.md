@@ -112,9 +112,11 @@ Both keys can be changed in the settings window.
 - Recognition relies on the game's current art and layout. A game update that changes a window
   may break it until the templates are updated.
 - Island Rumours: the island is recognised by the sea chart around it. Dragging or zooming the
-  Atlas between two openings of the panel can leave too little of the chart in common; the
-  program then starts a new collection for the same island. Opening the panel without moving
-  the Atlas (the usual rotation through the inventory) is always recognised.
+  Atlas between two openings of the panel, or switching between keyboard and controller (another
+  zoom, another view), can leave too little of the chart in common: the Atlas is drawn in
+  perspective, so a moved map shows the same island distorted differently, and the program then
+  starts a new collection for the same island. Opening the panel without moving the Atlas (the
+  usual rotation through the inventory) is always recognised.
 
 ## Troubleshooting
 
@@ -153,7 +155,8 @@ whether a newer version is out.
 
 Settings stay in `%LOCALAPPDATA%\poe2pricer` either way. The check can be switched off in the
 settings window. What changed in each version: [CHANGELOG.md](CHANGELOG.md) and the notes of
-each release on GitHub.
+each release on GitHub; a click on the version number in the program window opens the changelog
+in your browser (the program itself requests nothing for that).
 
 ## Build from source
 

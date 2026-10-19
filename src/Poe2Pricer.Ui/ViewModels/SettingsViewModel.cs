@@ -50,6 +50,7 @@ public sealed class SettingsViewModel : ObservableObject
     private string? unit;
     private string priceUnit;
     private bool startWithWindows;
+    private bool extendedDiagnostics;
     private bool checkForUpdates;
     private bool floorInvalid;
     private bool intervalInvalid;
@@ -78,6 +79,7 @@ public sealed class SettingsViewModel : ObservableObject
         priceUnit = PriceUnits.Contains(settings.PriceUnit) ? settings.PriceUnit : "ex";
         Switches = AutoSwitch.All.Select(a => new AutoSwitchViewModel(a, a.Get(settings))).ToArray();
         startWithWindows = settings.StartWithWindows;
+        extendedDiagnostics = settings.ExtendedDiagnostics;
         checkForUpdates = settings.CheckForUpdates;
         interval = Shown(settings.AutoIntervalSeconds);
         glance = Shown(settings.GlanceIntervalSeconds);
@@ -221,6 +223,12 @@ public sealed class SettingsViewModel : ObservableObject
         set => SetProperty(ref startWithWindows, value);
     }
 
+    public bool ExtendedDiagnostics
+    {
+        get => extendedDiagnostics;
+        set => SetProperty(ref extendedDiagnostics, value);
+    }
+
     public bool CheckForUpdates
     {
         get => checkForUpdates;
@@ -307,11 +315,9 @@ public sealed class SettingsViewModel : ObservableObject
 
     private static string Shown(decimal number) => number.ToString(CultureInfo.InvariantCulture).Replace(".", Texts.DecimalSeparator);
 
-    private static bool Number(string text, out decimal number) =>
-        decimal.TryParse(text.Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out number);
+    private static bool Number(string text, out decimal number) => Numbers.TryParse(text, out number);
 
-    private static bool Seconds(string text, out double seconds) =>
-        double.TryParse(text.Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out seconds) && double.IsFinite(seconds);
+    private static bool Seconds(string text, out double seconds) => Numbers.TryParse(text, out seconds);
 
     private static bool Readable(string key)
     {
@@ -374,6 +380,7 @@ public sealed class SettingsViewModel : ObservableObject
             FloorUnit = Unit ?? "ex",
             PriceUnit = PriceUnit,
             StartWithWindows = StartWithWindows,
+            ExtendedDiagnostics = ExtendedDiagnostics,
             CheckForUpdates = CheckForUpdates,
             AutoIntervalSeconds = everyKept,
             GlanceIntervalSeconds = checkKept,

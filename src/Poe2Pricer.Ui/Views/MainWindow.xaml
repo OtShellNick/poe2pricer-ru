@@ -159,7 +159,10 @@
       <StackPanel VerticalAlignment="Center">
         <StackPanel Orientation="Horizontal">
           <TextBlock Text="poe2pricer" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource Text}"/>
-          <TextBlock Text="{Binding Version}" FontSize="10.5" Foreground="{StaticResource Muted}" Margin="8,0,0,2" VerticalAlignment="Bottom"/>
+          <!-- The version is a link to the changelog on github.com (E6): a click opens the browser. It
+               lies in the caption area (WindowChrome), which takes every click for dragging unless
+               the element is marked hit-test visible — without the mark, no click and no tooltip. -->
+          <TextBlock FontSize="10.5" Margin="8,0,0,2" VerticalAlignment="Bottom" ToolTip="{views:Text TipVersion}" WindowChrome.IsHitTestVisibleInChrome="True"><Hyperlink NavigateUri="{Binding Source={x:Static core:AppInfo.ChangelogPage}}" Foreground="{StaticResource Muted}" RequestNavigate="OpenLink"><Run Text="{Binding Version, Mode=OneWay}"/></Hyperlink></TextBlock>
         </StackPanel>
         <TextBlock Text="{views:Text Subtitle}" FontSize="10.5" Foreground="{StaticResource Muted}" TextTrimming="CharacterEllipsis"/>
       </StackPanel>
@@ -291,19 +294,33 @@
             </StackPanel>
           </GroupBox>
 
+          <!-- Left the two keys; right, in the column of the switches, the extended diagnostics
+               beside the diagnostics key it belongs to (off by default). -->
           <GroupBox Header="{views:Text GroupHotkeys}" Style="{StaticResource Section}">
-            <StackPanel>
-              <StackPanel Style="{StaticResource Row}">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="{StaticResource LeftColumn}"/>
+                <ColumnDefinition Width="Auto"/>
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+              </Grid.RowDefinitions>
+              <StackPanel Grid.Row="0" Grid.Column="0" Style="{StaticResource Row}">
                 <TextBlock Text="{views:Text ToggleOverlay}" Style="{StaticResource RowCaption}"/>
                 <views:KeyBox Width="158" Text="{Binding ToggleKey, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input}"/>
                 <ContentControl Style="{StaticResource InfoIcon}" ToolTip="{views:Text TipHotkey}"/>
               </StackPanel>
-              <StackPanel Style="{StaticResource Row}">
+              <StackPanel Grid.Row="1" Grid.Column="0" Style="{StaticResource Row}">
                 <TextBlock Text="{views:Text SaveDiagnostics}" Style="{StaticResource RowCaption}"/>
                 <views:KeyBox Width="158" Text="{Binding DiagnoseKey, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input}"/>
                 <ContentControl Style="{StaticResource InfoIcon}" ToolTip="{views:Text TipHotkey}"/>
               </StackPanel>
-            </StackPanel>
+              <StackPanel Grid.Row="1" Grid.Column="1" Style="{StaticResource Row}">
+                <CheckBox Content="{views:Text ExtendedDiagnostics}" IsChecked="{Binding ExtendedDiagnostics}" Style="{StaticResource Check}"/>
+                <ContentControl Style="{StaticResource InfoIcon}" ToolTip="{views:Text TipExtendedDiagnostics}"/>
+              </StackPanel>
+            </Grid>
           </GroupBox>
 
           <!-- The automatic scan runs as soon as one of the three windows is ticked; a main

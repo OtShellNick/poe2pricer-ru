@@ -139,7 +139,7 @@ public sealed class RumourBook
         }
         lock (book.gate)
         {
-            book.sheet = list;
+            book.sheet = Corrected(list);
             book.own = book.LoadOwn();
             book.Rebuild();
         }
@@ -205,11 +205,26 @@ public sealed class RumourBook
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
     }
 
+    // Where the community table names an island that is not the one the game's own text
+    // points at (RumourTexts, from the game files): the game's island, whatever the source.
+    // Confirmed in the game on 19.10.2026 for the chart column; whether mods and rating are
+    // swapped as well is open (OFFEN F8) and reported to Gnejs.
+    // Looked up by Key, as the book keys names everywhere else: a spelling variant in the
+    // sheet ("Something Fishy...") must not leave the island uncorrected (review 19.10.).
+    public static readonly IReadOnlyDictionary<string, string> IslandCorrections = new Dictionary<string, string>
+    {
+        [Key("Something Fishy")] = "Barren Atoll",
+        [Key("Bleak and Awful")] = "Bleached Shoals",
+    };
+
+    public static List<Rumour> Corrected(IEnumerable<Rumour> list) =>
+        list.Select(r => IslandCorrections.TryGetValue(Key(r.Name), out var island) && r.Map != island ? r with { Map = island } : r).ToList();
+
     private void SetSheet(List<Rumour> list, string source)
     {
         lock (gate)
         {
-            sheet = list;
+            sheet = Corrected(list);
             SheetDate = DateTime.Now;
             Source = source;
             Rebuild();

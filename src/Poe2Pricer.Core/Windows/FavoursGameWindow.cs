@@ -42,6 +42,8 @@ public sealed class FavoursGameWindow(Pipeline pipeline) : IGameWindow
         if (pipeline.Locator.Locate(frame.Image) is not { } grid)
             return null;
         var read = await ReadAsync(frame, grid);
+        if (context.Keep is not null && read.Doubtful.Any(d => d))
+            read = read with { FirstLook = frame.Image.Clone() };
         if (remembered[(int)grid.Mode] is not { } known)
             return read;
         if (known.Number?.OtherNumber(frame.Image, grid) == true)
@@ -320,9 +322,15 @@ public sealed class FavoursGameWindow(Pipeline pipeline) : IGameWindow
         (GameCapture.Frame Frame, Occluder[] Popups)? Seen,
         RerollMark? Number,
         ItemMatch[] Carried,
-        bool Rolled = false
+        bool Rolled = false,
+        Mat? FirstLook = null
     ) : IOpenWindow
     {
+        // FirstLook: the picture of the first reading while cells were doubtful — kept only
+        // with extended diagnostics on (LookContext.Keep), handed over with the picture of the
+        // reading that resolves them (evidence for OFFEN U12: the first look after the window
+        // opens read worse than a picture seconds later), then dropped. Freed when the follow
+        // reads anew; a window closed before that leaves it to the finalizer (review 19.10.).
         public IGameWindow Window => Kind;
 
         // The grid, the anchor and the reroll button: the glance looks at the number too.
@@ -362,6 +370,7 @@ public sealed class FavoursGameWindow(Pipeline pipeline) : IGameWindow
             if (grid is not null && (Math.Abs(grid.Bounds.X - known.Bounds.X) > 2 || Math.Abs(grid.Bounds.Y - known.Bounds.Y) > 2))
             {
                 context.Log("Favours window moved, rescanning");
+                FirstLook?.Dispose();
                 return await Kind.ReadAsync(frame, grid);
             }
             var looks = Memory.Look(picture);
@@ -373,6 +382,7 @@ public sealed class FavoursGameWindow(Pipeline pipeline) : IGameWindow
             {
                 context.Log("new roll detected, rescanning (reroll count changed)");
                 Evidence(context, "roll-follow", frame.Image);
+                FirstLook?.Dispose();
                 return await Kind.ReadAsync(frame, grid ?? known);
             }
             // The button was covered when the window was read: its number is taken as soon as
@@ -435,8 +445,21 @@ public sealed class FavoursGameWindow(Pipeline pipeline) : IGameWindow
             var taken = read.SelectMany(CellsOf).Concat(wanted.Where(c => !blocked[c] && !partly.Contains(c))).ToHashSet();
             if (taken.Count > 0)
                 context.Log($"rescanned: {taken.Count} cells uncovered, {read.Length} items");
+            // Doubtful cells of the first look now read for certain: the first look was the
+            // worse one — both pictures kept (U12), the first one is not needed any more.
+            var firstLook = FirstLook;
+            if (firstLook is not null && context.Keep is { } keep && read.Any(i => Certain(i) && CellsOf(i).Any(c => Doubtful[c])))
+            {
+                int resolved = read.Where(Certain).SelectMany(CellsOf).Count(c => Doubtful[c]);
+                context.Log($"first look read worse: {resolved} doubtful cells certain now, pictures kept");
+                keep("first-look", firstLook);
+                keep("first-look-later", frame.Image);
+                firstLook.Dispose();
+                firstLook = null;
+            }
             return this with
             {
+                FirstLook = firstLook,
                 Scan = Scan with { Items = items.Where(old => !CellsOf(old).Any(taken.Contains)).Concat(read).OrderBy(i => i.Row).ThenBy(i => i.Column).ToArray() },
                 Unseen = scan.Items.Where(i => !Free(i) && CellsOf(i).Any(c => !memory.Stored(c))).ToArray(),
                 Memory = memory.With(picture, taken, Occupancy(frame.Image, Scan.Grid!)),
@@ -494,7 +517,9 @@ public sealed class FavoursGameWindow(Pipeline pipeline) : IGameWindow
             var labels = Labels.For(shown.Items, book, Labels.FloorInDivine(settings.FloorValue, settings.FloorUnit, book), settings.PriceUnit);
             var named = shown.Items.Where(i => i.ResolvedBy is not null).ToDictionary(i => (i.Row, i.Column));
             var next = this with { Scan = Scan with { Items = Scan.Items.Select(i => named.GetValueOrDefault((i.Row, i.Column)) ?? i).ToArray() } };
-            Kind.remembered[(int)grid.Mode] = next with { Seen = null };
+            // Without the pictures: the remembered roll lives on until the next, a first look
+            // not resolved by then would be pinned with it (review 19.10.).
+            Kind.remembered[(int)grid.Mode] = next with { Seen = null, FirstLook = null };
             int priced = labels.Count(l => l.Text is not null);
             return new Picture(
                 next,

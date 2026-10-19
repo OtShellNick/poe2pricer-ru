@@ -431,7 +431,6 @@ public static class Tuning
         // modes, under a tooltip too; other tabs and windows at most .28, a sub-tab of the same
         // tab .45 (told apart by the sub-tab button); the tab fading out still gives about .5.
         public const double MinimumScore = .75;
-        public const double KeepScore = .75;
 
         // Of the tiles the best BestTiles share counts: a large tooltip in the controller UI
         // covers more than half of them, and on a resized picture the free tiles fit less well,
@@ -663,13 +662,16 @@ public static class Tuning
         public const double Reach = 10;
 
         // IslandBook: the same island from SameIsland on (measured .70 against .18, see Reach),
-        // judged only with MinimumEvidence points in common; without a judgement the panel
-        // standing within SamePanelPlace px of where it stood means the island seen last.
-        // At most MostIslands are kept (a guard, not a measure: a match costs milliseconds).
+        // judged only with MinimumEvidence points in common; a print with fewer points than that
+        // is not placed at all (RumourGameWindow.Place). At most MostIslands are kept (a guard,
+        // not a measure: a match costs a few milliseconds per island, the points in a grid).
         public const double SameIsland = .45;
         public const int MinimumEvidence = 30;
-        public const int SamePanelPlace = 3;
         public const int MostIslands = 100;
+
+        // Island.Follow: a new opening's print replaces the stored one unless it holds fewer
+        // than this share of its points (the panel still flying in: 35 against 200).
+        public const double ThinPrint = 2 / 3.0;
 
         // Island.ProbablyComplete: the chance that one more rumour exists and never showed, at
         // most this. Three seen: from the third roll without a new one (1.6 %); four: the
@@ -837,6 +839,20 @@ public static class Tuning
         // roughly half of one processor core while the game is in front — the price of prices
         // that appear as soon as a window opens.
         public const double AutoMinimumSeconds = .2;
+
+        // The glance may keep at most this share of the time with its capture (OverlayEngine.
+        // PaceGlance); the rest is the game's. The capture time is smoothed with weight
+        // CaptureSmoothing per glance (about the last five), the pace moves in GlancePaceStep.
+        // Chosen.
+        public const double GlanceLoad = .5;
+        public const double CaptureSmoothing = .2;
+        public static readonly TimeSpan GlancePaceStep = TimeSpan.FromMilliseconds(50);
+        public static readonly TimeSpan ScanPaceStep = TimeSpan.FromMilliseconds(100);
+
+        // Evidence pictures a window hands over (OverlayEngine.Keep): of each kind only the
+        // newest this many stay in the diagnostics folder. Chosen: enough to look at a case,
+        // bounded on the user's disk (a picture is three to four megabytes).
+        public const int EvidenceKept = 3;
 
         // No sense in a longer pause between two looks, and a timer takes no more than some 49
         // days: a huge value in the settings must not end the program at the start.

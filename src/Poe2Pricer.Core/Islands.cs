@@ -9,16 +9,33 @@ namespace Poe2Pricer.Core;
 // an island worth remembering is bookmarked in the game.
 public sealed class Island
 {
-    internal Island(IslandPrint print, Box panel)
+    internal Island(IslandPrint print)
     {
         Print = print;
-        Panel = panel;
     }
 
-    // The chart as last seen (the next opening most likely shows the map as it is now) and
-    // where the panel stood.
-    public IslandPrint Print { get; internal set; }
-    public Box Panel { get; internal set; }
+    // The chart the next opening is matched against: as last seen (the map most likely stands
+    // as it did), unless that reading was thin (Follow); within one opening the reading with
+    // the most points (Keep).
+    public IslandPrint Print { get; private set; }
+
+    // The same opening read again: the print with more points stays — a print read while
+    // the panel flies in or a tooltip lies over the water shows less of the same chart.
+    internal void Keep(IslandPrint print)
+    {
+        if (print.Points.Length >= Print.Points.Length)
+            Print = print;
+    }
+
+    // A new opening: the view may have moved a little (a step of zoom, a short drag), and the
+    // next opening is more like this one than like the first — the print follows, so that
+    // small moves do not add up against a fixed reference (review 19.10.). A thin reading
+    // (fewer than ThinPrint of the stored points) does not replace a rich one (review 19.10.).
+    internal void Follow(IslandPrint print)
+    {
+        if (print.Points.Length >= Tune.ThinPrint * Print.Points.Length)
+            Print = print;
+    }
 
     // How often the panel was rolled at this island: openings whose lines differ from the
     // last reading. Closing and opening the panel without moving an item shows the same three
@@ -100,8 +117,8 @@ public sealed record IslandSummary(string? Tier, int Rolls, int Rumours, bool Co
 
 // The islands seen since the program started, the one seen last first. A panel is placed at
 // the island whose chart fits best (IslandMarks.Match from SameIsland on, with MinimumEvidence
-// points in common); with too few points in common for any judgement, at the island seen last
-// when the panel stands where it stood; else at a new island.
+// points in common), else at a new island. Where the panel stands says nothing: in the
+// controller UI it always stands in the middle (review 19.10.).
 public sealed class IslandBook
 {
     private readonly List<Island> islands = [];
@@ -119,64 +136,67 @@ public sealed class IslandBook
     // rows: the panel's lines in order (null: no rumour of the table). opened: the panel
     // appeared after being closed — a roll when its lines differ from the last reading; false:
     // the same opening read again. previous: the island the same opening was placed at before.
-    public Island Place(IslandPrint print, Box panel, IReadOnlyList<string?> rows, bool opened, Island? previous = null)
+    public Island Place(IslandPrint print, IReadOnlyList<string?> rows, bool opened, Island? previous = null)
     {
         lock (gate)
         {
-            var found = Match(print, panel);
+            var found = Match(print);
             if (found is null)
             {
-                found = new Island(print, panel);
+                found = new Island(print);
                 if (islands.Count >= Tune.MostIslands)
                     islands.RemoveAt(islands.Count - 1);
             }
             else
+            {
                 islands.Remove(found);
+                found.Follow(print);
+            }
             islands.Insert(0, found);
-            found.Print = print;
-            found.Panel = panel;
             found.Take(rows, opened && found != previous);
-            if (rows.Count is > 0 and < 3)
-                found.Complete = true;
+            // Fewer than three rows: the island has no more. Three again later: a row had been
+            // lost to the text recognition, not to the island (review 19.10.).
+            found.Complete = rows.Count is > 0 and < 3;
             return found;
         }
     }
 
     // The island the panel stands at, as the book has it, or null: nothing is recorded (the
     // diagnosis, LookContext.Observe).
-    public Island? Find(IslandPrint print, Box panel)
+    public Island? Find(IslandPrint print)
     {
         lock (gate)
-            return Match(print, panel);
+            return Match(print);
     }
 
-    // The island whose print matches best; else, without evidence either way, the last one
-    // when the panel stands where it stood; null: none.
-    private Island? Match(IslandPrint print, Box panel)
+    // The island whose print matches best, by evidence only; null: none. (Until 19.10. a print
+    // without evidence either way fell back to the island seen last when the panel stood where
+    // it stood — in the controller UI the panel always stands in the middle, so a thin first
+    // picture of the next island was merged into the previous one. Now a print too thin to
+    // judge is not placed at all, RumourGameWindow.Place.)
+    private Island? Match(IslandPrint print)
     {
         Island? found = null;
         double best = 0;
-        bool enough = false;
         foreach (var island in islands)
         {
             var (score, evidence, _) = IslandMarks.Match(print, island.Print);
-            enough |= evidence >= Tune.MinimumEvidence;
             if (evidence >= Tune.MinimumEvidence && score >= Tune.SameIsland && score > best)
                 (found, best) = (island, score);
         }
-        if (found is null && !enough && islands.FirstOrDefault() is { } last && Math.Abs(last.Panel.X - panel.X) <= Tune.SamePanelPlace && Math.Abs(last.Panel.Y - panel.Y) <= Tune.SamePanelPlace)
-            found = last;
         return found;
     }
 
     // The same opening read again at the same island: the rows as read now, nothing counted.
-    public void Update(Island island, IReadOnlyList<string?> rows)
+    // print: the chart as read now (Island.Keep).
+    public void Update(Island island, IReadOnlyList<string?> rows, IslandPrint? print = null)
     {
         lock (gate)
         {
             island.Take(rows, opened: false);
-            if (rows.Count is > 0 and < 3)
-                island.Complete = true;
+            island.Complete = rows.Count is > 0 and < 3;
+            if (print is not null)
+                island.Keep(print);
         }
     }
 }

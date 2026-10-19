@@ -21,8 +21,8 @@ public sealed class RumourGameWindow(Pipeline pipeline) : IGameWindow
         if (Pipeline.Rumours.Locate(frame.Image, popup: frame.Popup) is not { } panel)
             return null;
         var lines = await Pipeline.Rumours.ReadAsync(frame.Image, panel, context.Rumours, frame.Popup, frame.Language);
-        var island = Place(frame.Image, panel, lines, opened: true, previous: null, context);
-        return new Open(this, panel, lines, RumourReader.Signature(frame.Image, panel), frame.Popup, island);
+        var island = Place(frame.Image, panel, lines, opened: true, previous: null, context, out bool tryAgain);
+        return new Open(this, panel, lines, RumourReader.Signature(frame.Image, panel), frame.Popup, island, Unplaced: tryAgain);
     }
 
     // The panel placed at its island: by the chart around the ship marker, which is found
@@ -30,8 +30,11 @@ public sealed class RumourGameWindow(Pipeline pipeline) : IGameWindow
     // rumours are shown without a collection. opened: the panel appeared after being closed
     // (a roll only when its lines changed, IslandBook.Place).
     // Observing (the diagnosis): the island as the book has it, nothing counted or added.
-    private Island? Place(Mat image, RumourPanel panel, RumourLine[] lines, bool opened, Island? previous, LookContext context)
+    // tryAgain: no island yet because too little of the chart was read — worth another
+    // reading once the panel rests (not so without a ship marker).
+    private Island? Place(Mat image, RumourPanel panel, RumourLine[] lines, bool opened, Island? previous, LookContext context, out bool tryAgain)
     {
+        tryAgain = false;
         if (IslandMarks.Marker(image, panel.Panel) is not { } marker)
         {
             context.Log("Rumour window: no ship marker beside the panel, island unknown");
@@ -40,13 +43,39 @@ public sealed class RumourGameWindow(Pipeline pipeline) : IGameWindow
         var print = IslandMarks.Print(image, panel.Panel, marker);
         if (context.Observe)
         {
-            var known = Islands.Find(print, panel.Panel);
-            context.Log(known is null ? "Rumour window at an island not seen yet (observed)" : $"Rumour window at island {Islands.All.ToList().IndexOf(known) + 1} of {Islands.All.Count}, roll {known.Rolls} (observed)");
+            var known = Islands.Find(print);
+            var book = Islands.All;
+            context.Log(known is null ? "Rumour window at an island not seen yet (observed)" : $"Rumour window at island {IndexOf(book, known)} of {book.Count}, roll {known.Rolls} (observed)");
             return known;
         }
-        var island = Islands.Place(print, panel.Panel, lines.Select(l => l.Entry?.Name).ToArray(), opened, previous);
-        context.Log($"Rumour window at island {Islands.All.ToList().IndexOf(island) + 1} of {Islands.All.Count}, roll {island.Rolls}, {island.Seen.Count} rumours seen, {print.Points.Length} chart points");
+        // Too little of the chart (the map still panning in the controller UI, a tooltip over
+        // the water): no judgement possible, the island is placed when the panel rests.
+        if (print.Points.Length < Tuning.Islands.MinimumEvidence)
+        {
+            context.Log($"Rumour window: only {print.Points.Length} chart points, island not placed yet");
+            tryAgain = true;
+            return null;
+        }
+        var island = Islands.Place(print, lines.Select(l => l.Entry?.Name).ToArray(), opened, previous);
+        var all = Islands.All;
+        context.Log($"Rumour window at island {IndexOf(all, island)} of {all.Count}, roll {island.Rolls}, {island.Seen.Count} rumours seen, {print.Points.Length} chart points");
         return island;
+    }
+
+    private static int IndexOf(IReadOnlyList<Island> all, Island island)
+    {
+        for (int i = 0; i < all.Count; i++)
+            if (all[i] == island)
+                return i + 1;
+        return 0;
+    }
+
+    // The same opening read again at its island: the rows as read now, and the chart as read
+    // now when it shows more than the one stored.
+    private void Refresh(Mat image, RumourPanel panel, Island island, RumourLine[] lines)
+    {
+        var print = IslandMarks.Marker(image, panel.Panel) is { } marker ? IslandMarks.Print(image, panel.Panel, marker) : null;
+        Islands.Update(island, lines.Select(l => l.Entry?.Name).ToArray(), print);
     }
 
     // Stale: the glance saw that what was read no longer holds; the follow reads again, and
@@ -57,7 +86,10 @@ public sealed class RumourGameWindow(Pipeline pipeline) : IGameWindow
     // Resized: the game runs at another height than the readers are measured at (GameView).
     // Popup: the game's popup size when the panel was read (the glance gets a picture without it).
     // Island: where the panel was placed (null: no marker found, nothing is collected).
-    private sealed record Open(RumourGameWindow Kind, RumourPanel Panel, RumourLine[] Lines, double[] Signature, double Popup, Island? Island, bool Stale = false, bool Resting = false) : IOpenWindow
+    // Gone: a glance did not find the panel; what the follow finds is a new opening, whatever
+    // the island (review 19.10.: a roll read on the follow after a short absence was counted as
+    // the same opening).
+    private sealed record Open(RumourGameWindow Kind, RumourPanel Panel, RumourLine[] Lines, double[] Signature, double Popup, Island? Island, bool Stale = false, bool Resting = false, bool Gone = false, bool Unplaced = false) : IOpenWindow
     {
         public IGameWindow Window => Kind;
 
@@ -83,7 +115,7 @@ public sealed class RumourGameWindow(Pipeline pipeline) : IGameWindow
             if (Stale)
                 return Core.Glance.Unchanged;
             if (Kind.Pipeline.Rumours.Locate(frame, GlanceArea, Popup) is not { } now)
-                return new Glance.Reread(this with { Stale = true }, ClearNow: true);
+                return new Glance.Reread(this with { Stale = true, Gone = true }, ClearNow: true);
             if (RumourReader.Changed(RumourReader.Signature(frame, now), Signature))
                 return new Glance.Reread(this with { Stale = true }, ClearNow: false);
             int dx = now.Title.X - Panel.Title.X,
@@ -110,6 +142,10 @@ public sealed class RumourGameWindow(Pipeline pipeline) : IGameWindow
                 context.Log("hidden: Rumour window no longer detected");
                 return null;
             }
+            // No island yet (too little of the chart while the panel flew in) and the panel at
+            // rest: placed now from this full picture, with the lines as read — once.
+            if (Unplaced && Resting && !Stale)
+                return this with { Island = Kind.Place(frame.Image, panel, Lines, opened: true, previous: null, context, out _), Unplaced = false };
             if (!Stale && Math.Abs(panel.Title.X - Panel.Title.X) <= Tuning.Rumours.SamePlace && Math.Abs(panel.Title.Y - Panel.Title.Y) <= Tuning.Rumours.SamePlace && !RumourReader.Changed(RumourReader.Signature(frame.Image, Panel), Signature))
                 return this;
             var lines = await Kind.Pipeline.Rumours.ReadAsync(frame.Image, panel, context.Rumours, frame.Popup, frame.Language);
@@ -119,16 +155,18 @@ public sealed class RumourGameWindow(Pipeline pipeline) : IGameWindow
             // of the book (19.10.: one island, three entries, the count jumping between them
             // at every rescan). Other rows: the first reading corrected, or another island
             // (the cursor moved on): placed anew, the same opening when it is the same island.
+            // After an absence (Gone) it is a new opening, whatever the rows.
             Island? island;
-            if (Island is { } same && lines.Select(l => l.Entry?.Name).SequenceEqual(Lines.Select(l => l.Entry?.Name)))
+            bool tryAgain = false;
+            if (!Gone && Island is { } same && lines.Select(l => l.Entry?.Name).SequenceEqual(Lines.Select(l => l.Entry?.Name)))
             {
-                Kind.Islands.Update(same, lines.Select(l => l.Entry?.Name).ToArray());
+                Kind.Refresh(frame.Image, panel, same, lines);
                 island = same;
             }
             else
-                island = Kind.Place(frame.Image, panel, lines, opened: true, previous: Island, context);
+                island = Kind.Place(frame.Image, panel, lines, opened: true, previous: Gone ? null : Island, context, out tryAgain);
             // Other lines on a panel that rests where it stood: shown at once.
-            return new Open(Kind, panel, lines, RumourReader.Signature(frame.Image, panel), frame.Popup, island, Resting: Resting && panel.Title == Panel.Title);
+            return new Open(Kind, panel, lines, RumourReader.Signature(frame.Image, panel), frame.Popup, island, Resting: Resting && panel.Title == Panel.Title, Unplaced: tryAgain);
         }
 
         // Own ratings changed in the settings window: shown at once. A line without an entry may

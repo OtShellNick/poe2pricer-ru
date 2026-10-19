@@ -91,12 +91,11 @@ public sealed class RumoursViewModel : ObservableObject
             if (!w.Invalid)
                 read[w.Tier] = value;
         }
-        if (read.Count < Weights.Count)
-            notWritten ??= new("InvalidNotANumber");
-        else
-            notWritten ??= book.SetWeights(new TierWeights(read));
+        // The weights are applied and written whatever became of the ratings (review 19.10.:
+        // a ratings file that could not be written used to drop the weights without a word).
+        Told? weightsNotWritten = read.Count < Weights.Count ? new("InvalidNotANumber") : book.SetWeights(new TierWeights(read));
         Changed?.Invoke();
-        return notWritten;
+        return notWritten ?? weightsNotWritten;
     }
 
     // An empty row of the player's own at the end of the list; it goes into the book with the
@@ -133,6 +132,5 @@ public sealed class TierWeightViewModel(string tier, double weight) : Observable
         set => SetProperty(ref invalid, value);
     }
 
-    public bool Read(out double value) =>
-        double.TryParse(Text.Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out value) && double.IsFinite(value);
+    public bool Read(out double value) => Numbers.TryParse(Text, out value);
 }

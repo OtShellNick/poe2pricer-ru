@@ -69,7 +69,7 @@ public sealed class StashGameWindow(Pipeline pipeline) : IGameWindow
         // read running for it, and nothing was ever read.
         public Glance Glance(Mat frame, PriceBook? ready, LookContext context)
         {
-            var now = Kind.Pipeline.Stash.Locate(frame, StashTabReader.KeepScore);
+            var now = Kind.Pipeline.Stash.Locate(frame, StashTabReader.MinimumScore);
             if (now is null)
                 return new Glance.Gone("stash tab no longer detected");
             if (now.Kind == Tab.Kind && now.Mode == Tab.Mode)
@@ -82,7 +82,7 @@ public sealed class StashGameWindow(Pipeline pipeline) : IGameWindow
         public Task<IOpenWindow?> FollowAsync(GameCapture.Frame frame, LookContext context)
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
-            var tab = Kind.Pipeline.Stash.Locate(frame.Image, StashTabReader.KeepScore);
+            var tab = Kind.Pipeline.Stash.Locate(frame.Image, StashTabReader.MinimumScore);
             if (tab is null)
             {
                 context.Log("hidden: stash tab no longer detected");

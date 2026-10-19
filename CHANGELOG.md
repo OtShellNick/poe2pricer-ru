@@ -3,7 +3,28 @@
 All notable changes to poe2pricer, newest first. The release notes on GitHub say the same
 with more words: https://github.com/saxe78/poe2pricer/releases
 
-## 1.1.0 — 2026-10-20
+## 1.1.1 — 2026-10-19
+
+### Added
+- The version number in the program window links to this changelog (opens in the browser).
+
+### Fixed
+- Two islands the community table has swapped ("Something Fishy" is Barren Atoll, "Bleak and
+  Awful" is Bleached Shoals, as the game's own texts say) are shown as in the game, in the
+  Rumours tab and under the line on the card.
+- Island Rumours: a roll read right after a short absence of the panel counts; "complete" is
+  lifted again when three rows return; the next island is no longer merged into the previous
+  one in the controller UI when its first picture shows little of the chart; a reopening that
+  shows less of the chart no longer replaces the richer reading the island is recognised by.
+- The tier weights are saved even when the ratings file cannot be written.
+- At 3840×2160 the quick check of an open window paced itself faster than its screen capture
+  took; it and the automatic scan now keep to half the time at most.
+- The program no longer writes pictures of its own into the diagnostics folder (1.0.0 and
+  1.1.0 kept two full pictures of every reroll it detected in the Ritual window, without end).
+  Only the diagnostics key writes there, unless "Extended diagnostics" (Settings → Hotkeys,
+  off by default) is on; then at most three pictures of each kind stay.
+
+## 1.1.0 — 2026-10-19
 
 ### Added
 - Island Rumours are collected per island: the island is recognised by the sea chart around

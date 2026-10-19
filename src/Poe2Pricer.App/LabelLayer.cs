@@ -242,10 +242,13 @@ public sealed class LabelLayer : FrameworkElement
         {
             var head = T(In("OverlayExpeditionUnrated"), Light, 26, Ink);
             dc.DrawText(head, new Point(x + pad, top + pad - 6));
-            if (i.Tier is { } tier)
-                dc.DrawText(T(tier, Light, 26, Poe2Pricer.Ui.RatingColours.Of(tier)), new Point(x + pad + head.Width + 9, top + pad - 6));
+            var tierText = i.Tier is { } tier ? T(tier, Light, 26, Poe2Pricer.Ui.RatingColours.Of(tier)) : null;
+            if (tierText is not null)
+                dc.DrawText(tierText, new Point(x + pad + head.Width + 9, top + pad - 6));
             string state = i.Complete ? " · " + In("ExpeditionComplete") : i.ProbablyComplete ? " · " + In("ExpeditionProbablyComplete") : "";
-            var counts = T(Poe2Pricer.Core.Texts.CountIn(language, "ExpeditionRumours", i.Rumours) + " · " + Poe2Pricer.Core.Texts.CountIn(language, "ExpeditionRolls", i.Rolls) + state, Regular, 13, Faint, width - 2 * pad - head.Width - 40);
+            // The counts end at the right edge and must not run under the head and the tier.
+            double headWidth = head.Width + (tierText is null ? 0 : tierText.Width + 9);
+            var counts = T(Poe2Pricer.Core.Texts.CountIn(language, "ExpeditionRumours", i.Rumours) + " · " + Poe2Pricer.Core.Texts.CountIn(language, "ExpeditionRolls", i.Rolls) + state, Regular, 13, Faint, width - 2 * pad - headWidth - 20);
             dc.DrawText(counts, new Point(x + width - pad - counts.Width, top + pad + 6));
         }
         if (hint)
