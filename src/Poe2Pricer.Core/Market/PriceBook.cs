@@ -9,15 +9,31 @@ public record Price(decimal Divine, decimal ExaltedPerDivine, int? Listings, str
 {
     public decimal Exalted => Divine * ExaltedPerDivine;
 
+    // The book's chaos rate (0: not known); set by PriceBook.Find like ExaltedPerDivine.
+    public decimal ChaosPerDivine { get; init; }
+    public decimal Chaos => Divine * ChaosPerDivine;
+
     // Fewer than five offers: shown with "~".
     public bool Thin => Listings < Tuning.Labels.ThinBelow;
 
     // From 1 divine on in div with two decimals, below in ex with at most one; always ".".
-    public string Text =>
+    public string Text => TextIn("ex");
+
+    // The unit the price is written in: "div" from one divine on, below the unit asked for
+    // (Settings.PriceUnit) — "chaos" only with a chaos rate, else "ex".
+    public string UnitIn(string unit) =>
+        Divine >= Tuning.Labels.DivineFrom ? "div" : unit == "chaos" && ChaosPerDivine > 0 ? "chaos" : "ex";
+
+    // As Text, in the unit asked for; chaos with up to two decimals (a chaos is worth some
+    // seventy exalts late in a league, and a twenty-exalt item must not read "0 chaos").
+    public string TextIn(string unit) =>
         (Thin ? "~" : "")
-        + (Divine >= Tuning.Labels.DivineFrom
-            ? Divine.ToString("0.00", CultureInfo.InvariantCulture) + " div"
-            : Exalted.ToString("0.#", CultureInfo.InvariantCulture) + " ex");
+        + UnitIn(unit) switch
+        {
+            "div" => Divine.ToString("0.00", CultureInfo.InvariantCulture) + " div",
+            "chaos" => Chaos.ToString("0.##", CultureInfo.InvariantCulture) + " chaos",
+            _ => Exalted.ToString("0.#", CultureInfo.InvariantCulture) + " ex",
+        };
 }
 
 public sealed class PriceBook(string league)
@@ -34,7 +50,7 @@ public sealed class PriceBook(string league)
     public int Count => byName.Count;
 
     public Price? Find(string nameEn) =>
-        byName.GetValueOrDefault(nameEn) is { } p ? p with { ExaltedPerDivine = ExaltedPerDivine } : null;
+        byName.GetValueOrDefault(nameEn) is { } p ? p with { ExaltedPerDivine = ExaltedPerDivine, ChaosPerDivine = ChaosPerDivine } : null;
 
     public IEnumerable<string> Names => byName.Keys;
 

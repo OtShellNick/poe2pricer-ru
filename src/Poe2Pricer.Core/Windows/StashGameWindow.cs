@@ -101,7 +101,7 @@ public sealed class StashGameWindow(Pipeline pipeline) : IGameWindow
             foreach (var s in named.Where(s => s.Present && s.NamedBy is not (null or StashIdentifier.ByTable)))
                 context.Log($"stash {Tab.Kind} slot {s.Index}: {s.Name ?? "-"} ({s.NamedBy})");
             var settings = context.Settings;
-            var labels = Labels.ForStash(named.Where(s => !s.Covered), book, Labels.FloorInDivine(settings.FloorValue, settings.FloorUnit, book));
+            var labels = Labels.ForStash(named.Where(s => !s.Covered), book, Labels.FloorInDivine(settings.FloorValue, settings.FloorUnit, book), settings.PriceUnit);
             int present = named.Count(s => s.Present);
             return new Picture(
                 this with { Slots = named },

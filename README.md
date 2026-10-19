@@ -2,9 +2,10 @@
 
 Price overlay for Path of Exile 2. It reads the game window from the screen and writes prices
 from poe.ninja next to what it recognises. It presses no keys, clicks nothing and sends nothing
-about you or your game anywhere. What it does request: prices from poe.ninja, the community
-ratings of the island rumours from Gnejs PoE Tools and a public Google sheet, and, if you leave
-"Check for updates" on, once per start the newest release from github.com.
+about you or your game anywhere. What it does request: prices from poe.ninja and the item
+images they refer to from web.poecdn.com, the community ratings of the island rumours from Gnejs
+PoE Tools and a public Google sheet, and, if you leave "Check for updates" on, once per start the
+newest release from github.com.
 
 | Ritual (Favours) | Expedition remnants |
 |---|---|
@@ -12,7 +13,7 @@ ratings of the island rumours from Gnejs PoE Tools and a public Google sheet, an
 
 | Stash tabs | Island Rumours |
 |---|---|
-| ![Orbs tab with a price at every slot, Divine values with the Divine icon](data/guide/stash.png) | ![Rumour panel with the community table beside it](data/guide/rumours.png) |
+| ![Orbs tab with a price at every slot, Divine values with the Divine icon](data/guide/stash.png) | ![Rumour panel with the card beside it: expedition tier, rolls, the rumours with their tiers, a new one marked, a rotated one under the line](data/guide/rumours.png) |
 
 ## Features
 
@@ -24,7 +25,12 @@ ratings of the island rumours from Gnejs PoE Tools and a public Google sheet, an
 - **Special stash tabs** (orbs, essences, breach, delirium, expedition, ritual, abyss, tablets,
   socketables): a price at every filled slot.
 - **Island Rumours** panel of the Atlas: the community rating of each rumour next to its line,
-  with your own ratings and notes on top.
+  with your own ratings and notes on top. The panel shows three rumours at a time and rolls
+  them anew when you move an item in the inventory; poe2pricer recognises the island by the sea
+  chart around it and collects the rumours over the rolls: rumours seen before are listed
+  under the table, new ones are marked, and an **expedition tier** sums the island up. Opening
+  the panel again without moving anything shows the same three and counts as no roll; with
+  three on the panel the card reminds you to move an item for more.
 - **Automatic**: with the automatic scan on, prices appear by themselves when one of these
   windows opens and go when it closes. Or by key: `Alt+F` shows and hides them.
 - **Prices from poe.ninja**, refreshed every few minutes. Marks instead of a price: "?" poe.ninja
@@ -80,8 +86,10 @@ resets the program.
   what the program made of it. Useful when reporting a wrong price; the screenshot shows your
   game as it was at that moment.
 - The settings window has two tabs: **Settings** (league, keys, automatic scan and its
-  windows, price floor, start with Windows, language) and **Rumours** (the community table of
-  island rumours, your own ratings and notes).
+  windows, price floor, the unit prices are written in — Exalted or Chaos, Divine from one
+  Divine on — start with Windows, language) and **Rumours** (the community table of
+  island rumours, your own ratings and notes, and the weight of each tier for the expedition
+  tier).
 - "Refresh prices" and "Exit" are in the settings window.
 
 Both keys can be changed in the settings window.
@@ -103,6 +111,10 @@ Both keys can be changed in the settings window.
 - In the Standard league poe.ninja lists no prices for most uniques; they show "?".
 - Recognition relies on the game's current art and layout. A game update that changes a window
   may break it until the templates are updated.
+- Island Rumours: the island is recognised by the sea chart around it. Dragging or zooming the
+  Atlas between two openings of the panel can leave too little of the chart in common; the
+  program then starts a new collection for the same island. Opening the panel without moving
+  the Atlas (the usual rotation through the inventory) is always recognised.
 
 ## Troubleshooting
 

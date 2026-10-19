@@ -282,6 +282,12 @@
                 <ContentControl Style="{StaticResource InfoIcon}"
                                 ToolTip="{views:Text TipFloor}"/>
               </StackPanel>
+              <StackPanel Style="{StaticResource Row}">
+                <TextBlock Text="{views:Text PricesIn}" Style="{StaticResource RowCaption}"/>
+                <ComboBox Width="158" ItemsSource="{Binding PriceUnits}" SelectedItem="{Binding PriceUnit}"/>
+                <ContentControl Style="{StaticResource InfoIcon}"
+                                ToolTip="{views:Text TipPriceUnit}"/>
+              </StackPanel>
             </StackPanel>
           </GroupBox>
 
@@ -400,6 +406,28 @@
                 <!-- Credits with links: ratings and notes by Jestra1220,
                      game texts and notes as shown by Gnejs PoE Tools. -->
                 <TextBlock Style="{StaticResource Small}" TextWrapping="Wrap" Margin="0,8,0,0"><Run Text="{views:Text CreditsBy}"/><Hyperlink NavigateUri="{Binding Source={x:Static core:RumourBook.SheetLink}}" Foreground="{StaticResource Accent}" RequestNavigate="OpenLink"><Run Text="{views:Text CreditsSheet}"/></Hyperlink><Run Text="{views:Text CreditsCompiled}"/><Hyperlink NavigateUri="{Binding Source={x:Static core:RumourBook.GnejsPage}}" Foreground="{StaticResource Accent}" RequestNavigate="OpenLink"><Run Text="{views:Text CreditsTools}"/></Hyperlink><Run Text="{views:Text CreditsThanks}"/></TextBlock>
+              </StackPanel>
+            </GroupBox>
+            <!-- The weights of the tiers for the expedition tier: one small field per tier in a
+                 row, S+ to F, the hint below. -->
+            <GroupBox DockPanel.Dock="Bottom" Header="{views:Text GroupExpeditionTier}" Style="{StaticResource Section}" Margin="0,10,0,0">
+              <StackPanel>
+                <ItemsControl ItemsSource="{Binding Weights}" Focusable="False">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <StackPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:TierWeightViewModel}">
+                      <StackPanel Orientation="Horizontal" Margin="0,0,12,0">
+                        <TextBlock Text="{Binding Tier}" Style="{StaticResource Small}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                        <TextBox Width="44" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" views:Field.Invalid="{Binding Invalid}" Style="{StaticResource Input}"/>
+                      </StackPanel>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Style="{StaticResource Small}" TextWrapping="Wrap" Margin="0,8,0,0" Text="{views:Text ExpeditionTierHint}"/>
               </StackPanel>
             </GroupBox>
             <GroupBox Header="{views:Text GroupIslandRumours}" Style="{StaticResource Box}">

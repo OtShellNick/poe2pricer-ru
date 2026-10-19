@@ -24,9 +24,13 @@ public sealed class LabelLayer : FrameworkElement
 
     // Rumour table beside the "Uncharted Waters" panel, like PoeAncientsPriceHelper shows it:
     // Rumour, Map, Mods, Rating; one row per rumour, level with its line in the panel.
-    public (Box Panel, RumourLine[] Lines)? Rumours { get; set; }
+    public (Box Panel, RumourLine[] Lines, IslandSummary? Island)? Rumours { get; set; }
     public ImageSource? Divine { get; set; }
     public ImageSource? Exalted { get; set; }
+    public ImageSource? Chaos { get; set; }
+
+    // The orb drawn for a label's unit (Label.Unit).
+    private ImageSource? OrbOf(Label l) => l.Unit switch { "div" => Divine, "chaos" => Chaos, _ => Exalted };
     public double PixelScale { get; set; } = 1;
 
     // Where the labels' origin lies on this element (the preview draws onto a whole picture;
@@ -65,7 +69,7 @@ public sealed class LabelLayer : FrameworkElement
         dc.PushTransform(new TranslateTransform(Origin.X, Origin.Y));
         dc.PushTransform(new ScaleTransform(PixelScale, PixelScale));
         if (Rumours is { } r)
-            DrawRumours(dc, r.Panel, r.Lines);
+            DrawRumours(dc, r.Panel, r.Lines, r.Island);
         foreach (var l in Labels)
         {
             var b = l.Bounds;
@@ -95,7 +99,7 @@ public sealed class LabelLayer : FrameworkElement
             }
             if (l.Text is null)
                 continue;
-            string number = l.Text.Replace(" div", "").Replace(" ex", "");
+            string number = l.Text.Replace(" div", "").Replace(" ex", "").Replace(" chaos", "");
             // One size for every price, whatever the size of the item (PriceSize). Only a number
             // too long for its field is set smaller, as far as it takes to fit.
             double size = PriceSize;
@@ -109,7 +113,7 @@ public sealed class LabelLayer : FrameworkElement
                 py = b.Bottom - 3 - ph / 2;
             dc.DrawRoundedRectangle(Plate, null, new Rect(cx - pw / 2, py - ph / 2, pw, ph), 5, 5);
             Draw(dc, text, cx - text.Width / 2, py - text.Height / 2);
-            var orb = l.UsesDivine ? Divine : Exalted;
+            var orb = OrbOf(l);
             if (orb is not null)
             {
                 double s = OrbSize;
@@ -155,7 +159,7 @@ public sealed class LabelLayer : FrameworkElement
         }
         if (l.Text is null)
             return;
-        string number = l.Text.Replace(" div", "").Replace(" ex", "");
+        string number = l.Text.Replace(" div", "").Replace(" ex", "").Replace(" chaos", "");
         var text = Format(number, PriceSize, l.Light ? DarkColourOf(l) : ColourOf(l));
         // The best reward lies out of view: an arrow that way before the orb.
         var arrow = l.Arrow is null ? null : Format(l.Arrow, 18, l.Light ? DarkColourOf(l) : ColourOf(l));
@@ -166,74 +170,126 @@ public sealed class LabelLayer : FrameworkElement
         dc.DrawRoundedRectangle(plate, null, new Rect(x, cy - 16, w, 32), 5, 5);
         if (arrow is not null)
             Draw(dc, arrow, x + 6, cy - arrow.Height / 2, outline: !l.Light);
-        if ((l.UsesDivine ? Divine : Exalted) is { } orb)
+        if (OrbOf(l) is { } orb)
             dc.DrawImage(orb, new Rect(x + 6 + lead, cy - s / 2, s, s));
         Draw(dc, text, x + 6 + lead + s + 6, cy - text.Height / 2, outline: !l.Light);
     }
 
     private static readonly Typeface Regular = new(new FontFamily("Segoe UI"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
 
-    private void DrawRumours(DrawingContext dc, Box panel, RumourLine[] lines)
+    private static readonly Typeface Light = new(new FontFamily("Segoe UI"), FontStyles.Normal, FontWeights.Light, FontStretches.Normal);
+    private static readonly Typeface SemiBold = new(new FontFamily("Segoe UI"), FontStyles.Normal, FontWeights.SemiBold, FontStretches.Normal);
+    private static readonly Brush Card = Frozen(new SolidColorBrush(Color.FromArgb(225, 18, 18, 22)));
+    private static readonly Brush Ink = Frozen(new SolidColorBrush(Color.FromRgb(235, 235, 240)));
+    private static readonly Brush Faint = Frozen(new SolidColorBrush(Color.FromRgb(150, 150, 160)));
+    private static readonly Brush Dim = Frozen(new SolidColorBrush(Color.FromRgb(140, 140, 150)));
+    private static readonly Brush Warn = Frozen(new SolidColorBrush(Color.FromRgb(255, 120, 120)));
+    // The hint in the program's brass (Theme.Accent): the one action to take, as in the window.
+    private static readonly Brush HintInk = Frozen(new SolidColorBrush(Poe2Pricer.Ui.Theme.Current.Accent));
+    private static readonly Brush Fresh = Frozen(new SolidColorBrush(Color.FromRgb(60, 150, 90)));
+    private static readonly Brush FreshInk = Frozen(new SolidColorBrush(Color.FromRgb(240, 255, 240)));
+    private static readonly Brush PillInk = Frozen(new SolidColorBrush(Color.FromRgb(20, 20, 24)));
+    private static readonly Brush DimPill = Frozen(new SolidColorBrush(Color.FromRgb(70, 70, 78)));
+    private static readonly Brush DimPillInk = Frozen(new SolidColorBrush(Color.FromRgb(190, 190, 200)));
+    private static readonly Pen Rule = new(Frozen(new SolidColorBrush(Color.FromRgb(70, 70, 80))), 1);
+
+    // The card beside the panel. On top the island (IslandSummary): "Expedition" with its tier,
+    // the counts at the right. Then one row per line of the panel: the rumour with its tier in
+    // a pill, "new" when the island shows it for the first time, below it island, mods and note
+    // in one small line. A rule, and under it the rumours seen at the island that the panel
+    // does not show now, dimmed. Three lines on the panel and the island not (probably)
+    // complete: a hint under the head, in the program's brass, to move an item for more. The first row
+    // stands at the height of the panel's first line, the head (and the hint) above it.
+    // Without an island (no marker found): the rows alone, with the hint.
+    private void DrawRumours(DrawingContext dc, Box panel, RumourLine[] lines, IslandSummary? island)
     {
         if (lines.Length == 0)
             return;
-        const double size = 17,
-            gap = 18,
-            pad = 10,
-            rowHeight = 30;
-        FormattedText T(string text, Brush brush, bool bold = false, double sz = size) =>
-            new(text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, bold ? Face : Regular, sz, brush, 1);
-        // The table follows the language of the game, not that of the program window: head, rumour
-        // and island as the game names them; mods and notes are the community's (English).
-        string language = lines[0].Language;
-        var header = new[] { "OverlayRumour", "OverlayIsland", "OverlayMods", "OverlayTier", "OverlayNote" }.Select(h => T(Poe2Pricer.Core.Texts.In(language, h), Brushes.Gray, false, 13)).ToArray();
-        var warn = new SolidColorBrush(Color.FromRgb(255, 110, 110));
-        // Hint column at most 280 px wide, two lines, then "…": long warnings would make the
-        // whole table too wide. Rumour lines in the panel are ~50 px apart,
-        // so two lines keep the rows aligned.
-        FormattedText Hint(string text, Brush brush)
+        const double width = 520,
+            pad = 22,
+            rowHeight = 54,
+            headHeight = 46,
+            hintHeight = 24,
+            pillWidth = 36,
+            pillHeight = 22;
+        FormattedText T(string text, Typeface face, double size, Brush brush, double? maxWidth = null)
         {
-            var f = T(text, brush, false, 14);
-            f.MaxTextWidth = 280;
-            f.MaxLineCount = 2;
-            f.Trimming = TextTrimming.CharacterEllipsis;
+            var f = new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, face, size, brush, 1);
+            if (maxWidth is { } w)
+            {
+                f.MaxTextWidth = w;
+                f.MaxLineCount = 1;
+                f.Trimming = TextTrimming.CharacterEllipsis;
+            }
             return f;
         }
-        var cells = lines
-            .Select(l =>
-                l.Entry is { } e
-                    ? new[]
-                    {
-                        T(l.Name ?? e.Name, e.Warning.Length > 0 ? warn : Brushes.White, true),
-                        T(l.Island ?? e.Map, Brushes.LightGray),
-                        T(e.Mods, Brushes.LightGray),
-                        T(e.Shown + (e.Own.Length > 0 ? "*" : ""), Poe2Pricer.Ui.RatingColours.Of(e.Shown), true),
-                        Hint(e.Hint, e.Note.Length == 0 && e.Warning.Length > 0 ? warn : Brushes.Gray),
-                    }
-                    : new[] { T(l.Text, Brushes.Gray), T("", Brushes.Gray), T("", Brushes.Gray), T("?", Brushes.Gray, true), T("", Brushes.Gray) }
-            )
-            .ToArray();
-        var widths = Enumerable.Range(0, 5).Select(c => Math.Max(header[c].Width, cells.Max(r => r[c].Width))).ToArray();
-        double width = widths.Sum() + gap * 4 + pad * 2;
+        // The card follows the language of the game, not that of the program window: rumour
+        // and island as the game names them; mods and notes are the community's (English).
+        string language = lines[0].Language;
+        string In(string key, params object?[] args) => Poe2Pricer.Core.Texts.In(language, key, args);
+        var isNew = island?.New.ToHashSet() ?? [];
+        double rowsTop = lines.Min(l => l.CenterY) - rowHeight / 2;
+        bool hint = lines.Length == 3 && !(island?.ProbablyComplete ?? false);
+        double above = (island is null ? 0 : headHeight) + (hint ? hintHeight : 0);
+        double top = rowsTop - pad - above;
+        int rotated = island?.Rotated.Length ?? 0;
+        double height = pad + above + lines.Length * rowHeight + (rotated > 0 ? 18 + rotated * rowHeight : 0) + pad - 12;
         // Opposite the side the panel leans to; left when there is room.
         double x = panel.X - width - 12 >= 0 ? panel.X - width - 12 : panel.Right + 12;
-        double top = lines.Min(l => l.CenterY) - rowHeight / 2 - 22;
-        // Sources are credited in the program window only.
-        double height = (lines.Max(l => l.CenterY) - lines.Min(l => l.CenterY)) + rowHeight + 22 + pad;
-        dc.DrawRoundedRectangle(Frozen(new SolidColorBrush(Color.FromArgb(215, 12, 12, 16))), null, new Rect(x, top, width, height), 6, 6);
-        double cx = x + pad;
-        for (int c = 0; c < 5; c++)
+        dc.DrawRoundedRectangle(Card, null, new Rect(x, top, width, height), 14, 14);
+
+        if (island is { } i)
         {
-            dc.DrawText(header[c], new Point(cx, top + 5));
-            cx += widths[c] + gap;
+            var head = T(In("OverlayExpeditionUnrated"), Light, 26, Ink);
+            dc.DrawText(head, new Point(x + pad, top + pad - 6));
+            if (i.Tier is { } tier)
+                dc.DrawText(T(tier, Light, 26, Poe2Pricer.Ui.RatingColours.Of(tier)), new Point(x + pad + head.Width + 9, top + pad - 6));
+            string state = i.Complete ? " · " + In("ExpeditionComplete") : i.ProbablyComplete ? " · " + In("ExpeditionProbablyComplete") : "";
+            var counts = T(Poe2Pricer.Core.Texts.CountIn(language, "ExpeditionRumours", i.Rumours) + " · " + Poe2Pricer.Core.Texts.CountIn(language, "ExpeditionRolls", i.Rolls) + state, Regular, 13, Faint, width - 2 * pad - head.Width - 40);
+            dc.DrawText(counts, new Point(x + width - pad - counts.Width, top + pad + 6));
         }
-        for (int i = 0; i < lines.Length; i++)
+        if (hint)
+            dc.DrawText(T(In("OverlayRollHint"), SemiBold, 13, HintInk, width - 2 * pad), new Point(x + pad, rowsTop - hintHeight - 2));
+
+        void Row(Rumour? e, string name, string? map, double y, bool dimmed, bool marked)
         {
-            cx = x + pad;
-            for (int c = 0; c < 5; c++)
+            bool warning = e is { Warning.Length: > 0 };
+            var ink = dimmed ? Faint : Ink;
+            var title = T(name, Face, 17, warning && !dimmed ? Warn : ink, width - 2 * pad - pillWidth - 70);
+            dc.DrawText(title, new Point(x + pad, y));
+            if (marked)
             {
-                dc.DrawText(cells[i][c], new Point(cx, lines[i].CenterY - cells[i][c].Height / 2));
-                cx += widths[c] + gap;
+                double px = x + pad + title.Width + 10;
+                dc.DrawRoundedRectangle(Fresh, null, new Rect(px, y + 3, 40, 16), 8, 8);
+                var tag = T(In("OverlayNew"), SemiBold, 12, FreshInk);
+                dc.DrawText(tag, new Point(px + 20 - tag.Width / 2, y + 11 - tag.Height / 2));
+            }
+            string shown = e is null ? "?" : e.Shown + (e.Own.Length > 0 ? "*" : "");
+            var pillBrush = e is null ? DimPill : dimmed ? DimPill : Poe2Pricer.Ui.RatingColours.Of(e.Shown);
+            dc.DrawRoundedRectangle(pillBrush, null, new Rect(x + width - pad - pillWidth, y + 1, pillWidth, pillHeight), 11, 11);
+            var pill = T(shown, SemiBold, 13, dimmed || e is null ? DimPillInk : PillInk);
+            dc.DrawText(pill, new Point(x + width - pad - pillWidth / 2 - pill.Width / 2, y + 1 + pillHeight / 2 - pill.Height / 2));
+            if (e is null)
+                return;
+            string second = string.Join(" · ", new[] { map ?? e.Map, e.Mods }.Where(t => t.Length > 0)) + (e.Hint.Length > 0 ? " — " + e.Hint : "");
+            dc.DrawText(T(second, Regular, 13, warning ? Warn : Dim, width - 2 * pad - 10), new Point(x + pad, y + 24));
+        }
+
+        double rowY = rowsTop + rowHeight / 2 - 22;
+        for (int n = 0; n < lines.Length; n++)
+        {
+            var l = lines[n];
+            Row(l.Entry, l.Entry is { } e ? l.Name ?? e.Name : l.Text, l.Island, rowY, dimmed: false, marked: l.Entry is { } f && isNew.Contains(f.Name));
+            rowY += rowHeight;
+        }
+        if (island is not null && rotated > 0)
+        {
+            dc.DrawLine(Rule, new Point(x + pad, rowY + 2), new Point(x + width - pad, rowY + 2));
+            rowY += 18;
+            foreach (var e in island.Rotated)
+            {
+                Row(e, e.Name, null, rowY, dimmed: true, marked: false);
+                rowY += rowHeight;
             }
         }
     }

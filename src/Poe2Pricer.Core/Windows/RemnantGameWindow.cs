@@ -88,7 +88,7 @@ public sealed class RemnantGameWindow(Pipeline pipeline) : IGameWindow
         {
             var book = await prices;
             var settings = context.Settings;
-            var labels = Labels.ForRows(Rows, List, book, Labels.FloorInDivine(settings.FloorValue, settings.FloorUnit, book), Tooltips, Whole, frame.Language);
+            var labels = Labels.ForRows(Rows, List, book, Labels.FloorInDivine(settings.FloorValue, settings.FloorUnit, book), Tooltips, Whole, frame.Language, settings.PriceUnit);
             return new Picture(
                 this,
                 labels,

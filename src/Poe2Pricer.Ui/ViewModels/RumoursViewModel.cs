@@ -21,9 +21,13 @@ public sealed class RumoursViewModel : ObservableObject
         AddRowCommand = new RelayCommand(AddRow);
         RemoveRowCommand = new RelayCommand<RumourRowViewModel>(row => Rows.Remove(row!), row => row is { Custom: true });
         Fill();
+        Weights = new ObservableCollection<TierWeightViewModel>(RumourBook.Ratings.Select(t => new TierWeightViewModel(t, book.Weights.Of(t))));
         // The source line in the new language; the rows stay (what was typed must not go).
         Texts.Changed += Sourced;
     }
+
+    // The weight of each tier for the expedition tier (TierWeights), one field per tier.
+    public ObservableCollection<TierWeightViewModel> Weights { get; }
 
     public ObservableCollection<RumourRowViewModel> Rows { get; } = [];
     public IRelayCommand ReloadCommand { get; }
@@ -78,6 +82,19 @@ public sealed class RumoursViewModel : ObservableObject
     public Told? Save()
     {
         var notWritten = book.SetOwn(Rows.Select(r => r.Read()).OfType<Rumour>().ToList());
+        // A weight that is not a number: the ratings are saved, the weights stay as they were,
+        // the field turns red and the status line says so.
+        var read = new Dictionary<string, double>();
+        foreach (var w in Weights)
+        {
+            w.Invalid = !w.Read(out double value);
+            if (!w.Invalid)
+                read[w.Tier] = value;
+        }
+        if (read.Count < Weights.Count)
+            notWritten ??= new("InvalidNotANumber");
+        else
+            notWritten ??= book.SetWeights(new TierWeights(read));
         Changed?.Invoke();
         return notWritten;
     }
@@ -90,4 +107,32 @@ public sealed class RumoursViewModel : ObservableObject
         Rows.Add(new RumourRowViewModel(new Rumour("", "", "", "", Custom: true)));
         RowAdded?.Invoke();
     }
+}
+
+// One tier and its weight as typed; Invalid after a save that could not read it.
+public sealed class TierWeightViewModel(string tier, double weight) : ObservableObject
+{
+    private string text = weight.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    private bool invalid;
+
+    public string Tier { get; } = tier;
+
+    public string Text
+    {
+        get => text;
+        set
+        {
+            if (SetProperty(ref text, value))
+                Invalid = false;
+        }
+    }
+
+    public bool Invalid
+    {
+        get => invalid;
+        set => SetProperty(ref invalid, value);
+    }
+
+    public bool Read(out double value) =>
+        double.TryParse(Text.Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out value) && double.IsFinite(value);
 }

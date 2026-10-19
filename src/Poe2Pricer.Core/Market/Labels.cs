@@ -13,7 +13,7 @@ public sealed record Label(
     Box Bounds,
     string? Text,
     string? Mark,
-    bool UsesDivine,
+    string Unit,
     Tier Tier,
     bool MostValuable,
     bool Row = false,
@@ -76,7 +76,7 @@ public static class Labels
     // whole: the list as far as it has been seen (RemnantList). The top price holds for all of
     // it; when the best reward is scrolled out of view, nothing in view is green and an arrow
     // with its price stands at the list's upper or lower edge.
-    public static Label[] ForRows(IEnumerable<RemnantRow> rows, RemnantWindow window, PriceBook prices, decimal floorDivine, IEnumerable<Box>? tooltips = null, RemnantList? whole = null, string language = GameLanguage.English)
+    public static Label[] ForRows(IEnumerable<RemnantRow> rows, RemnantWindow window, PriceBook prices, decimal floorDivine, IEnumerable<Box>? tooltips = null, RemnantList? whole = null, string language = GameLanguage.English, string unit = "ex")
     {
         var labels = new List<(Label Label, decimal Divine)>();
         var covers = (tooltips ?? []).ToArray();
@@ -87,23 +87,23 @@ public static class Labels
             bool light = covers.Any(t => t.Intersects(box));
             if (Fixed(row.Text, language) is { } note)
             {
-                labels.Add((new(box, null, null, false, Tier.Normal, false, true, controller, light, note), -1));
+                labels.Add((new(box, null, null, "ex", Tier.Normal, false, true, controller, light, note), -1));
                 continue;
             }
             if (prices.Match(row.Text, language) is not { } m)
             {
-                labels.Add((new(box, null, "?", false, Tier.Normal, false, true, controller, light), -1));
+                labels.Add((new(box, null, "?", "ex", Tier.Normal, false, true, controller, light), -1));
                 continue;
             }
             var total = m.Price with { Divine = m.Price.Divine * row.Count };
-            if (BelowFloor(total, floorDivine))
+            if (BelowFloor(total, floorDivine, unit))
                 continue;
-            labels.Add((new(box, total.Text, null, total.Divine >= Tuning.Labels.DivineFrom, TierOf(total.Divine), false, true, controller, light), total.Divine));
+            labels.Add((new(box, total.TextIn(unit), null, total.UnitIn(unit), TierOf(total.Divine), false, true, controller, light), total.Divine));
         }
         // All items at the top price are green (several copies of one omen are common), also a
         // single one.
         decimal top = labels.Any(l => l.Divine >= 0) ? labels.Max(l => l.Divine) : -1;
-        var unseen = Unseen(whole, prices, floorDivine, language);
+        var unseen = Unseen(whole, prices, floorDivine, unit, language);
         var shown = labels.Select(l => l.Divine >= 0 && l.Divine == top && unseen.All(u => u.Price.Divine <= top) ? l.Label with { MostValuable = true } : l.Label).ToList();
         foreach (bool above in new[] { true, false })
         {
@@ -113,14 +113,14 @@ public static class Labels
             var best = beyond.MaxBy(b => b.Price.Divine).Price;
             int height = Tuning.Labels.RowLabelHeight;
             var box = new Box(window.List.X, above ? window.List.Y - height - Tuning.Labels.ArrowGap : window.List.Bottom + Tuning.Labels.ArrowGap, RowLabelWidth, height);
-            shown.Add(new(box, best.Text, null, best.Divine >= Tuning.Labels.DivineFrom, TierOf(best.Divine), true, true, Arrow: above ? "▲" : "▼"));
+            shown.Add(new(box, best.TextIn(unit), null, best.UnitIn(unit), TierOf(best.Divine), true, true, Arrow: above ? "▲" : "▼"));
         }
         return shown.ToArray();
     }
 
     // The rewards of the list that are not in view now, each with the value of its row; those
     // without a market price or below the floor do not count, as in view.
-    private static (bool Above, Price Price)[] Unseen(RemnantList? whole, PriceBook prices, decimal floorDivine, string language)
+    private static (bool Above, Price Price)[] Unseen(RemnantList? whole, PriceBook prices, decimal floorDivine, string unit, string language)
     {
         var unseen = new List<(bool, Price)>();
         for (int i = 0; whole is not null && i < whole.Rows.Count; i++)
@@ -129,7 +129,7 @@ public static class Labels
             if (whole.InView(i) || Fixed(row.Text, language) is not null || prices.Match(row.Text, language) is not { } m)
                 continue;
             var total = m.Price with { Divine = m.Price.Divine * row.Count };
-            if (!BelowFloor(total, floorDivine))
+            if (!BelowFloor(total, floorDivine, unit))
                 unseen.Add((i < whole.First, total));
         }
         return unseen.ToArray();
@@ -137,14 +137,16 @@ public static class Labels
 
 
     // Compared as shown: "not below 1 ex" must keep an Exalted Orb that poe.ninja prices at
-    // 0.999 ex and the label shows as 1.
-    public static bool BelowFloor(Price price, decimal floorDivine)
+    // 0.999 ex and the label shows as 1 — rounded in the unit the label is written in.
+    public static bool BelowFloor(Price price, decimal floorDivine, string unit = "ex")
     {
         if (floorDivine <= 0)
             return false;
-        decimal shown = price.Divine >= Tuning.Labels.DivineFrom ? Math.Round(price.Divine, 2) : Math.Round(price.Exalted, 1) / price.ExaltedPerDivine;
-        decimal floor = floorDivine >= Tuning.Labels.DivineFrom ? Math.Round(floorDivine, 2) : Math.Round(floorDivine * price.ExaltedPerDivine, 1) / price.ExaltedPerDivine;
-        return shown < floor;
+        return Shown(price.Divine) < Shown(floorDivine);
+        decimal Shown(decimal divine) =>
+            divine >= Tuning.Labels.DivineFrom ? Math.Round(divine, 2)
+            : price.UnitIn(unit) == "chaos" ? Math.Round(divine * price.ChaosPerDivine, 2) / price.ChaosPerDivine
+            : Math.Round(divine * price.ExaltedPerDivine, 1) / price.ExaltedPerDivine;
     }
 
     public static decimal FloorInDivine(decimal value, string unit, PriceBook prices) =>
@@ -159,26 +161,26 @@ public static class Labels
     // know the item, "<" below the floor (Favours alike; not in the remnant list, whose rows
     // have no item art). No green top price: nothing is chosen here, the labels only say what
     // the stash holds of value.
-    public static Label[] ForStash(IEnumerable<StashSlot> slots, PriceBook prices, decimal floorDivine)
+    public static Label[] ForStash(IEnumerable<StashSlot> slots, PriceBook prices, decimal floorDivine, string unit = "ex")
     {
         var labels = new List<Label>();
         // Unnamed: not in the table and not clearly recognised by symbol → nothing; "?" while
         // the item art it needs is still being fetched.
         foreach (var slot in slots.Where(s => s.Present && s.Name is null && s.NamedBy == StashIdentifier.Pending))
-            labels.Add(new(slot.Bounds, null, "?", false, Tier.Normal, false));
+            labels.Add(new(slot.Bounds, null, "?", "ex", Tier.Normal, false));
         foreach (var slot in slots.Where(s => s.Present && s.Name is not null))
         {
             if (prices.Find(slot.Name!) is not { } price)
-                labels.Add(new(slot.Bounds, null, "?", false, Tier.Normal, false));
-            else if (BelowFloor(price, floorDivine))
-                labels.Add(new(slot.Bounds, null, "<", false, Tier.Low, false));
+                labels.Add(new(slot.Bounds, null, "?", "ex", Tier.Normal, false));
+            else if (BelowFloor(price, floorDivine, unit))
+                labels.Add(new(slot.Bounds, null, "<", "ex", Tier.Low, false));
             else
-                labels.Add(new(slot.Bounds, price.Text, null, price.Divine >= Tuning.Labels.DivineFrom, TierOf(price.Divine), false));
+                labels.Add(new(slot.Bounds, price.TextIn(unit), null, price.UnitIn(unit), TierOf(price.Divine), false));
         }
         return labels.ToArray();
     }
 
-    public static Label[] For(IEnumerable<ItemMatch> items, PriceBook prices, decimal floorDivine)
+    public static Label[] For(IEnumerable<ItemMatch> items, PriceBook prices, decimal floorDivine, string unit = "ex")
     {
         var labels = new List<(Label Label, decimal Divine)>();
         foreach (var item in items)
@@ -187,22 +189,22 @@ public static class Labels
             {
                 // No usable candidate (rares, magic items) gets nothing.
                 if (item.Group is not null)
-                    labels.Add((new(item.Bounds, null, "!", false, Tier.Normal, false), -1));
+                    labels.Add((new(item.Bounds, null, "!", "ex", Tier.Normal, false), -1));
                 continue;
             }
             var price = prices.Find(item.Name);
             if (price is null)
             {
-                labels.Add((new(item.Bounds, null, "?", false, Tier.Normal, false), -1));
+                labels.Add((new(item.Bounds, null, "?", "ex", Tier.Normal, false), -1));
                 continue;
             }
             // Below the floor: "<" (recognised, cheap); not competing for the top price.
-            if (BelowFloor(price, floorDivine))
+            if (BelowFloor(price, floorDivine, unit))
             {
-                labels.Add((new(item.Bounds, null, "<", false, Tier.Low, false), -1));
+                labels.Add((new(item.Bounds, null, "<", "ex", Tier.Low, false), -1));
                 continue;
             }
-            labels.Add((new(item.Bounds, price.Text, null, price.Divine >= Tuning.Labels.DivineFrom, TierOf(price.Divine), false), price.Divine));
+            labels.Add((new(item.Bounds, price.TextIn(unit), null, price.UnitIn(unit), TierOf(price.Divine), false), price.Divine));
         }
         // All items at the top price are green (several copies of one omen are common), also a
         // single one.

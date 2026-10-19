@@ -37,6 +37,11 @@ public sealed record Settings
     public decimal FloorValue { get; init; }
     public string FloorUnit { get; init; } = "ex";
 
+    // The unit prices are written in below one divine: "ex" or "chaos" (from one divine on it
+    // is always div). Late in a league exalts are cheap and the numbers grow long; chaos is
+    // then the unit traders use (asked for on reddit, 19.10.2026).
+    public string PriceUnit { get; init; } = "ex";
+
     // Start with Windows (Autostart); off by default.
     public bool StartWithWindows { get; init; }
 

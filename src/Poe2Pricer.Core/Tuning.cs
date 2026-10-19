@@ -570,6 +570,113 @@ public static class Tuning
     }
 
     // RumourReader and RumourBook: the island rumour panel. px at 1440.
+    // IslandMarks: which island the rumour panel stands at. px at 1440.
+    public static class Islands
+    {
+        // The ship marker is searched this far beside the panel and above / below its lower
+        // edge. Measured: below the panel it stands 102 px under the lower edge, beside it
+        // 80 px from the panel's edge and anywhere along the panel's height (093329: 229 px
+        // above the lower edge).
+        public const int MarkerBeside = 240;
+        public const int MarkerAbove = 80;
+        public const int MarkerBelow = 240;
+
+        // The sails: a 44 × 40 white blob; around them the dark square and its frame, 64 × 64
+        // in all. Sails white from SailWhite (of 255) and greyer than SailGrey (saturation of
+        // 255), the square darker than SquareDark. Measured over 28 pictures: the sails fill
+        // .40–.48 of the inner box, the ring is .60–.80 dark; with the controller's gold frame
+        // on the marker still .60. Nothing else near the panel fills .35 of the inner box with
+        // white and has a dark ring: foliage and surf have no dark ring, waypoint glows are
+        // coloured.
+        public const int MarkerInner = 44;
+        public const int MarkerOuter = 64;
+        public const int SailWhite = 200;
+        public const int SailGrey = 77;
+        public const int SquareDark = 70;
+        public const double SailsAtLeast = .35;
+        public const double SailsAtMost = .85;
+        public const double RingDarkAtLeast = .45;
+        public const double RingWhiteAtMost = .2;
+
+        // Where nothing is read: the game's bars at the edges (both UIs, generously) and the
+        // panel with a margin. Chosen.
+        public const int HudTop = 140;
+        public const int HudBottom = 1060;
+        public const int HudLeft = 140;
+        public const int HudRight = 160;
+        public const int PanelMargin = 20;
+        public const int PanelMarginBelow = 40;
+
+        // Route dots: yellow (OpenCV hue, half degrees), saturated, bright; 6–70 px, at most
+        // DotSize wide and high, filled DotFill of their box. They are dashes, not dots: about
+        // 8 × 3 px, so a slanted one fills only a quarter of its box — with DotFill .45 and
+        // DotSize 10 (until 19.10.) only the level ones were found, 30–50 of about 200 in a
+        // picture, and the prints were thin and unstable. Measured: hue 40–60°, saturation
+        // .35–.53, value .72–1.0. Foliage glints: hue 49–76°, saturation .33–.57, value up to
+        // .98 — not told apart by colour, hence the ring: the ring RingFrom–RingTo px around a
+        // dot holds less than RingForeign of green (LeafHue…, the island) or yellow (the dot is
+        // part of a glint). A dot has another dot DotSpacingFrom–DotSpacingTo px away.
+        public const int DotHueFrom = 19;
+        public const int DotHueTo = 35;
+        public const int DotSaturation = 89;
+        public const int DotValue = 153;
+        public const int DotAreaFrom = 6;
+        public const int DotAreaTo = 70;
+        public const int DotSize = 14;
+        public const double DotFill = .25;
+        public const int LeafHueFrom = 31;
+        public const int LeafHueTo = 75;
+        public const int LeafSaturation = 77;
+        public const int LeafValue = 64;
+        public const int RingFrom = 6;
+        public const int RingTo = 11;
+        public const double RingForeign = .2;
+        public const int DotSpacingFrom = 8;
+        public const int DotSpacingTo = 20;
+
+        // Waypoint glows: saturation above GlowSaturation, value above GlowValue (of 255; the
+        // water is dark: value about .18), 60–2500 px, roundish. Measured.
+        public const int GlowSaturation = 102;
+        public const int GlowValue = 140;
+        public const int GlowAreaFrom = 60;
+        public const int GlowAreaTo = 2500;
+        public const int GlowSizeAtLeast = 10;
+        public const double GlowAspectFrom = .5;
+        public const double GlowAspectTo = 2;
+        public const double GlowFill = .35;
+
+        // Matching: the scale between two openings is searched from ScaleFrom to ScaleTo in
+        // ScaleSteps steps (3 % apart); a point hits when a point of the other print lies within
+        // Reach px (at the other's scale). The dashes move along their routes (the game
+        // animates them), so two pictures of the same view never hold the same dashes; Reach
+        // covers that. Measured 19.10. on 36 pictures of five islands, both UIs, with the
+        // dashes found as dashes (DotFill .25): the same island at the same place scores .70
+        // or more (both UIs, 200 dashes a picture at the controller), another island at most
+        // .18 with 30 points or more in common (.33 with 27: the floor is MinimumEvidence).
+        // The same island after dragging and zooming (keyboard) .5 or more; the same island
+        // seen with the other UI (another zoom, another view) .13–.31 — a new collection, as
+        // after dragging (README, known limits). Before 19.10., with the thin prints, the same
+        // view went down to .27 and the book opened one island three times.
+        public const double ScaleFrom = .6;
+        public const double ScaleTo = 1.6;
+        public const int ScaleSteps = 41;
+        public const double Reach = 10;
+
+        // IslandBook: the same island from SameIsland on (measured .70 against .18, see Reach),
+        // judged only with MinimumEvidence points in common; without a judgement the panel
+        // standing within SamePanelPlace px of where it stood means the island seen last.
+        // At most MostIslands are kept (a guard, not a measure: a match costs milliseconds).
+        public const double SameIsland = .45;
+        public const int MinimumEvidence = 30;
+        public const int SamePanelPlace = 3;
+        public const int MostIslands = 100;
+
+        // Island.ProbablyComplete: the chance that one more rumour exists and never showed, at
+        // most this. Three seen: from the third roll without a new one (1.6 %); four: the
+        // fourth (2.6 %); five: the fifth (3.1 %); six: the sixth (3.5 %). Chosen.
+        public const double HiddenRumourAtMost = .05;
+    }
+
     public static class Rumours
     {
         // The two ends of the title bar as a pair (RumourReader.Locate): the left piece is

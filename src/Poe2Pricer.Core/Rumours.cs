@@ -45,6 +45,53 @@ public sealed class RumourBook
     private string CacheFile => Path.Combine(folder, "rumours-sheet.csv");
     private string GnejsCache => Path.Combine(folder, "rumours-gnejs.html");
     private string OwnFile => Path.Combine(folder, "rumours-own.json");
+    private string WeightsFile => Path.Combine(folder, "tier-weights.json");
+
+    // The weights of the tiers for the expedition tier (TierWeights), the player's own from
+    // tier-weights.json, else the standard ones. An unreadable file counts as the standard.
+    public TierWeights Weights
+    {
+        get => Volatile.Read(ref weights);
+        private set => Volatile.Write(ref weights, value);
+    }
+
+    private TierWeights weights = TierWeights.Standard;
+
+    // The weights as edited in the settings window, kept and written; why not written, if not.
+    public Told? SetWeights(TierWeights next)
+    {
+        lock (gate)
+        {
+            Weights = next;
+            try
+            {
+                Directory.CreateDirectory(folder);
+                var part = WeightsFile + ".part";
+                File.WriteAllText(part, JsonSerializer.Serialize(next.Weights, JsonFiles.Options));
+                File.Move(part, WeightsFile, overwrite: true);
+                return null;
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+            {
+                return new("CustomTiersNotSaved", e.Message);
+            }
+        }
+    }
+
+    private void ReadWeights()
+    {
+        if (!File.Exists(WeightsFile))
+            return;
+        try
+        {
+            if (JsonSerializer.Deserialize<Dictionary<string, double>>(File.ReadAllText(WeightsFile), JsonFiles.Options) is { } read)
+                Weights = new TierWeights(read.Where(w => RumourBook.Ratings.Contains(w.Key) && double.IsFinite(w.Value)).ToDictionary());
+        }
+        catch (Exception e) when (e is JsonException or IOException or UnauthorizedAccessException)
+        {
+            // The standard weights count; the expedition tier is a hint, not something to stop the start for.
+        }
+    }
 
     // Where the table comes from: the name of its text in the language file (Texts), "" before
     // anything was loaded.
@@ -73,6 +120,7 @@ public sealed class RumourBook
     public static RumourBook LoadCached(string? folder = null)
     {
         var book = new RumourBook(folder ?? Settings.Folder);
+        book.ReadWeights();
         List<Rumour> list = [];
         // A copy that cannot be read just now (held by a virus scanner or a sync tool) counts
         // as missing: the table comes with the refresh at the start. It must not end the

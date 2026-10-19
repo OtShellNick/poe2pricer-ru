@@ -77,6 +77,12 @@
   <data name="HidePricesBelow" xml:space="preserve">
     <value>Preise ausblenden unter</value>
   </data>
+  <data name="PricesIn" xml:space="preserve">
+    <value>Preise in</value>
+  </data>
+  <data name="TipPriceUnit" xml:space="preserve">
+    <value>Die Einheit, in der Preise stehen: Exalted oder Chaos Orbs. Ab einem Divine Orb immer in Divine. Die Schwelle darüber hat ihre eigene Einheit.</value>
+  </data>
   <data name="ToggleOverlay" xml:space="preserve">
     <value>Overlay ein/aus</value>
   </data>
@@ -457,21 +463,6 @@ Einzelheiten: {1}</value>
   <data name="GameSettingsFileFilter" xml:space="preserve">
     <value>Spieleinstellungen (*.ini)</value>
   </data>
-  <data name="OverlayRumour" xml:space="preserve">
-    <value>Gerücht</value>
-  </data>
-  <data name="OverlayIsland" xml:space="preserve">
-    <value>Insel</value>
-  </data>
-  <data name="OverlayMods" xml:space="preserve">
-    <value>Mods</value>
-  </data>
-  <data name="OverlayTier" xml:space="preserve">
-    <value>Wertung</value>
-  </data>
-  <data name="OverlayNote" xml:space="preserve">
-    <value>Notiz</value>
-  </data>
   <data name="KeyCtrl" xml:space="preserve">
     <value>Strg</value>
   </data>
@@ -540,5 +531,38 @@ Einzelheiten: {1}</value>
   </data>
   <data name="GameTextSizeNotDefault" xml:space="preserve">
     <value>Die UI-Textgröße des Spiels steht auf „{0}“, nicht auf Standard. Das wird nicht unterstützt: Truhen-Tabs zeigen weniger Preise, und der Tribut-Dialog im Ritual wird nicht erkannt.</value>
+  </data>
+  <data name="OverlayNew" xml:space="preserve">
+    <value>neu</value>
+  </data>
+  <data name="OverlayExpeditionUnrated" xml:space="preserve">
+    <value>Expedition</value>
+  </data>
+  <data name="ExpeditionRumours_one" xml:space="preserve">
+    <value>{0} Gerücht</value>
+  </data>
+  <data name="ExpeditionRumours_other" xml:space="preserve">
+    <value>{0} Gerüchte</value>
+  </data>
+  <data name="ExpeditionRolls_one" xml:space="preserve">
+    <value>{0} Wurf</value>
+  </data>
+  <data name="ExpeditionRolls_other" xml:space="preserve">
+    <value>{0} Würfe</value>
+  </data>
+  <data name="ExpeditionProbablyComplete" xml:space="preserve">
+    <value>wahrscheinlich vollständig</value>
+  </data>
+  <data name="OverlayRollHint" xml:space="preserve">
+    <value>Für mehr Gerüchte einen Gegenstand im Inventar verschieben</value>
+  </data>
+  <data name="ExpeditionComplete" xml:space="preserve">
+    <value>vollständig</value>
+  </data>
+  <data name="GroupExpeditionTier" xml:space="preserve">
+    <value>Gewichte für das Expeditionstier</value>
+  </data>
+  <data name="ExpeditionTierHint" xml:space="preserve">
+    <value>Das Expeditionstier einer Insel ist das Mittel dieser Gewichte über alle dort gesehenen Gerüchte (eigene Wertungen zuerst), gezeigt als höchste Stufe, die das Mittel erreicht. Wirksam mit dem Speichern.</value>
   </data>
 </root>

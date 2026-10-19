@@ -48,6 +48,7 @@ public sealed class SettingsViewModel : ObservableObject
     private LeagueChoice league;
     private string floor;
     private string? unit;
+    private string priceUnit;
     private bool startWithWindows;
     private bool checkForUpdates;
     private bool floorInvalid;
@@ -74,6 +75,7 @@ public sealed class SettingsViewModel : ObservableObject
         floor = Shown(settings.FloorValue);
         // A saved unit the list does not know is shown as none and saved as "ex".
         unit = Units.Contains(settings.FloorUnit) ? settings.FloorUnit : null;
+        priceUnit = PriceUnits.Contains(settings.PriceUnit) ? settings.PriceUnit : "ex";
         Switches = AutoSwitch.All.Select(a => new AutoSwitchViewModel(a, a.Get(settings))).ToArray();
         startWithWindows = settings.StartWithWindows;
         checkForUpdates = settings.CheckForUpdates;
@@ -147,6 +149,8 @@ public sealed class SettingsViewModel : ObservableObject
     // of this page must not write the old one back.
     public void SetLanguage(string language) => settings = settings with { Language = language };
     public IReadOnlyList<string> Units { get; } = ["ex", "chaos", "div"];
+    // The unit prices are written in below one divine (Settings.PriceUnit).
+    public IReadOnlyList<string> PriceUnits { get; } = ["ex", "chaos"];
     public IReadOnlyList<AutoSwitchViewModel> Switches { get; }
     public IRelayCommand SaveCommand { get; }
     public IRelayCommand ReloadPricesCommand { get; }
@@ -203,6 +207,12 @@ public sealed class SettingsViewModel : ObservableObject
     {
         get => unit;
         set => SetProperty(ref unit, value);
+    }
+
+    public string PriceUnit
+    {
+        get => priceUnit;
+        set => SetProperty(ref priceUnit, value);
     }
 
     public bool StartWithWindows
@@ -362,6 +372,7 @@ public sealed class SettingsViewModel : ObservableObject
             League = League?.Value,
             FloorValue = floorValue,
             FloorUnit = Unit ?? "ex",
+            PriceUnit = PriceUnit,
             StartWithWindows = StartWithWindows,
             CheckForUpdates = CheckForUpdates,
             AutoIntervalSeconds = everyKept,

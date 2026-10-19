@@ -491,7 +491,7 @@ public sealed class FavoursGameWindow(Pipeline pipeline) : IGameWindow
 
             var book = await prices;
             var settings = context.Settings;
-            var labels = Labels.For(shown.Items, book, Labels.FloorInDivine(settings.FloorValue, settings.FloorUnit, book));
+            var labels = Labels.For(shown.Items, book, Labels.FloorInDivine(settings.FloorValue, settings.FloorUnit, book), settings.PriceUnit);
             var named = shown.Items.Where(i => i.ResolvedBy is not null).ToDictionary(i => (i.Row, i.Column));
             var next = this with { Scan = Scan with { Items = Scan.Items.Select(i => named.GetValueOrDefault((i.Row, i.Column)) ?? i).ToArray() } };
             Kind.remembered[(int)grid.Mode] = next with { Seen = null };

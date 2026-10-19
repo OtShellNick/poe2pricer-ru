@@ -14,7 +14,7 @@ public sealed class OverlayWindow : Window
 {
     private readonly LabelLayer layer = new();
 
-    public OverlayWindow(ImageSource? divine, ImageSource? exalted)
+    public OverlayWindow(ImageSource? divine, ImageSource? exalted, ImageSource? chaos)
     {
         WindowStyle = WindowStyle.None;
         AllowsTransparency = true;
@@ -26,6 +26,7 @@ public sealed class OverlayWindow : Window
         Content = layer;
         layer.Divine = divine;
         layer.Exalted = exalted;
+        layer.Chaos = chaos;
         SourceInitialized += (_, _) =>
         {
             var hwnd = new WindowInteropHelper(this).Handle;
@@ -37,7 +38,7 @@ public sealed class OverlayWindow : Window
 
     // scale: screen pixels per pixel of the labels' coordinates (the game runs at another
     // height than the readers are measured at).
-    public void Show(Box screen, Label[] labels, (Box Panel, RumourLine[] Lines)? rumours = null, double scale = 1)
+    public void Show(Box screen, Label[] labels, (Box Panel, RumourLine[] Lines, IslandSummary? Island)? rumours = null, double scale = 1)
     {
         layer.Rumours = rumours;
         if (!IsVisible)

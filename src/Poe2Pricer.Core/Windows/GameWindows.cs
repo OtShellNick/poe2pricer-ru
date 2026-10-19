@@ -7,7 +7,11 @@ namespace Poe2Pricer.Core;
 // settings (floor, automatic scan) and where to write log lines.
 // Keep: a picture a window hands over as evidence, with a word for what it shows; kept where
 // the control says (OverlayEngine.EvidenceFolder), or nowhere.
-public sealed record LookContext(RumourBook Rumours, Settings Settings, Action<string> Log, Action<string, Mat>? Keep = null);
+// Observe: the look must leave no trace. The diagnosis reads every window anew from its
+// picture; a window that keeps a record of what it saw (the rumour panel: openings per island)
+// reports the record as it stands instead of adding to it (two diagnoses on 19.10. counted two
+// openings that never were, cleared the "new" marks and moved "probably complete" closer).
+public sealed record LookContext(RumourBook Rumours, Settings Settings, Action<string> Log, Action<string, Mat>? Keep = null, bool Observe = false);
 
 // A window's profile: its name, the checkbox that lets the automatic scan look for it, and how
 // often an open window is followed (changed?). How often it is glanced at (still there?) is
@@ -90,7 +94,7 @@ public abstract record Glance
 public sealed record Picture(
     IOpenWindow Next,
     Label[] Labels,
-    (Box Panel, RumourLine[] Lines)? Rumours,
+    (Box Panel, RumourLine[] Lines, IslandSummary? Island)? Rumours,
     string Status,
     string Shown,
     object Description

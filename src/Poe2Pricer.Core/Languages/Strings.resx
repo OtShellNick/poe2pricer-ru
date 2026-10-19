@@ -74,6 +74,12 @@
   <data name="HidePricesBelow" xml:space="preserve">
     <value>Hide prices below</value>
   </data>
+  <data name="PricesIn" xml:space="preserve">
+    <value>Prices in</value>
+  </data>
+  <data name="TipPriceUnit" xml:space="preserve">
+    <value>The unit prices are written in: Exalted or Chaos Orbs. From one Divine Orb on they are always in Divine. The price floor above has its own unit.</value>
+  </data>
   <data name="ToggleOverlay" xml:space="preserve">
     <value>Toggle overlay</value>
   </data>
@@ -454,21 +460,6 @@ Details: {1}</value>
   <data name="GameSettingsFileFilter" xml:space="preserve">
     <value>Game settings (*.ini)</value>
   </data>
-  <data name="OverlayRumour" xml:space="preserve">
-    <value>Rumour</value>
-  </data>
-  <data name="OverlayIsland" xml:space="preserve">
-    <value>Island</value>
-  </data>
-  <data name="OverlayMods" xml:space="preserve">
-    <value>Mods</value>
-  </data>
-  <data name="OverlayTier" xml:space="preserve">
-    <value>Tier</value>
-  </data>
-  <data name="OverlayNote" xml:space="preserve">
-    <value>Note</value>
-  </data>
   <data name="KeyCtrl" xml:space="preserve">
     <value>Ctrl</value>
   </data>
@@ -537,5 +528,38 @@ Details: {1}</value>
   </data>
   <data name="GameTextSizeNotDefault" xml:space="preserve">
     <value>UI Text Size in the game is set to "{0}", not the default. This is not supported: stash tabs show fewer prices, and the tribute dialog in a Ritual is not detected.</value>
+  </data>
+  <data name="OverlayNew" xml:space="preserve">
+    <value>new</value>
+  </data>
+  <data name="OverlayExpeditionUnrated" xml:space="preserve">
+    <value>Expedition</value>
+  </data>
+  <data name="ExpeditionRumours_one" xml:space="preserve">
+    <value>{0} rumour</value>
+  </data>
+  <data name="ExpeditionRumours_other" xml:space="preserve">
+    <value>{0} rumours</value>
+  </data>
+  <data name="ExpeditionRolls_one" xml:space="preserve">
+    <value>{0} roll</value>
+  </data>
+  <data name="ExpeditionRolls_other" xml:space="preserve">
+    <value>{0} rolls</value>
+  </data>
+  <data name="ExpeditionProbablyComplete" xml:space="preserve">
+    <value>probably complete</value>
+  </data>
+  <data name="OverlayRollHint" xml:space="preserve">
+    <value>Move an item in the inventory for more rumours</value>
+  </data>
+  <data name="ExpeditionComplete" xml:space="preserve">
+    <value>complete</value>
+  </data>
+  <data name="GroupExpeditionTier" xml:space="preserve">
+    <value>Expedition tier weights</value>
+  </data>
+  <data name="ExpeditionTierHint" xml:space="preserve">
+    <value>The expedition tier of an island is the mean of these weights over every rumour seen there (custom tiers count first), shown as the highest tier the mean reaches. Applied on save.</value>
   </data>
 </root>

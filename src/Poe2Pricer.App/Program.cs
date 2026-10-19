@@ -126,11 +126,11 @@ public static class Program
             return 0;
         }
         if (args.Length >= 3 && args[0] == "--render")
-            return Render(args[1], args[2], args.Skip(3).ToArray(), pipeline, settings, Orb("Divine_Orb"), Orb("Exalted_Orb"));
+            return Render(args[1], args[2], args.Skip(3).ToArray(), pipeline, settings, Orb("Divine_Orb"), Orb("Exalted_Orb"), Orb("Chaos_Orb"));
 
         var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
         var iconPath = Path.Combine(AppContext.BaseDirectory, "poe2pricer.ico");
-        var overlay = new OverlayWindow(Orb("Divine_Orb"), Orb("Exalted_Orb"));
+        var overlay = new OverlayWindow(Orb("Divine_Orb"), Orb("Exalted_Orb"), Orb("Chaos_Orb"));
         var gameConfig = new GameConfig(settings.GameConfigFile);
         using var screen = new WindowsGameScreen(gameConfig);
         using var prices = new NinjaPrices(settings);
@@ -468,7 +468,7 @@ public static class Program
         return code;
     }
 
-    private static int Render(string input, string output, string[] before, Pipeline pipeline, Settings settings, ImageSource? divine, ImageSource? exalted)
+    private static int Render(string input, string output, string[] before, Pipeline pipeline, Settings settings, ImageSource? divine, ImageSource? exalted, ImageSource? chaos)
     {
         using var frame = Cv2.ImRead(input);
         using var ninja = new NinjaClient();
@@ -512,7 +512,7 @@ public static class Program
 
         var background = new BitmapImage(new Uri(Path.GetFullPath(input)));
         // Drawn onto the picture as it is: at the game's part of it, at the picture's scale.
-        var layer = new LabelLayer { Labels = labels, Divine = divine, Exalted = exalted, Rumours = rumours, PixelScale = shot.Scale, Origin = new System.Windows.Point(shot.ScreenBounds.X, shot.ScreenBounds.Y) };
+        var layer = new LabelLayer { Labels = labels, Divine = divine, Exalted = exalted, Chaos = chaos, Rumours = rumours, PixelScale = shot.Scale, Origin = new System.Windows.Point(shot.ScreenBounds.X, shot.ScreenBounds.Y) };
         var visual = new DrawingVisual();
         using (var dc = visual.RenderOpen())
         {

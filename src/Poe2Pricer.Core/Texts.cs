@@ -51,18 +51,26 @@ public static class Texts
 
     // A text in a given language, whatever language is chosen for the window: the overlay
     // follows the language of the game (GameLanguage). A language without the text: English.
-    public static string In(string language, string key)
+    public static string In(string language, string key, params object?[] args)
     {
-        CultureInfo of;
+        var of = Culture(language);
+        return Resources.GetString(key, of) is { } text ? (args.Length == 0 ? text : string.Format(of, text, args)) : $"[{key}]";
+    }
+
+    // A counted text in a given language (Count).
+    public static string CountIn(string language, string key, int count, params object?[] args) =>
+        In(language, key + (count == 1 ? "_one" : "_other"), [count, .. args]);
+
+    private static CultureInfo Culture(string language)
+    {
         try
         {
-            of = CultureInfo.GetCultureInfo(language);
+            return CultureInfo.GetCultureInfo(language);
         }
         catch (CultureNotFoundException)
         {
-            of = CultureInfo.GetCultureInfo(Default);
+            return CultureInfo.GetCultureInfo(Default);
         }
-        return Resources.GetString(key, of) ?? $"[{key}]";
     }
 
     // The same text in the main language, whatever language is chosen: for the log.

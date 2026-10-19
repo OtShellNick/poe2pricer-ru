@@ -7,7 +7,7 @@ namespace Poe2Pricer.Core;
 
 // What the overlay draws now. Screen: the game's part of the screen. Labels and Rumours are in
 // the coordinates of the reference picture (GameView); Scale: screen pixels per pixel of it.
-public sealed record Scene(Box Screen, Label[] Labels, (Box Panel, RumourLine[] Lines)? Rumours, double Scale = 1);
+public sealed record Scene(Box Screen, Label[] Labels, (Box Panel, RumourLine[] Lines, IslandSummary? Island)? Rumours, double Scale = 1);
 
 // The overlay's control for every window: key, automatic scan, glance (still there?) every
 // 50 ms, follow (changed?) every second, foreground changes, diagnosis. Inputs are queued and
@@ -32,7 +32,7 @@ public sealed class OverlayEngine : IDisposable
     // Only touched on the control's thread.
     private IOpenWindow? open;
     private Label[] lastLabels = [];
-    private (Box Panel, RumourLine[] Lines)? lastRumours;
+    private (Box Panel, RumourLine[] Lines, IslandSummary? Island)? lastRumours;
     private Picture? lastPicture;
     private Box? lastScreen;
     private double lastScale = 1;
@@ -577,7 +577,7 @@ public sealed class OverlayEngine : IDisposable
         var shown = lastPicture;
         var labels = lastLabels;
         var ready = prices.Ready;
-        var context = Context() with { Log = _ => { } };
+        var context = Context() with { Log = _ => { }, Observe = true };
         var current = settings;
         var file = await Task.Run(async () =>
         {
