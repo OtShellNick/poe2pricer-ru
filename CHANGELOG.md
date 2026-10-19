@@ -16,13 +16,6 @@ with more words: https://github.com/saxe78/poe2pricer/releases
 - Prices in Exalted or Chaos: Settings → Display → "Prices in". From one Divine on prices
   stay in Divine either way; the price floor is compared in the unit shown.
 
-### Fixed
-- Saving a diagnosis no longer counts as opening the rumour panel.
-- Opening the panel again without moving an item (the same three in the same order) counts
-  as no roll.
-- Island matching uses every dash of the routes (slanted dashes were dropped before), so the
-  same island at the same place is no longer entered twice.
-
 ### Known limits
 - Dragging or zooming the Atlas between two openings of the panel starts a new collection
   for the same island; opening it without moving the Atlas is always recognised.
