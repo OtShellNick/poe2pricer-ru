@@ -152,7 +152,8 @@ whether a newer version is out.
   page, and you unpack the new zip over the old folder or next to it.
 
 Settings stay in `%LOCALAPPDATA%\poe2pricer` either way. The check can be switched off in the
-settings window.
+settings window. What changed in each version: [CHANGELOG.md](CHANGELOG.md) and the notes of
+each release on GitHub.
 
 ## Build from source
 
