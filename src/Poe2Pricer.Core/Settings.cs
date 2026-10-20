@@ -70,6 +70,9 @@ public sealed record Settings
 
     public static string ShippedDataPath => Path.Combine(AppContext.BaseDirectory, "data", "catalog");
 
+    // Not written: derived, and the shipped path names the install folder, with the user's name
+    // in it for an installed copy (a diagnosis is made to be attached to a public issue).
+    [System.Text.Json.Serialization.JsonIgnore]
     public string DataPath => DataDirectory is { Length: > 0 } ? DataDirectory : ShippedDataPath;
 
     // POE2PRICER_FOLDER replaces it for the golden-master check (frozen icons and rumour table).

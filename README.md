@@ -158,6 +158,42 @@ settings window. What changed in each version: [CHANGELOG.md](CHANGELOG.md) and 
 each release on GitHub; a click on the version number in the program window opens the changelog
 in your browser (the program itself requests nothing for that).
 
+## Trust
+
+What the program does and does not do, for anyone weighing whether to run it. The source is
+here, about 14,000 lines of C#; the files that talk to the network are
+`src/Poe2Pricer.Core/Market/*.cs`, `src/Poe2Pricer.Core/Rumours.cs` and
+`src/Poe2Pricer.App/Updates.cs`.
+
+- It reads the screen (the client area of the game window, by GDI) and draws over it. It
+  presses no keys, clicks nothing and touches no other process. The one game file it reads is
+  the game's own settings file, for the popup size.
+- It sends nothing about you or your game. Its requests are plain HTTPS GETs to a fixed set of
+  hosts: poe.ninja (prices), web.poecdn.com (item art, only paths below that host whatever the
+  price answer names), poe.gnejs.app and docs.google.com (rumour ratings; the sheet download is
+  redirected to googleusercontent.com), api.github.com and github.com (the update check and the
+  update itself; the release files come from release-assets.githubusercontent.com). An answer
+  is read up to 32 MB, except the update package, which Velopack downloads.
+- It has a low-level keyboard hook; that is how Alt+F can work while the game has the focus.
+  The hook sees every key press, compares it with the two bound keys and passes everything else
+  on unchanged. Nothing is stored or sent.
+- The updater is Velopack fetching the releases of this repository; the binaries are not
+  signed. The trust is the same as when you download the exe from the releases page yourself:
+  whoever controls this GitHub account. "Check for updates" can be switched off, and a zip copy
+  never updates itself.
+- The item art it downloads is the one place where data from the network meets a parser. It
+  is decoded by the Windows Imaging Component, the decoder of the Explorer and the browsers,
+  patched with Windows, not by the one OpenCV ships; and only after the file's header has
+  passed (a PNG with an alpha channel, at most 1024 pixels a side).
+- The only step with administrator rights is installing the Windows text recognition with
+  `dism.exe`, and it asks first.
+- What it keeps, all under `%LOCALAPPDATA%\poe2pricer`: your settings, a log of its own
+  doings, the price cache, the item art and the rumour table. No picture of your game is
+  written unless you press the diagnostics key. A diagnosis is a picture of the game window and
+  a JSON with your settings (without the file paths in them, which carry your Windows user
+  name) and what was read. "Extended diagnostics" (off by default) adds a few pictures of
+  windows the program had trouble with.
+
 ## Build from source
 
 Needs the .NET 10 SDK on Windows 10 version 2004 or later.
@@ -196,8 +232,9 @@ and at every Popup Size of the game.
 ## Tech
 
 .NET 10, WPF (overlay and settings window), Windows Forms (tray icon), OpenCvSharp (template
-matching), Windows.Media.Ocr (text recognition), CommunityToolkit.Mvvm, Velopack (setup and
-self-update), the poe.ninja API, a Win32 keyboard hook of its own. Screen capture by GDI.
+matching), Windows.Media.Ocr (text recognition), the Windows Imaging Component (decoding the
+item art), CommunityToolkit.Mvvm, Velopack (setup and self-update), the poe.ninja API, a Win32
+keyboard hook of its own. Screen capture by GDI.
 
 ## Data from the game
 

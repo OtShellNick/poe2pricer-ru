@@ -355,7 +355,7 @@ public static class Program
                 bool loaded = false;
                 try
                 {
-                    using var http = new System.Net.Http.HttpClient();
+                    using var http = new System.Net.Http.HttpClient { MaxResponseContentBufferSize = Tuning.Control.ResponseLimit };
                     loaded = await rumourBook.RefreshAsync(http);
                 }
                 catch (Exception e)

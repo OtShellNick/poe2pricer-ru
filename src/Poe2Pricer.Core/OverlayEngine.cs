@@ -652,7 +652,11 @@ public sealed class OverlayEngine : IDisposable
             }
             // Pointer: on the saved picture. Scale: of the saved picture against what was
             // read (Shown, Fresh and the labels are in reference coordinates).
-            JsonFiles.Write(name + ".json", new { Settings = current, Pointer = shot.Pointer is { } p ? new[] { p.X, p.Y } : null, frame.Scale, frame.Popup, GameLanguage = shot.Language, shot.TextSize, Shown = shown?.Description, ShownLabels = labels, Fresh = fresh });
+            // The settings go in without the two paths: they carry the Windows user name, and
+            // a diagnosis is made to be attached to a public issue. What they stand for (popup
+            // size, text size) is in the picture's own fields.
+            var told = current with { GameConfigFile = "", DataDirectory = "" };
+            JsonFiles.Write(name + ".json", new { Settings = told, Pointer = shot.Pointer is { } p ? new[] { p.X, p.Y } : null, frame.Scale, frame.Popup, GameLanguage = shot.Language, shot.TextSize, Shown = shown?.Description, ShownLabels = labels, Fresh = fresh });
             return name;
         });
         Diagnosed?.Invoke(file);

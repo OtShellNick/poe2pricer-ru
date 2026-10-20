@@ -871,5 +871,14 @@ public static class Tuning
         public static readonly TimeSpan PricesRetryPause = TimeSpan.FromSeconds(30);
         public static readonly TimeSpan RequestSpacing = TimeSpan.FromSeconds(1);
         public static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(20);
+
+        // An answer (prices, item art, rumour table, release) is read up to this size and
+        // dropped beyond it: nothing the program asks for is anywhere near, and an endless
+        // answer must not fill the memory or the disk.
+        public const long ResponseLimit = 32 * 1024 * 1024;
+
+        // Item art larger than this a side is not decoded: poe.ninja's is 48 to 256 pixels. The
+        // size stands in the file's header and is checked before the decoder sets memory aside.
+        public const int IconMaxEdge = 1024;
     }
 }

@@ -3,6 +3,27 @@
 All notable changes to poe2pricer, newest first. The release notes on GitHub say the same
 with more words: https://github.com/saxe78/poe2pricer/releases
 
+## 1.1.2 — 2026-10-20
+
+### Fixed
+- Item art is fetched only from web.poecdn.com: a poe.ninja answer naming another address is
+  ignored instead of followed.
+- The release page a zip copy opens on a click is taken from GitHub's answer only when it lies
+  in this repository; anything else leads to the releases page.
+- Answers from poe.ninja, the image server, the rumour table and GitHub are read up to 32 MB
+  and dropped beyond.
+- A diagnosis no longer holds the file paths from the settings (game settings file, data
+  folder, the derived data path), which carry the Windows user name.
+
+### Changed
+- Item art is decoded by the Windows Imaging Component instead of the decoder in OpenCV, and
+  only after a check of the file's header (PNG with alpha channel, at most 1024 pixels a
+  side): the one place where data from the network met a parser shipped with the program.
+
+### Added
+- README: a "Trust" section (what the program reads, sends and runs; the keyboard hook; the
+  unsigned updater; what a diagnosis contains).
+
 ## 1.1.1 — 2026-10-19
 
 ### Added

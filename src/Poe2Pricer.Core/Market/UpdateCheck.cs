@@ -10,14 +10,15 @@ namespace Poe2Pricer.Core.Market;
 public sealed class UpdateCheck : IDisposable
 {
     public const string Repository = "saxe78/poe2pricer";
-    public const string ReleasesPage = "https://github.com/" + Repository + "/releases";
+    public const string RepositoryPage = "https://github.com/" + Repository;
+    public const string ReleasesPage = RepositoryPage + "/releases";
 
     private readonly HttpClient client;
 
     // handler: the tests answer the request themselves.
     public UpdateCheck(HttpMessageHandler? handler = null)
     {
-        client = new HttpClient(handler ?? new HttpClientHandler()) { BaseAddress = new Uri("https://api.github.com"), Timeout = Tuning.Control.RequestTimeout };
+        client = new HttpClient(handler ?? new HttpClientHandler()) { BaseAddress = new Uri("https://api.github.com"), Timeout = Tuning.Control.RequestTimeout, MaxResponseContentBufferSize = Tuning.Control.ResponseLimit };
         client.DefaultRequestHeaders.UserAgent.ParseAdd($"poe2pricer/{AppInfo.Version} (local, private)");
         client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
     }
@@ -32,7 +33,9 @@ public sealed class UpdateCheck : IDisposable
         response.EnsureSuccessStatusCode();
         using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancel));
         string tag = document.RootElement.TryGetProperty("tag_name", out var t) ? t.GetString() ?? "" : "";
-        string page = document.RootElement.TryGetProperty("html_url", out var u) ? u.GetString() ?? ReleasesPage : ReleasesPage;
+        // The page is opened in the browser by a click: only one below the repository is
+        // taken from the answer, anything else (another site, another scheme) is the releases page.
+        string page = document.RootElement.TryGetProperty("html_url", out var u) && u.GetString() is { } url && url.StartsWith(RepositoryPage + "/", StringComparison.Ordinal) ? url : ReleasesPage;
         return Newer(AppInfo.Version, tag) ? new Release(VersionOf(tag), page) : null;
     }
 
