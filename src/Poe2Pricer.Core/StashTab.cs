@@ -50,11 +50,21 @@ public sealed class StashTabReader
     // every tab 298 px right and 55 px lower at 16:9; wider than that it keeps its distance to
     // the middle (measured: at 2.4:1 it stands half the extra width further right), narrower
     // it stands Tune.ControllerNarrower px further right (measured at 16:10 only).
+    // Each of these also inside a stash folder: Tune.FolderDrop lower (measured in the keyboard
+    // UI; assumed the same in the controller UI).
     private (UiMode Mode, int Dx, int Dy)[] Placements(int width)
     {
         int wider = width - Tune.ReferenceWidth;
         int shift = wider >= 0 ? wider / 2 : Tune.ControllerNarrower;
-        return [(UiMode.KeyboardMouse, 0, 0), (UiMode.Controller, layout.ControllerOffset.X + shift, layout.ControllerOffset.Y)];
+        int cx = layout.ControllerOffset.X + shift,
+            cy = layout.ControllerOffset.Y;
+        return
+        [
+            (UiMode.KeyboardMouse, 0, 0),
+            (UiMode.Controller, cx, cy),
+            (UiMode.KeyboardMouse, 0, Tune.FolderDrop),
+            (UiMode.Controller, cx, cy + Tune.FolderDrop),
+        ];
     }
 
     // Compared on fine structure only (high-pass, quarter size), tile by tile, and only the

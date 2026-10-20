@@ -442,6 +442,10 @@ public static class Tuning
         // much further right the tab stands on a narrower picture.
         public const int ReferenceWidth = 2560;
         public const int ControllerNarrower = 5;
+        // A tab inside a stash folder: the folder's second row of tab buttons pushes the whole
+        // tab down by this much at 1440 (measured on an Essence tab in a folder, keyboard UI:
+        // .68 at the top-level place, .99 this far lower).
+        public const int FolderDrop = 47;
         public const int Shrink = 4;
         public const int TilesAcross = 5;
         public const int MinimumTilePixels = 30;
