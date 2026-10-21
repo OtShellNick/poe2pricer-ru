@@ -72,7 +72,7 @@ public sealed class StashGameWindow(Pipeline pipeline) : IGameWindow
             var now = Kind.Pipeline.Stash.Locate(frame, StashTabReader.MinimumScore);
             if (now is null)
                 return new Glance.Gone("stash tab no longer detected");
-            if (now.Kind == Tab.Kind && now.Mode == Tab.Mode)
+            if (now.Kind == Tab.Kind && now.Mode == Tab.Mode && now.OffsetY == Tab.OffsetY)
                 return Core.Glance.Unchanged;
             context.Log($"different stash tab ({now.Kind}), rescanning");
             return new Glance.Reread(this with { Tab = now, Slots = [] }, ClearNow: true);
