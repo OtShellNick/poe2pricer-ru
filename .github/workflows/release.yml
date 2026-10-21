@@ -82,7 +82,9 @@ jobs:
           $sums = Get-ChildItem dist -File | Sort-Object Name | ForEach-Object {
             "$((Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant())  $($_.Name)"
           }
-          $sums | Set-Content -Encoding ascii dist/SHA256SUMS.txt
+          # Unix line ends: "sha256sum -c SHA256SUMS.txt" reads the file as it is (with CRLF it
+          # took the "\r" for part of each name; Get-FileHash on Windows does not care).
+          [IO.File]::WriteAllText((Join-Path $PWD 'dist/SHA256SUMS.txt'), ($sums -join "`n") + "`n")
           # In the public log as well, not only in the release.
           $sums | Write-Output
 
