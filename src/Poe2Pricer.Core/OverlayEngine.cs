@@ -41,6 +41,7 @@ public sealed class OverlayEngine : IDisposable
     private bool busy; // a look or follow is running
     private bool glanceBusy;
     private bool readAgain; // the window changed while a follow was running
+    private bool exactAsked; // the exact-price key came while a follow was running
     private bool hiddenByKey; // the automatic scan leaves it hidden until no window is open
     private bool keyWaiting; // the key came while a look or follow was running
     private bool rebindWaiting; // own ratings changed while a look or follow was running
@@ -103,6 +104,26 @@ public sealed class OverlayEngine : IDisposable
     public void RumoursChanged() => Enqueue(RebindAsync);
 
     public void Diagnose(string folder) => Enqueue(() => DiagnoseAsync(folder));
+
+    // The exact-price key: a waystone's or tablet's tooltip shown is asked for exactly as the
+    // item is, past the profiles, and labelled anew; any other window, or none: nothing.
+    public void Exact() =>
+        Enqueue(async () =>
+        {
+            if (open is null || TooltipGameWindow.Exact(open) is not { } exact)
+                return;
+            log("exact price asked by key");
+            open = exact;
+            if (busy)
+            {
+                // The follow running holds the window from before the key and puts it back when
+                // it ends: the key is applied to its result then (review before 1.2.0).
+                exactAsked = true;
+                readAgain = true;
+            }
+            else
+                await FollowAsync();
+        });
 
     // Every queued input handled and every image job it started finished (tests).
     public async Task IdleAsync()
@@ -476,6 +497,11 @@ public sealed class OverlayEngine : IDisposable
             return;
         }
         open = next;
+        if (exactAsked)
+        {
+            exactAsked = false;
+            open = TooltipGameWindow.Exact(open) ?? open;
+        }
         await LabelAsync(frame, started);
     }
 
@@ -721,6 +747,7 @@ public sealed class OverlayEngine : IDisposable
     {
         log(hiddenByKey ? "hidden: hotkey" : "hidden");
         generation++;
+        exactAsked = false;
         follow.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
         glance.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
         HideOverlay();
@@ -730,6 +757,9 @@ public sealed class OverlayEngine : IDisposable
         lastScreen = null;
         lastLabels = [];
         lastRumours = null;
+        // A diagnosis after this must not report the window shown last: over a stash tab the
+        // program does not know (20.10.), it told "Orbs 1.00" from the tab before.
+        lastPicture = null;
     }
 
     private void Show(Scene scene)

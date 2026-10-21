@@ -22,6 +22,8 @@
       </ResourceDictionary.MergedDictionaries>
 
       <views:RatingBrush x:Key="RatingBrush"/>
+      <views:Not x:Key="Not"/>
+      <BooleanToVisibilityConverter x:Key="Visible"/>
 
       <!-- "Copy" with the right mouse button on the status line and on a warning: the whole
            text, also where the line shows only its beginning. -->
@@ -277,25 +279,43 @@
           <!-- One floor for everything: items from rituals and remnants are worth the same.
                Remnant rows compare the value of the whole row. -->
           <GroupBox Header="{views:Text GroupDisplay}" Style="{StaticResource Section}">
-            <StackPanel>
-              <StackPanel Style="{StaticResource Row}">
+            <!-- The unit and the floor left, one under the other; right, in the column of the
+                 switches, where trade-site prices come from (21.10.2026). -->
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="{StaticResource LeftColumn}"/>
+                <ColumnDefinition Width="Auto"/>
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+              </Grid.RowDefinitions>
+              <StackPanel Grid.Row="0" Grid.Column="0" Style="{StaticResource Row}">
+                <TextBlock Text="{views:Text PricesIn}" Style="{StaticResource RowCaption}"/>
+                <ComboBox Width="158" ItemsSource="{Binding PriceUnits}" SelectedItem="{Binding PriceUnit}"/>
+                <ContentControl Style="{StaticResource InfoIcon}"
+                                ToolTip="{views:Text TipPriceUnit}"/>
+              </StackPanel>
+              <StackPanel Grid.Row="1" Grid.Column="0" Style="{StaticResource Row}">
                 <TextBlock Text="{views:Text HidePricesBelow}" Style="{StaticResource RowCaption}"/>
                 <TextBox Width="70" Text="{Binding Floor, UpdateSourceTrigger=PropertyChanged}" views:Field.Invalid="{Binding FloorInvalid}" Style="{StaticResource Input}"/>
                 <ComboBox Width="80" Margin="8,0,0,0" ItemsSource="{Binding Units}" SelectedItem="{Binding Unit}"/>
                 <ContentControl Style="{StaticResource InfoIcon}"
                                 ToolTip="{views:Text TipFloor}"/>
               </StackPanel>
-              <StackPanel Style="{StaticResource Row}">
-                <TextBlock Text="{views:Text PricesIn}" Style="{StaticResource RowCaption}"/>
-                <ComboBox Width="158" ItemsSource="{Binding PriceUnits}" SelectedItem="{Binding PriceUnit}"/>
-                <ContentControl Style="{StaticResource InfoIcon}"
-                                ToolTip="{views:Text TipPriceUnit}"/>
+              <StackPanel Grid.Row="0" Grid.Column="1" Style="{StaticResource Row}">
+                <CheckBox Content="{views:Text LiveTradePrice}" IsChecked="{Binding LiveTradePrice}" Style="{StaticResource Check}"/>
+                <ContentControl Style="{StaticResource InfoIcon}" ToolTip="{views:Text TipLiveTradePrice}"/>
               </StackPanel>
-            </StackPanel>
+              <StackPanel Grid.Row="1" Grid.Column="1" Style="{StaticResource Row}">
+                <CheckBox Content="{views:Text TradeInPerson}" IsChecked="{Binding TradeInPerson}" Style="{StaticResource Check}"/>
+                <ContentControl Style="{StaticResource InfoIcon}" ToolTip="{views:Text TipTradeInPerson}"/>
+              </StackPanel>
+            </Grid>
           </GroupBox>
 
-          <!-- Left the two keys; right, in the column of the switches, the extended diagnostics
-               beside the diagnostics key it belongs to (off by default). -->
+          <!-- The three keys one under the other; right, in the column of the switches, the
+               extended diagnostics beside the diagnostics key they belong to (off by default). -->
           <GroupBox Header="{views:Text GroupHotkeys}" Style="{StaticResource Section}">
             <Grid>
               <Grid.ColumnDefinitions>
@@ -303,6 +323,7 @@
                 <ColumnDefinition Width="Auto"/>
               </Grid.ColumnDefinitions>
               <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
               </Grid.RowDefinitions>
@@ -315,6 +336,11 @@
                 <TextBlock Text="{views:Text SaveDiagnostics}" Style="{StaticResource RowCaption}"/>
                 <views:KeyBox Width="158" Text="{Binding DiagnoseKey, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input}"/>
                 <ContentControl Style="{StaticResource InfoIcon}" ToolTip="{views:Text TipHotkey}"/>
+              </StackPanel>
+              <StackPanel Grid.Row="2" Grid.Column="0" Style="{StaticResource Row}">
+                <TextBlock Text="{views:Text ExactPriceKey}" Style="{StaticResource RowCaption}"/>
+                <views:KeyBox Width="158" Text="{Binding ExactKey, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Input}"/>
+                <ContentControl Style="{StaticResource InfoIcon}" ToolTip="{views:Text TipExactPriceKey}"/>
               </StackPanel>
               <StackPanel Grid.Row="1" Grid.Column="1" Style="{StaticResource Row}">
                 <CheckBox Content="{views:Text ExtendedDiagnostics}" IsChecked="{Binding ExtendedDiagnostics}" Style="{StaticResource Check}"/>
@@ -483,6 +509,293 @@
             </GroupBox>
           </DockPanel>
         </DockPanel>
+      </TabItem>
+      <!-- Waystones: a profile of summary values, tier, corrupted and
+           mods, from which come the search text for the stash search, the profile's price on
+           the trade site and the live price at a waystone's tooltip. -->
+      <TabItem Header="{views:Text TabWaystones}" Style="{StaticResource Tab}">
+        <ScrollViewer x:Name="waystoneScroll" Margin="-1,0,-1,0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False" FocusVisualStyle="{x:Null}">
+        <StackPanel x:Name="waystones" Margin="1,10,1,0" DataContext="{Binding Waystones}">
+          <GroupBox Header="{views:Text GroupWaystoneProfile}" Style="{StaticResource Section}">
+            <!-- Left the profile and under it the tolerance, right the profile's price over
+                 both rows (no empty line under the list; 21.10.2026). The price is asked
+                 for only with the button below it: the trade site's limit is shared with the
+                 live price in the game. -->
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+              </Grid.RowDefinitions>
+              <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Top" Margin="0,0,0,6">
+                <ComboBox Width="260" Style="{StaticResource Picker}" ItemsSource="{Binding ProfileNames}" SelectedItem="{Binding SelectedProfile}"
+                          Text="{Binding ProfileText, UpdateSourceTrigger=PropertyChanged}" ToolTip="{views:Text TipWaystoneProfile}"/>
+                <ContentControl Style="{StaticResource InfoIcon}" ToolTip="{views:Text TipWaystoneProfile}"/>
+                <Button Style="{StaticResource RowTick}" Margin="18,0,0,0" ToolTip="{views:Text TipWaystoneSaveProfile}" Command="{Binding SaveProfileCommand}"/>
+                <Button Style="{StaticResource RowDelete}" Margin="6,0,0,0" ToolTip="{views:Text TipDeleteRow}" Command="{Binding RemoveProfileCommand}"/>
+              </StackPanel>
+              <StackPanel Grid.Row="1" Grid.Column="0" Style="{StaticResource Row}">
+                <TextBlock Text="{views:Text WaystoneTolerance}" Style="{StaticResource RowCaption}"/>
+                <TextBox Width="60" Text="{Binding Tolerance, UpdateSourceTrigger=PropertyChanged}" views:Field.Invalid="{Binding ToleranceInvalid}" Style="{StaticResource Input}"/>
+                <ContentControl Style="{StaticResource InfoIcon}" ToolTip="{views:Text TipWaystoneTolerance}"/>
+              </StackPanel>
+              <StackPanel Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Top">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                  <Image Source="{Binding ProfilePriceIcon}" Width="26" Height="26" VerticalAlignment="Center" Margin="0,0,6,0" RenderOptions.BitmapScalingMode="HighQuality"/>
+                  <TextBlock Text="{Binding ProfilePrice}" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource Accent}" VerticalAlignment="Center"/>
+                  <TextBlock Text="{Binding ProfilePriceNote}" Style="{StaticResource Small}" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                </StackPanel>
+                <Button HorizontalAlignment="Right" Margin="0,6,0,0" Content="{views:Text RefreshProfilePrice}" Command="{Binding PriceCommand}" Style="{StaticResource PlainButton}" ToolTip="{views:Text TipWaystoneRefreshPrice}"/>
+              </StackPanel>
+            </Grid>
+          </GroupBox>
+
+          <GroupBox Header="{views:Text GroupProperties}" Style="{StaticResource Section}">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+              <StackPanel Grid.Column="0">
+                <StackPanel Style="{StaticResource Row}">
+                  <TextBlock Text="{views:Text FieldItemRarity}" Style="{StaticResource RowCaption}" Width="170"/>
+                  <TextBox Width="60" Text="{Binding ItemRarity, UpdateSourceTrigger=PropertyChanged}" views:Field.Invalid="{Binding ItemRarityInvalid}" Style="{StaticResource Input}"/>
+                  <TextBlock Text="%" Style="{StaticResource Small}" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                </StackPanel>
+                <StackPanel Style="{StaticResource Row}">
+                  <TextBlock Text="{views:Text FieldPackSize}" Style="{StaticResource RowCaption}" Width="170"/>
+                  <TextBox Width="60" Text="{Binding PackSize, UpdateSourceTrigger=PropertyChanged}" views:Field.Invalid="{Binding PackSizeInvalid}" Style="{StaticResource Input}"/>
+                  <TextBlock Text="%" Style="{StaticResource Small}" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                </StackPanel>
+                <StackPanel Style="{StaticResource Row}">
+                  <TextBlock Text="{views:Text FieldMonsterRarity}" Style="{StaticResource RowCaption}" Width="170"/>
+                  <TextBox Width="60" Text="{Binding MonsterRarity, UpdateSourceTrigger=PropertyChanged}" views:Field.Invalid="{Binding MonsterRarityInvalid}" Style="{StaticResource Input}"/>
+                  <TextBlock Text="%" Style="{StaticResource Small}" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                </StackPanel>
+                <StackPanel Style="{StaticResource Row}">
+                  <TextBlock Text="{views:Text FieldEffectiveness}" Style="{StaticResource RowCaption}" Width="170"/>
+                  <TextBox Width="60" Text="{Binding Effectiveness, UpdateSourceTrigger=PropertyChanged}" views:Field.Invalid="{Binding EffectivenessInvalid}" Style="{StaticResource Input}"/>
+                  <TextBlock Text="%" Style="{StaticResource Small}" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                </StackPanel>
+              </StackPanel>
+              <StackPanel Grid.Column="1" Margin="16,0,0,0">
+                <StackPanel Style="{StaticResource Row}">
+                  <TextBlock Text="{views:Text FieldTier}" Style="{StaticResource RowCaption}" Width="150"/>
+                  <TextBox Width="50" Text="{Binding TierMin, UpdateSourceTrigger=PropertyChanged}" views:Field.Invalid="{Binding TierMinInvalid}" Style="{StaticResource Input}"/>
+                  <TextBlock Text="{views:Text FieldTo}" Style="{StaticResource Small}" VerticalAlignment="Center" Margin="6,0,6,0"/>
+                  <TextBox Width="50" Text="{Binding TierMax, UpdateSourceTrigger=PropertyChanged}" views:Field.Invalid="{Binding TierMaxInvalid}" Style="{StaticResource Input}"/>
+                </StackPanel>
+                <StackPanel Style="{StaticResource Row}">
+                  <TextBlock Text="{views:Text FieldRevives}" Style="{StaticResource RowCaption}" Width="150"/>
+                  <TextBox Width="50" Text="{Binding RevivesMin, UpdateSourceTrigger=PropertyChanged}" views:Field.Invalid="{Binding RevivesMinInvalid}" Style="{StaticResource Input}"/>
+                  <TextBlock Text="{views:Text FieldTo}" Style="{StaticResource Small}" VerticalAlignment="Center" Margin="6,0,6,0"/>
+                  <TextBox Width="50" Text="{Binding RevivesMax, UpdateSourceTrigger=PropertyChanged}" views:Field.Invalid="{Binding RevivesMaxInvalid}" Style="{StaticResource Input}"/>
+                </StackPanel>
+                <StackPanel Style="{StaticResource Row}">
+                  <TextBlock Text="{views:Text FieldCorrupted}" Style="{StaticResource RowCaption}" Width="150"/>
+                  <ComboBox Width="150" ItemsSource="{Binding CorruptedOptions}" SelectedItem="{Binding Corrupted}"/>
+                </StackPanel>
+                <StackPanel Style="{StaticResource Row}">
+                  <TextBlock Text="{views:Text FieldDropChance}" Style="{StaticResource RowCaption}" Width="150"/>
+                  <TextBox Width="60" Text="{Binding DropChance, UpdateSourceTrigger=PropertyChanged}" views:Field.Invalid="{Binding DropChanceInvalid}" Style="{StaticResource Input}"/>
+                  <TextBlock Text="%" Style="{StaticResource Small}" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                </StackPanel>
+              </StackPanel>
+            </Grid>
+          </GroupBox>
+
+          <!-- Mod groups, as the trade site's stat groups: each with its kind (and: every row,
+               or: at least one row, not: none), the groups joined by "and". The first group is
+               "and", every added one "or" until changed. -->
+          <GroupBox Header="{views:Text GroupWaystoneMods}" Style="{StaticResource Section}">
+            <StackPanel>
+              <ItemsControl ItemsSource="{Binding Groups}" Focusable="False">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate DataType="{x:Type vm:GroupViewModel}">
+                    <StackPanel Margin="0,0,0,4">
+                      <!-- A line between groups: above every group but the first. -->
+                      <Border BorderBrush="{StaticResource Muted}" BorderThickness="0,1,0,0" Margin="0,4,0,10" Visibility="{Binding FollowsAnother, Converter={StaticResource Visible}}"/>
+                      <StackPanel>
+                        <!-- The group's head: title, kind, a mod into this group, a new group after it, ✕. -->
+                        <!-- As wide as a mod row's list, gap and value field (426 + 8 + 64): the buttons
+                             end where the value field ends, the ✕ stand one under the other. -->
+                        <DockPanel Margin="0,0,0,6" LastChildFill="False">
+                          <Grid DockPanel.Dock="Left" Width="498">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                              <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Foreground="{StaticResource Text}" VerticalAlignment="Center" Width="90"/>
+                              <ComboBox Width="64" ItemsSource="{Binding Kinds}" SelectedItem="{Binding Kind}" ToolTip="{views:Text TipGroupKind}"/>
+                              <ContentControl Style="{StaticResource InfoIcon}" ToolTip="{views:Text TipGroupKind}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                              <Button Content="{views:Text WaystoneAddMod}" Command="{Binding AddRuleCommand}" Style="{StaticResource PlainButton}" Margin="0"/>
+                              <Button Content="{views:Text AddGroup}" Command="{Binding AddGroupCommand}" Style="{StaticResource PlainButton}" Margin="8,0,0,0" ToolTip="{views:Text TipAddGroup}"/>
+                            </StackPanel>
+                          </Grid>
+                          <Button DockPanel.Dock="Left" Style="{StaticResource RowDelete}" Margin="10,0,0,0" ToolTip="{views:Text TipRemoveGroup}" Command="{Binding RemoveGroupCommand}"/>
+                        </DockPanel>
+                        <ItemsControl ItemsSource="{Binding Rules}" Focusable="False">
+                          <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:ModRuleViewModel}">
+                              <DockPanel Margin="0,0,0,6" LastChildFill="False">
+                                <ComboBox DockPanel.Dock="Left" Width="426" Style="{StaticResource Picker}" ItemsSource="{Binding Choices}" SelectedItem="{Binding Mod}"
+                                          Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}" IsDropDownOpen="{Binding DropDownOpen, Mode=TwoWay}" ToolTip="{views:Text TipWaystoneFilter}"/>
+                                <Grid DockPanel.Dock="Left" Margin="8,0,0,0" Width="64">
+                                  <TextBox Text="{Binding Min, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding HasValue}" views:Field.Invalid="{Binding MinInvalid}" Style="{StaticResource Input}" ToolTip="{views:Text WaystoneMinValue}"/>
+                                  <TextBlock Text="{Binding Range}" Style="{StaticResource Small}" Foreground="{StaticResource Muted}" IsHitTestVisible="False" VerticalAlignment="Center" Margin="8,0,0,0" Visibility="{Binding ShowRange, Converter={StaticResource Visible}}"/>
+                                </Grid>
+                                <Button DockPanel.Dock="Left" Style="{StaticResource RowDelete}" Margin="10,0,0,0" ToolTip="{views:Text TipDeleteRow}"
+                                        Command="{Binding DataContext.RemoveRowCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}"/>
+                              </DockPanel>
+                            </DataTemplate>
+                          </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                      </StackPanel>
+                    </StackPanel>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </GroupBox>
+
+          <GroupBox Header="{views:Text GroupWaystoneSearch}" Style="{StaticResource Section}">
+            <StackPanel>
+              <TextBox Margin="0,0,0,6" Text="{Binding Search, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" FontFamily="Consolas" MinHeight="30" Style="{StaticResource Input}" views:Field.Invalid="{Binding SearchTooLong}"/>
+              <DockPanel LastChildFill="True">
+                <Button DockPanel.Dock="Left" Content="{views:Text WaystoneCopy}" Command="{Binding CopyCommand}" Style="{StaticResource PlainButton}" Margin="0"/>
+                <ContentControl DockPanel.Dock="Left" Style="{StaticResource InfoIcon}" ToolTip="{views:Text TipWaystones}"/>
+                <TextBlock DockPanel.Dock="Right" Text="{Binding SearchLength}" Style="{StaticResource Small}" VerticalAlignment="Center"/>
+                <TextBlock Style="{StaticResource Hint}" Margin="10,0,10,0" Foreground="{StaticResource Accent}" Text="{views:Text WaystoneSearchTooLong}" Visibility="{Binding SearchTooLong, Converter={StaticResource Visible}}"/>
+              </DockPanel>
+            </StackPanel>
+          </GroupBox>
+
+        </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <!-- Tablets: one profile per kind of tablet (the kind list chooses it), uses left,
+           wanted and unwanted mods; from them the search text, the profile's price and the
+           live price at a tablet's tooltip, as on the Waystones tab. -->
+      <TabItem Header="{views:Text TabTablets}" Style="{StaticResource Tab}">
+        <ScrollViewer x:Name="tabletScroll" Margin="-1,0,-1,0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False" FocusVisualStyle="{x:Null}">
+        <StackPanel x:Name="tablets" Margin="1,10,1,0" DataContext="{Binding Tablets}">
+          <GroupBox Header="{views:Text GroupWaystoneProfile}" Style="{StaticResource Section}">
+            <!-- Left the profile and under it the tolerance, right the profile's price over
+                 both rows (no empty line under the list; 21.10.2026). The price is asked
+                 for only with the button below it: the trade site's limit is shared with the
+                 live price in the game. -->
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+              </Grid.RowDefinitions>
+              <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Top" Margin="0,0,0,6">
+                <ComboBox Width="260" ItemsSource="{Binding Kinds}" DisplayMemberPath="Text" SelectedValuePath="Name" SelectedValue="{Binding SelectedKind}" ToolTip="{views:Text TipTabletKind}"/>
+                <ContentControl Style="{StaticResource InfoIcon}" ToolTip="{views:Text TipTabletKind}"/>
+                <Button Style="{StaticResource RowTick}" Margin="18,0,0,0" ToolTip="{views:Text TipWaystoneSaveProfile}" Command="{Binding SaveProfileCommand}"/>
+                <Button Style="{StaticResource RowDelete}" Margin="6,0,0,0" ToolTip="{views:Text TipTabletRemoveProfile}" Command="{Binding RemoveProfileCommand}"/>
+              </StackPanel>
+              <StackPanel Grid.Row="1" Grid.Column="0" Style="{StaticResource Row}">
+                <TextBlock Text="{views:Text WaystoneTolerance}" Style="{StaticResource RowCaption}"/>
+                <TextBox Width="60" Text="{Binding Tolerance, UpdateSourceTrigger=PropertyChanged}" views:Field.Invalid="{Binding ToleranceInvalid}" Style="{StaticResource Input}"/>
+                <ContentControl Style="{StaticResource InfoIcon}" ToolTip="{views:Text TipTabletTolerance}"/>
+              </StackPanel>
+              <StackPanel Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Top">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                  <Image Source="{Binding ProfilePriceIcon}" Width="26" Height="26" VerticalAlignment="Center" Margin="0,0,6,0" RenderOptions.BitmapScalingMode="HighQuality"/>
+                  <TextBlock Text="{Binding ProfilePrice}" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource Accent}" VerticalAlignment="Center"/>
+                  <TextBlock Text="{Binding ProfilePriceNote}" Style="{StaticResource Small}" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                </StackPanel>
+                <Button HorizontalAlignment="Right" Margin="0,6,0,0" Content="{views:Text RefreshProfilePrice}" Command="{Binding PriceCommand}" Style="{StaticResource PlainButton}" ToolTip="{views:Text TipWaystoneRefreshPrice}"/>
+              </StackPanel>
+            </Grid>
+          </GroupBox>
+
+          <!-- The tablet's own properties, as on the Waystones tab. -->
+          <GroupBox Header="{views:Text GroupProperties}" Style="{StaticResource Section}">
+            <StackPanel>
+              <StackPanel Style="{StaticResource Row}">
+                <TextBlock Text="{views:Text FieldUses}" Style="{StaticResource RowCaption}" Width="170"/>
+                <TextBox Width="60" Text="{Binding UsesMin, UpdateSourceTrigger=PropertyChanged}" views:Field.Invalid="{Binding UsesMinInvalid}" Style="{StaticResource Input}"/>
+                <ContentControl Style="{StaticResource InfoIcon}" ToolTip="{views:Text TipTabletUses}"/>
+              </StackPanel>
+            </StackPanel>
+          </GroupBox>
+
+          <!-- Mod groups, as the trade site's stat groups: each with its kind (and: every row,
+               or: at least one row, not: none), the groups joined by "and". The first group is
+               "and", every added one "or" until changed. -->
+          <GroupBox Header="{views:Text GroupWaystoneMods}" Style="{StaticResource Section}">
+            <StackPanel>
+              <ItemsControl ItemsSource="{Binding Groups}" Focusable="False">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate DataType="{x:Type vm:GroupViewModel}">
+                    <StackPanel Margin="0,0,0,4">
+                      <!-- A line between groups: above every group but the first. -->
+                      <Border BorderBrush="{StaticResource Muted}" BorderThickness="0,1,0,0" Margin="0,4,0,10" Visibility="{Binding FollowsAnother, Converter={StaticResource Visible}}"/>
+                      <StackPanel>
+                        <!-- The group's head: title, kind, a mod into this group, a new group after it, ✕. -->
+                        <!-- As wide as a mod row's list, gap and value field (426 + 8 + 64): the buttons
+                             end where the value field ends, the ✕ stand one under the other. -->
+                        <DockPanel Margin="0,0,0,6" LastChildFill="False">
+                          <Grid DockPanel.Dock="Left" Width="498">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                              <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Foreground="{StaticResource Text}" VerticalAlignment="Center" Width="90"/>
+                              <ComboBox Width="64" ItemsSource="{Binding Kinds}" SelectedItem="{Binding Kind}" ToolTip="{views:Text TipGroupKind}"/>
+                              <ContentControl Style="{StaticResource InfoIcon}" ToolTip="{views:Text TipGroupKind}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                              <Button Content="{views:Text WaystoneAddMod}" Command="{Binding AddRuleCommand}" Style="{StaticResource PlainButton}" Margin="0" ToolTip="{views:Text TipTabletMods}"/>
+                              <Button Content="{views:Text AddGroup}" Command="{Binding AddGroupCommand}" Style="{StaticResource PlainButton}" Margin="8,0,0,0" ToolTip="{views:Text TipAddGroup}"/>
+                            </StackPanel>
+                          </Grid>
+                          <Button DockPanel.Dock="Left" Style="{StaticResource RowDelete}" Margin="10,0,0,0" ToolTip="{views:Text TipRemoveGroup}" Command="{Binding RemoveGroupCommand}"/>
+                        </DockPanel>
+                        <ItemsControl ItemsSource="{Binding Rules}" Focusable="False">
+                          <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:ModRuleViewModel}">
+                              <DockPanel Margin="0,0,0,6" LastChildFill="False">
+                                <ComboBox DockPanel.Dock="Left" Width="426" Style="{StaticResource Picker}" ItemsSource="{Binding Choices}" SelectedItem="{Binding Mod}"
+                                          Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}" IsDropDownOpen="{Binding DropDownOpen, Mode=TwoWay}" ToolTip="{views:Text TipWaystoneFilter}"/>
+                                <Grid DockPanel.Dock="Left" Margin="8,0,0,0" Width="64">
+                                  <TextBox Text="{Binding Min, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding HasValue}" views:Field.Invalid="{Binding MinInvalid}" Style="{StaticResource Input}" ToolTip="{views:Text WaystoneMinValue}"/>
+                                  <TextBlock Text="{Binding Range}" Style="{StaticResource Small}" Foreground="{StaticResource Muted}" IsHitTestVisible="False" VerticalAlignment="Center" Margin="8,0,0,0" Visibility="{Binding ShowRange, Converter={StaticResource Visible}}"/>
+                                </Grid>
+                                <Button DockPanel.Dock="Left" Style="{StaticResource RowDelete}" Margin="10,0,0,0" ToolTip="{views:Text TipDeleteRow}"
+                                        Command="{Binding DataContext.RemoveRowCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}"/>
+                              </DockPanel>
+                            </DataTemplate>
+                          </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                      </StackPanel>
+                    </StackPanel>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </GroupBox>
+
+          <GroupBox Header="{views:Text GroupWaystoneSearch}" Style="{StaticResource Section}">
+            <StackPanel>
+              <TextBox Margin="0,0,0,6" Text="{Binding Search, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" FontFamily="Consolas" MinHeight="30" Style="{StaticResource Input}" views:Field.Invalid="{Binding SearchTooLong}"/>
+              <DockPanel LastChildFill="True">
+                <Button DockPanel.Dock="Left" Content="{views:Text WaystoneCopy}" Command="{Binding CopyCommand}" Style="{StaticResource PlainButton}" Margin="0"/>
+                <ContentControl DockPanel.Dock="Left" Style="{StaticResource InfoIcon}" ToolTip="{views:Text TipTablets}"/>
+                <TextBlock DockPanel.Dock="Right" Text="{Binding SearchLength}" Style="{StaticResource Small}" VerticalAlignment="Center"/>
+                <TextBlock Style="{StaticResource Hint}" Margin="10,0,10,0" Foreground="{StaticResource Accent}" Text="{views:Text WaystoneSearchTooLong}" Visibility="{Binding SearchTooLong, Converter={StaticResource Visible}}"/>
+              </DockPanel>
+            </StackPanel>
+          </GroupBox>
+
+        </StackPanel>
+        </ScrollViewer>
       </TabItem>
     </TabControl>
     </Grid>

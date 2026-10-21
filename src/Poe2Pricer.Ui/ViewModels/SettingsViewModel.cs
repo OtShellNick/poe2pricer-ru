@@ -51,6 +51,8 @@ public sealed class SettingsViewModel : ObservableObject
     private string priceUnit;
     private bool startWithWindows;
     private bool extendedDiagnostics;
+    private bool tradeInPerson;
+    private bool liveTradePrice;
     private bool checkForUpdates;
     private bool floorInvalid;
     private bool intervalInvalid;
@@ -59,6 +61,7 @@ public sealed class SettingsViewModel : ObservableObject
     private string glance;
     private string toggleKey;
     private string diagnoseKey;
+    private string exactKey;
     private string gameConfigFile;
     private bool gameConfigFileInvalid;
 
@@ -80,11 +83,14 @@ public sealed class SettingsViewModel : ObservableObject
         Switches = AutoSwitch.All.Select(a => new AutoSwitchViewModel(a, a.Get(settings))).ToArray();
         startWithWindows = settings.StartWithWindows;
         extendedDiagnostics = settings.ExtendedDiagnostics;
+        tradeInPerson = settings.TradeInPerson;
+        liveTradePrice = settings.LiveTradePrice;
         checkForUpdates = settings.CheckForUpdates;
         interval = Shown(settings.AutoIntervalSeconds);
         glance = Shown(settings.GlanceIntervalSeconds);
         toggleKey = HotKey.Shown(settings.ToggleKey);
         diagnoseKey = HotKey.Shown(settings.DiagnoseKey);
+        exactKey = settings.ExactKey.Length == 0 ? "" : HotKey.Shown(settings.ExactKey);
         gameConfigFile = string.IsNullOrWhiteSpace(settings.GameConfigFile) ? GameConfig.StandardFile : settings.GameConfigFile;
         BrowseGameConfigCommand = new RelayCommand(() =>
         {
@@ -136,6 +142,7 @@ public sealed class SettingsViewModel : ObservableObject
             s.Reworded();
         ToggleKey = HotKey.Shown(ToggleKey);
         DiagnoseKey = HotKey.Shown(DiagnoseKey);
+        ExactKey = ExactKey.Trim().Length == 0 ? "" : HotKey.Shown(ExactKey);
         if (Seconds(Interval, out double every))
             interval = Shown(every);
         if (Seconds(Glance, out double check))
@@ -187,6 +194,11 @@ public sealed class SettingsViewModel : ObservableObject
         Texts.Get("TipIntervals", Tuning.Control.AutoMinimumSeconds, Tuning.Control.GlanceEvery.TotalSeconds, Tuning.Control.FollowEvery.TotalSeconds);
 
     public event Action<Settings>? Saved;
+
+    // The Waystones tab, saved along with this page: whether its fields are in order, and
+    // what they hold (MainViewModel sets it).
+    public Func<(bool Valid, Core.Waystones.WaystoneSettings Settings)>? WaystonesSource { get; set; }
+    public Func<(bool Valid, Core.Tablets.TabletSettings Settings)>? TabletsSource { get; set; }
     public event Action? ReloadPrices;
 
     public LeagueChoice League
@@ -221,6 +233,20 @@ public sealed class SettingsViewModel : ObservableObject
     {
         get => startWithWindows;
         set => SetProperty(ref startWithWindows, value);
+    }
+
+    // The live price at waystone and tablet tooltips (Settings.LiveTradePrice).
+    public bool LiveTradePrice
+    {
+        get => liveTradePrice;
+        set => SetProperty(ref liveTradePrice, value);
+    }
+
+    // Trade prices with sellers online in person besides Instant Buyout (Settings.TradeInPerson).
+    public bool TradeInPerson
+    {
+        get => tradeInPerson;
+        set => SetProperty(ref tradeInPerson, value);
     }
 
     public bool ExtendedDiagnostics
@@ -288,6 +314,12 @@ public sealed class SettingsViewModel : ObservableObject
                 OnPropertyChanged(nameof(DiagnoseKey));
                 report(new(Texts.Get("HotkeysSwapped")));
             }
+            else if (Same(value, exactKey) && !Same(before, value))
+            {
+                exactKey = before;
+                OnPropertyChanged(nameof(ExactKey));
+                report(new(Texts.Get("HotkeysSwapped")));
+            }
         }
     }
 
@@ -301,6 +333,36 @@ public sealed class SettingsViewModel : ObservableObject
             {
                 toggleKey = before;
                 OnPropertyChanged(nameof(ToggleKey));
+                report(new(Texts.Get("HotkeysSwapped")));
+            }
+            else if (Same(value, exactKey) && !Same(before, value))
+            {
+                exactKey = before;
+                OnPropertyChanged(nameof(ExactKey));
+                report(new(Texts.Get("HotkeysSwapped")));
+            }
+        }
+    }
+
+    // The exact-price key; given the key of one of the other two, they swap as those two do.
+    public string ExactKey
+    {
+        get => exactKey;
+        set
+        {
+            string before = exactKey;
+            if (!SetProperty(ref exactKey, value) || Same(before, value))
+                return;
+            if (Same(value, toggleKey))
+            {
+                toggleKey = before;
+                OnPropertyChanged(nameof(ToggleKey));
+                report(new(Texts.Get("HotkeysSwapped")));
+            }
+            else if (Same(value, diagnoseKey))
+            {
+                diagnoseKey = before;
+                OnPropertyChanged(nameof(DiagnoseKey));
                 report(new(Texts.Get("HotkeysSwapped")));
             }
         }
@@ -337,12 +399,14 @@ public sealed class SettingsViewModel : ObservableObject
     {
         // A key text that cannot be read is named as it stands, without the message of .NET.
         // The key fields take pressed keys only, so this is a settings file changed by hand.
-        if (new[] { ToggleKey, DiagnoseKey }.FirstOrDefault(key => !Readable(key)) is { } unknown)
+        // The exact-price key may stay empty: it is then off.
+        if (new[] { ToggleKey, DiagnoseKey, ExactKey }.Where(key => key != ExactKey || ExactKey.Trim().Length > 0).FirstOrDefault(key => !Readable(key)) is { } unknown)
         {
             report(StatusMessage.Error(Texts.Get("InvalidUnknownKey", unknown.Trim())));
             return false;
         }
-        if (HotKey.Parse(ToggleKey) == HotKey.Parse(DiagnoseKey))
+        bool exactOff = ExactKey.Trim().Length == 0;
+        if (HotKey.Parse(ToggleKey) == HotKey.Parse(DiagnoseKey) || !exactOff && (HotKey.Parse(ExactKey) == HotKey.Parse(ToggleKey) || HotKey.Parse(ExactKey) == HotKey.Parse(DiagnoseKey)))
         {
             report(StatusMessage.Error(Texts.Get("InvalidHotkeysIdentical")));
             return false;
@@ -373,19 +437,32 @@ public sealed class SettingsViewModel : ObservableObject
         Interval = Shown(everyKept);
         Glance = Shown(checkKept);
         Floor = Shown(floorValue);
+        var waystones = WaystonesSource?.Invoke();
+        var tablets = TabletsSource?.Invoke();
+        if (waystones is { Valid: false } || tablets is { Valid: false })
+        {
+            // The field marked red stands on another tab: it is named (review before 1.2.0).
+            report(StatusMessage.Error(Texts.Get("InvalidInTab", Texts.Get(waystones is { Valid: false } ? "TabWaystones" : "TabTablets"))));
+            return false;
+        }
         var next = settings with
         {
+            Waystones = waystones?.Settings ?? settings.Waystones,
+            Tablets = tablets?.Settings ?? settings.Tablets,
             League = League?.Value,
             FloorValue = floorValue,
             FloorUnit = Unit ?? "ex",
             PriceUnit = PriceUnit,
             StartWithWindows = StartWithWindows,
             ExtendedDiagnostics = ExtendedDiagnostics,
+            TradeInPerson = TradeInPerson,
+            LiveTradePrice = LiveTradePrice,
             CheckForUpdates = CheckForUpdates,
             AutoIntervalSeconds = everyKept,
             GlanceIntervalSeconds = checkKept,
             ToggleKey = HotKey.Parse(ToggleKey).Stored,
             DiagnoseKey = HotKey.Parse(DiagnoseKey).Stored,
+            ExactKey = exactOff ? "" : HotKey.Parse(ExactKey).Stored,
             GameConfigFile = standardPlace ? "" : config,
         };
         next = Switches.Aggregate(next, (n, s) => s.Switch.Set(n, s.On));

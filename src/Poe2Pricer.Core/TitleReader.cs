@@ -14,6 +14,10 @@ public sealed class TitleReader
 {
     private readonly OcrEngine engine;
 
+    // Windows' recognizer takes one picture at a time ("Another RecognizeAsync operation is
+    // already running!"): a diagnosis reading every window while a follow runs would collide.
+    private readonly SemaphoreSlim one = new(1, 1);
+
     // Windows has the text recognition of this language installed.
     public static bool Available(string language) => OcrEngine.IsLanguageSupported(new Language(language));
 
@@ -93,7 +97,15 @@ public sealed class TitleReader
         stream.Seek(0);
         var decoder = await BitmapDecoder.CreateAsync(stream);
         using var bitmap = await decoder.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
-        return await engine.RecognizeAsync(bitmap);
+        await one.WaitAsync();
+        try
+        {
+            return await engine.RecognizeAsync(bitmap);
+        }
+        finally
+        {
+            one.Release();
+        }
     }
 
     // language: the language the client runs in; the title was read in that language and is

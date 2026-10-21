@@ -105,8 +105,8 @@ public sealed class GameWindows(IReadOnlyList<IGameWindow> all)
 {
     public IReadOnlyList<IGameWindow> All { get; } = all;
 
-    public static GameWindows Standard(Pipeline pipeline) =>
-        new([new FavoursGameWindow(pipeline), new StashGameWindow(pipeline), new RemnantGameWindow(pipeline), new RumourGameWindow(pipeline)]);
+    public static GameWindows Standard(Pipeline pipeline, Market.ITradePrices? tradePrices = null) =>
+        new([new FavoursGameWindow(pipeline), new StashGameWindow(pipeline), new RemnantGameWindow(pipeline), new RumourGameWindow(pipeline), new TooltipGameWindow(pipeline, tradePrices)]);
 
     // The first wanted window on the frame.
     public async Task<IOpenWindow?> LookAsync(GameCapture.Frame frame, LookContext context, Func<IGameWindow, bool> wanted)

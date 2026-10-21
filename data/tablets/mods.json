@@ -1,0 +1,2038 @@
+{
+ "source": "Spieldaten (BaseItemTypes, ItemClasses, Mods, Stats, Tags, tablet_/map_/stat_descriptions.csd) und trade2/data/stats, tools/tablet_mods.py",
+ "kinds": [
+  {
+   "name": "Abyss Tablet",
+   "de": "Abgrund-Tafel",
+   "id": "Metadata/Items/TowerAugment/AbyssAugment",
+   "tag": "tower_augment_abyss",
+   "implicit": [
+    "Adds Abysses to a Map",
+    "# uses remaining"
+   ],
+   "implicitDe": [
+    "Fügt einer Karte Abgründe hinzu",
+    "# Nutzungen übrig"
+   ]
+  },
+  {
+   "name": "Breach Tablet",
+   "de": "Riss-Tafel",
+   "id": "Metadata/Items/TowerAugment/BreachAugment",
+   "tag": "tower_augment_breach",
+   "implicit": [
+    "Adds an Otherworldy Breach to a Map",
+    "# uses remaining"
+   ],
+   "implicitDe": [
+    "Fügt einer Karte einen Riss ins Jenseits hinzu",
+    "# Nutzungen übrig"
+   ]
+  },
+  {
+   "name": "Delirium Tablet",
+   "de": "Delirium-Tafel",
+   "id": "Metadata/Items/TowerAugment/DeliriumAugment",
+   "tag": "tower_augment_delirium",
+   "implicit": [
+    "Adds a Mirror of Delirium to a Map",
+    "# uses remaining"
+   ],
+   "implicitDe": [
+    "Fügt einer Karte einen Spiegel des Deliriums hinzu",
+    "# Nutzungen übrig"
+   ]
+  },
+  {
+   "name": "Expedition Tablet",
+   "de": "Expedition-Tafel",
+   "id": "Metadata/Items/TowerAugment/ExpeditionAugment",
+   "tag": "tower_augment_expedition",
+   "implicit": [
+    "Adds a Kalguuran Expedition to a Map",
+    "# uses remaining"
+   ],
+   "implicitDe": [
+    "Fügt einer Karte eine kalguurische Expedition hinzu",
+    "# Nutzungen übrig"
+   ]
+  },
+  {
+   "name": "Irradiated Tablet",
+   "de": "Bestrahlte Tafel",
+   "id": "Metadata/Items/TowerAugment/GenericAugment",
+   "tag": "tower_augment_generic",
+   "implicit": [
+    "Adds Irradiated to a Map",
+    "# uses remaining"
+   ],
+   "implicitDe": [
+    "Fügt einer Karte Bestrahlung hinzu",
+    "# Nutzungen übrig"
+   ]
+  },
+  {
+   "name": "Overseer Tablet",
+   "de": "Aufseher-Tafel",
+   "id": "Metadata/Items/TowerAugment/MapBossAugment",
+   "tag": "tower_augment_map_boss",
+   "implicit": [
+    "Empowers the Map Boss of a Map",
+    "# uses remaining"
+   ],
+   "implicitDe": [
+    "Verstärkt den Kartenboss einer Karte",
+    "# Nutzungen übrig"
+   ]
+  },
+  {
+   "name": "Ritual Tablet",
+   "de": "Ritual-Tafel",
+   "id": "Metadata/Items/TowerAugment/RitualAugment",
+   "tag": "tower_augment_ritual",
+   "implicit": [
+    "Adds Ritual Altars to a Map",
+    "# uses remaining"
+   ],
+   "implicitDe": [
+    "Fügt einer Karte Ritual-Altäre hinzu",
+    "# Nutzungen übrig"
+   ]
+  },
+  {
+   "name": "Temple Tablet",
+   "de": "Tempel-Tafel",
+   "id": "Metadata/Items/TowerAugment/IncursionAugment",
+   "tag": "tower_augment_incursion",
+   "implicit": [
+    "Adds Vaal Beacons to a Map",
+    "# uses remaining"
+   ],
+   "implicitDe": [
+    "Fügt einer Karte Vaal-Leuchtfeuer hinzu",
+    "# Nutzungen übrig"
+   ]
+  }
+ ],
+ "mods": [
+  {
+   "kind": "prefix",
+   "tablet": null,
+   "names": [
+    "Elevated"
+   ],
+   "lines": [
+    {
+     "text": "#% increased Experience gain in Map",
+     "de": "#% erhöhter Erfahrungsgewinn in der Karte",
+     "stat": "map_experience_gain_+%",
+     "min": 12,
+     "max": 18,
+     "tiers": [
+      [
+       12,
+       18
+      ]
+     ],
+     "trade": "explicit.stat_57434274"
+    }
+   ]
+  },
+  {
+   "kind": "prefix",
+   "tablet": null,
+   "names": [
+    "Bountiful"
+   ],
+   "lines": [
+    {
+     "text": "#% increased Gold found in Map",
+     "de": "#% erhöhtes gefundenes Gold in der Karte",
+     "stat": "map_extra_gold_piles_chance_%",
+     "min": 25,
+     "max": 35,
+     "tiers": [
+      [
+       25,
+       35
+      ]
+     ],
+     "trade": "explicit.stat_1133965702"
+    }
+   ]
+  },
+  {
+   "kind": "prefix",
+   "tablet": null,
+   "names": [
+    "Breeding"
+   ],
+   "lines": [
+    {
+     "text": "#% increased Pack Size in Map",
+     "de": "#% erhöhte Gruppengröße in der Karte",
+     "stat": "map_pack_size_+%",
+     "min": 5,
+     "max": 7,
+     "tiers": [
+      [
+       5,
+       7
+      ]
+     ],
+     "trade": "explicit.stat_2017682521"
+    }
+   ]
+  },
+  {
+   "kind": "prefix",
+   "tablet": null,
+   "names": [
+    "Collector's"
+   ],
+   "lines": [
+    {
+     "text": "#% increased Rarity of Items found in Map",
+     "de": "#% erhöhte Seltenheit gefundener Gegenstände in der Karte",
+     "stat": "map_item_drop_rarity_+%",
+     "min": 8,
+     "max": 12,
+     "tiers": [
+      [
+       8,
+       12
+      ]
+     ],
+     "trade": "explicit.stat_2306002879"
+    }
+   ]
+  },
+  {
+   "kind": "prefix",
+   "tablet": null,
+   "names": [
+    "Azmeri's"
+   ],
+   "lines": [
+    {
+     "text": "Map contains # additional Azmeri Spirit",
+     "de": "Karte enthält # zusätzlichen Azmeri-Geist",
+     "stat": "map_spawn_extra_torment_spirits",
+     "min": 1,
+     "max": 1,
+     "tiers": [
+      [
+       1,
+       1
+      ]
+     ],
+     "trade": "explicit.stat_358129101"
+    }
+   ]
+  },
+  {
+   "kind": "prefix",
+   "tablet": null,
+   "names": [
+    "Treasurer's"
+   ],
+   "lines": [
+    {
+     "text": "Map contains # additional Rare Chests",
+     "de": "Karte enthält # zusätzliche seltene Truhen",
+     "stat": "map_addtional_rare_chest_amount",
+     "min": 2,
+     "max": 3,
+     "tiers": [
+      [
+       2,
+       3
+      ]
+     ],
+     "trade": "explicit.stat_231864447"
+    }
+   ]
+  },
+  {
+   "kind": "prefix",
+   "tablet": null,
+   "names": [
+    "Crystallised"
+   ],
+   "lines": [
+    {
+     "text": "Map contains an additional Essence",
+     "de": "Karte enthält eine zusätzliche Essenz",
+     "stat": "map_extra_monoliths",
+     "trade": "explicit.stat_395808938"
+    }
+   ]
+  },
+  {
+   "kind": "prefix",
+   "tablet": null,
+   "names": [
+    "Summoner's"
+   ],
+   "lines": [
+    {
+     "text": "Map contains an additional Summoning Circle",
+     "de": "Karte enthält einen zusätzlichen Beschwörungskreis",
+     "stat": "map_num_extra_stone_circles",
+     "trade": "explicit.stat_2839545956"
+    }
+   ]
+  },
+  {
+   "kind": "prefix",
+   "tablet": null,
+   "names": [
+    "Teeming"
+   ],
+   "lines": [
+    {
+     "text": "Map has #% increased Magic Monsters",
+     "de": "Karte hat #% erhöhte magische Monster",
+     "stat": "map_number_of_magic_packs_+%",
+     "min": 30,
+     "max": 40,
+     "tiers": [
+      [
+       30,
+       40
+      ]
+     ],
+     "trade": "explicit.stat_3873704640"
+    }
+   ]
+  },
+  {
+   "kind": "prefix",
+   "tablet": null,
+   "names": [
+    "Abounding"
+   ],
+   "lines": [
+    {
+     "text": "Map has #% increased Monster Rarity",
+     "de": "Karte hat #% erhöhte Monsterseltenheit",
+     "stat": "map_number_of_magic_and_rare_packs_+%_and_rare_monster_modifiers_chance_%",
+     "min": 15,
+     "max": 20,
+     "tiers": [
+      [
+       15,
+       20
+      ]
+     ],
+     "trade": "explicit.stat_4142653832"
+    }
+   ]
+  },
+  {
+   "kind": "prefix",
+   "tablet": null,
+   "names": [
+    "Brimming"
+   ],
+   "lines": [
+    {
+     "text": "Map has #% increased number of Rare Monsters",
+     "de": "Karte hat #% erhöhte Anzahl seltener Monster",
+     "stat": "map_number_of_rare_packs_+%",
+     "min": 25,
+     "max": 35,
+     "tiers": [
+      [
+       25,
+       35
+      ]
+     ],
+     "trade": "explicit.stat_3793155082"
+    }
+   ]
+  },
+  {
+   "kind": "prefix",
+   "tablet": null,
+   "names": [
+    "Exiled"
+   ],
+   "lines": [
+    {
+     "text": "Map is inhabited by # additional Rogue Exile",
+     "de": "Karte ist von # zusätzlichen Abtrünnigen Verbannten besiedelt",
+     "stat": "map_spawn_extra_exiles",
+     "min": 1,
+     "max": 1,
+     "tiers": [
+      [
+       1,
+       1
+      ]
+     ],
+     "trade": "explicit.stat_3550168289"
+    }
+   ]
+  },
+  {
+   "kind": "prefix",
+   "tablet": null,
+   "names": [
+    "Challenger's"
+   ],
+   "lines": [
+    {
+     "text": "Monsters have #% increased Effectiveness",
+     "de": "Monster haben #% erhöhte Schlagkraft",
+     "stat": "map_monster_potency_+%",
+     "min": 10,
+     "max": 15,
+     "tiers": [
+      [
+       10,
+       15
+      ]
+     ],
+     "trade": "explicit.stat_2065500219"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": null,
+   "names": [
+    "of the Cartographer"
+   ],
+   "lines": [
+    {
+     "text": "#% increased Quantity of Waystones found in Map",
+     "de": "#% erhöhte Menge gefundener Wegsteine in der Karte",
+     "stat": "map_map_item_drop_chance_+%",
+     "min": 30,
+     "max": 40,
+     "tiers": [
+      [
+       30,
+       40
+      ]
+     ],
+     "trade": "explicit.stat_2777224821"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": null,
+   "names": [
+    "of the Devoted"
+   ],
+   "lines": [
+    {
+     "text": "Map contains an additional Shrine",
+     "de": "Karte enthält einen zusätzlichen Schrein",
+     "stat": "map_num_extra_shrines",
+     "trade": "explicit.stat_1468737867"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": null,
+   "names": [
+    "of the Antiquarian"
+   ],
+   "lines": [
+    {
+     "text": "Map contains an additional Strongbox",
+     "de": "Karte enthält einen zusätzlichen Tresor",
+     "stat": "map_num_extra_strongboxes",
+     "trade": "explicit.stat_3240183538"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": null,
+   "names": [
+    "of Undertaking"
+   ],
+   "lines": [
+    {
+     "text": "Map has # additional random Modifier",
+     "de": "Karte verfügt über # zufälligen zusätzlichen Modifikator",
+     "stat": "map_number_of_additional_mods",
+     "min": 1,
+     "max": 2,
+     "tiers": [
+      [
+       1,
+       2
+      ]
+     ],
+     "trade": "explicit.stat_588512487"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": null,
+   "names": [
+    "of the Summoning"
+   ],
+   "lines": [
+    {
+     "text": "Map has #% increased chance to contain a Summoning Circle",
+     "de": "Karte hat #% erhöhte Chance, einen Beschwörungskreis zu enthalten",
+     "stat": "map_stone_circle_chance_+%",
+     "min": 70,
+     "max": 100,
+     "tiers": [
+      [
+       70,
+       100
+      ]
+     ],
+     "trade": "explicit.stat_267210597"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": null,
+   "names": [
+    "of Spirits"
+   ],
+   "lines": [
+    {
+     "text": "Map has #% increased chance to contain Azmeri Spirits",
+     "de": "Karte hat #% erhöhte Chance, Azmeri-Geister zu enthalten",
+     "stat": "map_tormented_spirit_chance_+%",
+     "min": 70,
+     "max": 100,
+     "tiers": [
+      [
+       70,
+       100
+      ]
+     ],
+     "trade": "explicit.stat_3815617979"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": null,
+   "names": [
+    "of the Essence"
+   ],
+   "lines": [
+    {
+     "text": "Map has #% increased chance to contain Essences",
+     "de": "Karte hat #% erhöhte Chance, Essenzen zu enthalten",
+     "stat": "map_monolith_chance_+%",
+     "min": 70,
+     "max": 100,
+     "tiers": [
+      [
+       70,
+       100
+      ]
+     ],
+     "trade": "explicit.stat_1825943485"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": null,
+   "names": [
+    "of the Exile"
+   ],
+   "lines": [
+    {
+     "text": "Map has #% increased chance to contain Rogue Exiles",
+     "de": "Karte hat #% erhöhte Chance, Abtrünnige Verbannte zu enthalten",
+     "stat": "map_rogue_exile_chance_+%",
+     "min": 70,
+     "max": 100,
+     "tiers": [
+      [
+       70,
+       100
+      ]
+     ],
+     "trade": "explicit.stat_1352729973"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": null,
+   "names": [
+    "of Shrines"
+   ],
+   "lines": [
+    {
+     "text": "Map has #% increased chance to contain Shrines",
+     "de": "Karte hat #% erhöhte Chance, Schreine zu enthalten",
+     "stat": "map_shrine_chance_+%",
+     "min": 70,
+     "max": 100,
+     "tiers": [
+      [
+       70,
+       100
+      ]
+     ],
+     "trade": "explicit.stat_689816330"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": null,
+   "names": [
+    "of Strongboxes"
+   ],
+   "lines": [
+    {
+     "text": "Map has #% increased chance to contain Strongboxes",
+     "de": "Karte hat #% erhöhte Chance, Tresore zu enthalten",
+     "stat": "map_strongbox_chance_+%",
+     "min": 70,
+     "max": 100,
+     "tiers": [
+      [
+       70,
+       100
+      ]
+     ],
+     "trade": "explicit.stat_4279535856"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": null,
+   "names": [
+    "of Contest"
+   ],
+   "lines": [
+    {
+     "text": "Unique Monsters have # additional Rare Modifier",
+     "de": "Einzigartige Monster haben # zusätzlichen Modifikator",
+     "stat": "map_unique_monster_num_additional_modifiers",
+     "min": 1,
+     "max": 1,
+     "tiers": [
+      [
+       1,
+       1
+      ]
+     ],
+     "trade": "explicit.stat_3371085671"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Abyss Tablet",
+   "names": [
+    "of Champions"
+   ],
+   "lines": [
+    {
+     "text": "# additional Rare Monsters are spawned from Abysses in Map",
+     "de": "# zusätzliche seltene Monster werden von Abgründen in der Karte beschworen",
+     "stat": "map_abyss_num_additional_rare_monsters",
+     "min": 2,
+     "max": 3,
+     "tiers": [
+      [
+       2,
+       3
+      ]
+     ],
+     "trade": "explicit.stat_243380454"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Abyss Tablet",
+   "names": [
+    "of Dark Power"
+   ],
+   "lines": [
+    {
+     "text": "#% increased chance for Abyssal monsters in Map to have Abyssal Modifiers",
+     "de": "#% erhöhte Chance, dass Abgrund-Monster in der Karte Abgrund-Modifikatoren haben",
+     "stat": "map_abyss_monster_abyssal_modifier_chance_+%",
+     "min": 20,
+     "max": 30,
+     "tiers": [
+      [
+       20,
+       30
+      ]
+     ],
+     "trade": "explicit.stat_2789248444"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Abyss Tablet",
+   "names": [
+    "of Ossification"
+   ],
+   "lines": [
+    {
+     "text": "#% increased chance for Desecrated Currency from Abysses in Map",
+     "de": "#% erhöhte Chance auf entweihte Währung aus Abgründen in der Karte",
+     "stat": "map_abyss_ticket_chance_+%",
+     "min": 20,
+     "max": 30,
+     "tiers": [
+      [
+       20,
+       30
+      ]
+     ],
+     "trade": "explicit.stat_1710200734"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Abyss Tablet",
+   "names": [
+    "of Treasures"
+   ],
+   "lines": [
+    {
+     "text": "Abyss Pits in Map are twice as likely to have Rewards",
+     "de": "Abgrund-Gruben in der Karte haben mit doppelter Wahrscheinlichkeit Belohnungen",
+     "stat": "map_abyss_no_reward_chance_+%",
+     "trade": "explicit.stat_4256531808"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Abyss Tablet",
+   "names": [
+    "of Escalation"
+   ],
+   "lines": [
+    {
+     "text": "Abyssal Monsters have #% increased Effectiveness for each closed Pit, up to 100%",
+     "de": "Abgrund-Monster haben #% erhöhte Schlagkraft für jede geschlossene Grube, bis zu 100%",
+     "stat": "map_abyss_monster_potency_+%_per_chasm_closed",
+     "min": 8,
+     "max": 12,
+     "tiers": [
+      [
+       8,
+       12
+      ]
+     ],
+     "trade": "explicit.stat_664606484"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Abyss Tablet",
+   "names": [
+    "of the Depths"
+   ],
+   "lines": [
+    {
+     "text": "Abysses in Map have #% increased chance to lead to an Abyssal Depths",
+     "de": "Abgründe in der Karte haben #% erhöhte Chance, in Abgründige Tiefen zu führen",
+     "stat": "map_abyss_depths_chance_+%",
+     "min": 10,
+     "max": 20,
+     "tiers": [
+      [
+       10,
+       20
+      ]
+     ],
+     "trade": "explicit.stat_2722831300"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Abyss Tablet",
+   "names": [
+    "of the Horde"
+   ],
+   "lines": [
+    {
+     "text": "Abysses in Map spawn #% increased Monsters",
+     "de": "Abgründe in der Karte beschwören #% erhöhte Monster",
+     "stat": "map_abyss_monster_spawn_amount_+%",
+     "min": 20,
+     "max": 30,
+     "tiers": [
+      [
+       20,
+       30
+      ]
+     ],
+     "trade": "explicit.stat_944630113"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Abyss Tablet",
+   "names": [
+    "of Hollows"
+   ],
+   "lines": [
+    {
+     "text": "Map contains an additional Abyss",
+     "de": "Karte enthält einen zusätzlichen Abgrund",
+     "stat": "map_num_extra_abysses",
+     "trade": "explicit.stat_1070816711"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Abyss Tablet",
+   "names": [
+    "of Schisms"
+   ],
+   "lines": [
+    {
+     "text": "Map has #% chance to contain four additional Abysses",
+     "de": "Karte hat #% Chance, vier zusätzliche Abgründe zu enthalten",
+     "stat": "map_chance_for_4_additional_abysses_%",
+     "min": 20,
+     "max": 40,
+     "tiers": [
+      [
+       20,
+       40
+      ]
+     ],
+     "trade": "explicit.stat_2890355696"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Breach Tablet",
+   "names": [
+    "of the Hand"
+   ],
+   "lines": [
+    {
+     "text": "#% increased Effectiveness of Rare Breach Monsters in Map",
+     "de": "#% erhöhte Schlagkraft von seltenen Riss-Monstern in Karten",
+     "stat": "map_breach_rare_monster_potency_+%",
+     "min": 5,
+     "max": 20,
+     "tiers": [
+      [
+       5,
+       20
+      ]
+     ],
+     "trade": "explicit.stat_2895378479"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Breach Tablet",
+   "names": [
+    "of the Flow"
+   ],
+   "lines": [
+    {
+     "text": "#% increased Quantity of Hiveblood found in Map",
+     "de": "#% erhöhte Menge gefundenen Schwarmbluts in der Karte",
+     "stat": "map_breach_hiveblood_quantity_+%",
+     "min": 30,
+     "max": 60,
+     "tiers": [
+      [
+       30,
+       60
+      ]
+     ],
+     "trade": "explicit.stat_2778285247"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Breach Tablet",
+   "names": [
+    "of the Form"
+   ],
+   "lines": [
+    {
+     "text": "#% increased Quantity of Wombgifts found in Map",
+     "de": "#% erhöhte Menge gefundener Fruchtkeime in der Karte",
+     "stat": "map_breach_wombgift_quantity_+%",
+     "min": 30,
+     "max": 60,
+     "tiers": [
+      [
+       30,
+       60
+      ]
+     ],
+     "trade": "explicit.stat_472809816"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Breach Tablet",
+   "names": [
+    "of the Horde"
+   ],
+   "lines": [
+    {
+     "text": "Breaches in Map have #% increased Pack Size",
+     "de": "Risse in der Karte haben #% erhöhte Gruppengröße",
+     "stat": "map_breach_monster_quantity_+%",
+     "min": 5,
+     "max": 15,
+     "tiers": [
+      [
+       5,
+       15
+      ]
+     ],
+     "trade": "explicit.stat_1210760818"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Breach Tablet",
+   "names": [
+    "of the Commander"
+   ],
+   "lines": [
+    {
+     "text": "Unstable Breaches in Map have #% increased chance to contain Vruun, Marshal of Xesht",
+     "de": "Instabile Risse in der Karte haben #% erhöhte Chance, Vruun, Marschall von Xesht zu enthalten",
+     "stat": "map_chance_for_breaches_to_contain_boss_+%",
+     "min": 20,
+     "max": 50,
+     "tiers": [
+      [
+       20,
+       50
+      ]
+     ],
+     "trade": "explicit.stat_2433436306"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Breach Tablet",
+   "names": [
+    "of the Invasion"
+   ],
+   "lines": [
+    {
+     "text": "Unstable Breaches in Map spawn # additional Rare Monsters when Stabilised",
+     "de": "Instabile Risse in Karten erzeugen # zusätzliche seltene Monster, wenn sie stabilisiert werden",
+     "stat": "map_unstable_breach_enrage_x_additional_rare_monsters",
+     "min": 1,
+     "max": 2,
+     "tiers": [
+      [
+       1,
+       2
+      ]
+     ],
+     "trade": "explicit.stat_3762913035"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Breach Tablet",
+   "names": [
+    "of the Flesh"
+   ],
+   "lines": [
+    {
+     "text": "Wombgifts have #% chance to drop one Level higher in Map",
+     "de": "Fruchtkeime in Karte haben #% Chance, eine Stufe höher fallen gelassen zu werden",
+     "stat": "map_breach_wombgift_additional_item_level_chance_%",
+     "min": 10,
+     "max": 30,
+     "tiers": [
+      [
+       10,
+       30
+      ]
+     ],
+     "trade": "explicit.stat_2889272422"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Delirium Tablet",
+   "names": [
+    "of the Simulacrum"
+   ],
+   "lines": [
+    {
+     "text": "#% increased Stack size of Simulacrum Splinters found in Map",
+     "de": "#% erhöhte Stapelgröße gefundener Simulacrum-Splitter in der Karte",
+     "stat": "map_delirium_splinter_stack_size_+%",
+     "min": 15,
+     "max": 30,
+     "tiers": [
+      [
+       15,
+       30
+      ]
+     ],
+     "trade": "explicit.stat_3836551197"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Delirium Tablet",
+   "names": [
+    "of Phobia"
+   ],
+   "lines": [
+    {
+     "text": "Delirium Encounters in Map are #% more likely to spawn Unique Bosses",
+     "de": "Delirium-Begegnungen in der Karte beschwören mit #% größerer Wahrscheinlichkeit einzigartige Bosse",
+     "stat": "map_affliction_encounter_boss_chance_+%",
+     "min": 15,
+     "max": 30,
+     "tiers": [
+      [
+       15,
+       30
+      ]
+     ],
+     "trade": "explicit.stat_3962960008"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Delirium Tablet",
+   "names": [
+    "of Madness"
+   ],
+   "lines": [
+    {
+     "text": "Delirium Fog in Map applies #% increased Deliriousness to Players",
+     "de": "Delirium-Nebel in der Karte wendet auf Spieler #% erhöhte Deliriösität an",
+     "stat": "map_affliction_encounter_monster_depth_+%",
+     "min": 15,
+     "max": 30,
+     "tiers": [
+      [
+       15,
+       30
+      ]
+     ],
+     "trade": "explicit.stat_1769611692"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Delirium Tablet",
+   "names": [
+    "of the Unending"
+   ],
+   "lines": [
+    {
+     "text": "Delirium Fog in Map dissipates #% slower",
+     "de": "Delirium-Nebel in der Karte löst sich #% langsamer auf",
+     "stat": "map_affliction_secondary_wave_acceleration_+%",
+     "min": 20,
+     "max": 30,
+     "tiers": [
+      [
+       20,
+       30
+      ]
+     ],
+     "trade": "explicit.stat_3350944114",
+     "tradeNegated": true
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Delirium Tablet",
+   "names": [
+    "of Eternity"
+   ],
+   "lines": [
+    {
+     "text": "Delirium Fog in Map lasts # additional seconds before dissipating",
+     "de": "Delirium-Nebel in der Karte hält # zusätzliche Sekunden an, bevor er sich auflöst",
+     "stat": "map_affliction_secondary_wave_delay_seconds_+",
+     "min": 6,
+     "max": 12,
+     "tiers": [
+      [
+       6,
+       12
+      ]
+     ],
+     "trade": "explicit.stat_3226351972"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Delirium Tablet",
+   "names": [
+    "of Mirrors"
+   ],
+   "lines": [
+    {
+     "text": "Delirium Fog in Map spawns #% increased Fracturing Mirrors",
+     "de": "Delirium-Nebel in der Karte beschwört #% erhöhte zerbrechende Spiegel",
+     "stat": "map_delirium_doodads_+%_final",
+     "min": 15,
+     "max": 30,
+     "tiers": [
+      [
+       15,
+       30
+      ]
+     ],
+     "trade": "explicit.stat_551040294"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Delirium Tablet",
+   "names": [
+    "of Shattering"
+   ],
+   "lines": [
+    {
+     "text": "Delirium Fog in Map spawns #% increased Mirror Shards",
+     "de": "Delirium-Nebel in Karte beschwört #% erhöhte Spiegel-Splitter",
+     "stat": "map_delirium_special_event_all_chance_+%",
+     "min": 12,
+     "max": 26,
+     "tiers": [
+      [
+       12,
+       26
+      ]
+     ],
+     "trade": "explicit.stat_900933517"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Delirium Tablet",
+   "names": [
+    "of Persecution"
+   ],
+   "lines": [
+    {
+     "text": "Delirium Monsters in Map have #% increased Pack Size",
+     "de": "Delirium-Monster in der Karte haben #% erhöhte Gruppengröße",
+     "stat": "map_affliction_pack_size_+%",
+     "min": 15,
+     "max": 30,
+     "tiers": [
+      [
+       15,
+       30
+      ]
+     ],
+     "trade": "explicit.stat_3465791711"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Delirium Tablet",
+   "names": [
+    "of Freeze Time"
+   ],
+   "lines": [
+    {
+     "text": "Slaying Rare Monsters in Map pauses the Delirium Mirror Timer for # seconds",
+     "de": "Das Töten von seltenen Monstern in der Karte pausiert den Timer des Deliriumspiegels für # Sekunden",
+     "stat": "map_killing_rare_monsters_pauses_delirium_mirror_timer_for_x_seconds",
+     "min": 3,
+     "max": 5,
+     "tiers": [
+      [
+       3,
+       5
+      ]
+     ],
+     "trade": "explicit.stat_2323782229"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Expedition Tablet",
+   "names": [
+    "of the Demolition"
+   ],
+   "lines": [
+    {
+     "text": "#% increased Expedition Explosive Area of Effect in Map",
+     "de": "#% vergrößerter Wirkungsbereich von Expedition-Sprengstoffen in der Karte",
+     "stat": "map_expedition_explosion_area_of_effect_+%",
+     "min": 5,
+     "max": 10,
+     "tiers": [
+      [
+       5,
+       10
+      ]
+     ],
+     "trade": "explicit.stat_3039133122"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Expedition Tablet",
+   "names": [
+    "of Power"
+   ],
+   "lines": [
+    {
+     "text": "#% increased Expedition Monster Rarity in Map",
+     "de": "#% erhöhte Monsterseltenheit bei Expeditionen in der Karte",
+     "stat": "map_expedition_number_of_magic_and_rare_packs_+%_and_rare_monster_modifiers_chance_%",
+     "min": 15,
+     "max": 25,
+     "tiers": [
+      [
+       15,
+       25
+      ]
+     ],
+     "trade": "explicit.stat_2905096233"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Expedition Tablet",
+   "names": [
+    "of Knowledge"
+   ],
+   "lines": [
+    {
+     "text": "#% increased Quantity of Expedition Logbooks dropped by Runic Monsters in Map",
+     "de": "#% erhöhte Menge fallen gelassener Expedition-Logbücher von Runenmonstern in der Karte",
+     "stat": "expedition_monsters_logbook_chance_+%",
+     "min": 15,
+     "max": 25,
+     "tiers": [
+      [
+       15,
+       25
+      ]
+     ],
+     "trade": "explicit.stat_1083387327"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Expedition Tablet",
+   "names": [
+    "of Preservation"
+   ],
+   "lines": [
+    {
+     "text": "Expeditions contain # Additional Bosses encased in ice in Map",
+     "de": "Expeditionen in der Karte enthalten # zusätzliche Bosse, die in Eis eingeschlossen sind",
+     "stat": "map_expedition_num_frozen_bosses_+",
+     "min": 1,
+     "max": 2,
+     "tiers": [
+      [
+       1,
+       2
+      ]
+     ],
+     "trade": "explicit.stat_1183698646"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Expedition Tablet",
+   "names": [
+    "of Sentinels"
+   ],
+   "lines": [
+    {
+     "text": "Expeditions contain # Additional Verisium Sentries in Map",
+     "de": "Expeditionen in der Karte enthalten # zusätzliche Verisium-Wächter",
+     "stat": "map_expedition_num_sentinels_+",
+     "min": 1,
+     "max": 2,
+     "tiers": [
+      [
+       1,
+       2
+      ]
+     ],
+     "trade": "explicit.stat_1109460697"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Expedition Tablet",
+   "names": [
+    "of Treasure"
+   ],
+   "lines": [
+    {
+     "text": "Expeditions contain # buried Strongboxes in Map",
+     "de": "Expeditionen in der Karte enthalten # vergrabene Tresore",
+     "stat": "map_expedition_num_buried_strongboxes_+",
+     "min": 1,
+     "max": 2,
+     "tiers": [
+      [
+       1,
+       2
+      ]
+     ],
+     "trade": "explicit.stat_181823691"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Expedition Tablet",
+   "names": [
+    "of the Past"
+   ],
+   "lines": [
+    {
+     "text": "Expeditions contain # Vaal Relics in Map",
+     "de": "Expeditionen in der Karte enthalten # Vaal-Relikte",
+     "stat": "map_expedition_num_vaal_relics_+",
+     "min": 1,
+     "max": 2,
+     "tiers": [
+      [
+       1,
+       2
+      ]
+     ],
+     "trade": "explicit.stat_2852112245"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Expedition Tablet",
+   "names": [
+    "of Remnants"
+   ],
+   "lines": [
+    {
+     "text": "Expeditions have +#% Surpassing chance to contain an additional Verisium Remnant",
+     "de": "Expeditionen in der Karte haben +#% übertreffende Chance, ein zusätzliches Verisium-Relikt zu enthalten",
+     "stat": "map_expedition_remnants_surpassing_chance_%",
+     "min": 30,
+     "max": 40,
+     "tiers": [
+      [
+       30,
+       40
+      ]
+     ],
+     "trade": "explicit.stat_3653794255"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Expedition Tablet",
+   "names": [
+    "of Twins"
+   ],
+   "lines": [
+    {
+     "text": "Expeditions have +#% Surpassing chance to Duplicate Runic Monsters in Map",
+     "de": "Expeditionen in der Karte haben +#% übertreffende Chance, Runenmonster zu duplizieren",
+     "stat": "map_expedition_twinned_elites_surpassing_chance_%",
+     "min": 30,
+     "max": 40,
+     "tiers": [
+      [
+       30,
+       40
+      ]
+     ],
+     "trade": "explicit.stat_779964546"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Expedition Tablet",
+   "names": [
+    "of Runes"
+   ],
+   "lines": [
+    {
+     "text": "Map contains #% increased number of Runic Monster Markers",
+     "de": "Karte enthält #% erhöhte Anzahl von Markierungen für Runenmonster",
+     "stat": "map_expedition_elite_marker_count_+%",
+     "min": 15,
+     "max": 25,
+     "tiers": [
+      [
+       15,
+       25
+      ]
+     ],
+     "trade": "explicit.stat_1640965354"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Expedition Tablet",
+   "names": [
+    "of Verisium"
+   ],
+   "lines": [
+    {
+     "text": "Monsters from Verisium Remnants drop #% increased Verisium",
+     "de": "Monster von Verisium-Relikten lassen #% erhöhtes Verisium fallen",
+     "stat": "map_verisium_stack_size_+%",
+     "min": 15,
+     "max": 25,
+     "tiers": [
+      [
+       15,
+       25
+      ]
+     ],
+     "trade": "explicit.stat_3520418269"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Expedition Tablet",
+   "names": [
+    "of Ancient Evil"
+   ],
+   "lines": [
+    {
+     "text": "The first # unearthed Runic Monsters will be Rare Monsters in Map",
+     "de": "Die ersten # freigelegten Runenmonster in der Karte werden seltene Monster sein",
+     "stat": "map_expedition_first_X_unearthed_runic_monsters_are_rare",
+     "min": 1,
+     "max": 2,
+     "tiers": [
+      [
+       1,
+       2
+      ]
+     ],
+     "trade": "explicit.stat_3963944561"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Expedition Tablet",
+   "names": [
+    "of Ancient Fiends"
+   ],
+   "lines": [
+    {
+     "text": "Verisium Remnants have +#% chance to add an additional Runic Modifier in Map",
+     "de": "Verisium-Relikte in der Karte haben +#% Chance, einen zusätzlichen Runen-Modifikator hinzuzufügen",
+     "stat": "map_expedition_remnants_pass_2_runic_modifiers_chance_%",
+     "min": 25,
+     "max": 35,
+     "tiers": [
+      [
+       25,
+       35
+      ]
+     ],
+     "trade": "explicit.stat_3871299443"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Overseer Tablet",
+   "names": [
+    "of Hoards"
+   ],
+   "lines": [
+    {
+     "text": "#% increased Quantity of Items dropped by Map Bosses",
+     "de": "#% erhöhte Menge fallen gelassener Gegenstände von Kartenbossen",
+     "stat": "map_boss_dropped_item_quantity_+%",
+     "min": 13,
+     "max": 20,
+     "tiers": [
+      [
+       13,
+       20
+      ]
+     ],
+     "trade": "explicit.stat_3119172063"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Overseer Tablet",
+   "names": [
+    "of Pathways"
+   ],
+   "lines": [
+    {
+     "text": "#% increased Quantity of Waystones dropped by Map Bosses",
+     "de": "#% erhöhte Menge fallen gelassener Wegsteine von Kartenbossen",
+     "stat": "map_map_boss_bonus_map_drop_chance_+%",
+     "min": 18,
+     "max": 30,
+     "tiers": [
+      [
+       18,
+       30
+      ]
+     ],
+     "trade": "explicit.stat_1457896329"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Overseer Tablet",
+   "names": [
+    "of Treasure"
+   ],
+   "lines": [
+    {
+     "text": "#% increased Rarity of Items dropped by Map Bosses",
+     "de": "#% erhöhte Seltenheit fallen gelassener Gegenstände von Kartenbossen",
+     "stat": "map_boss_item_rarity_+%",
+     "min": 35,
+     "max": 60,
+     "tiers": [
+      [
+       35,
+       60
+      ]
+     ],
+     "trade": "explicit.stat_4255069232"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Overseer Tablet",
+   "names": [
+    "of Conquering"
+   ],
+   "lines": [
+    {
+     "text": "Map Bosses grant #% increased Experience",
+     "de": "Kartenbosse gewähren #% erhöhte Erfahrung",
+     "stat": "map_boss_experience_+%_final",
+     "min": 40,
+     "max": 80,
+     "tiers": [
+      [
+       40,
+       80
+      ]
+     ],
+     "trade": "explicit.stat_3860150265"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Overseer Tablet",
+   "names": [
+    "of Wisps"
+   ],
+   "lines": [
+    {
+     "text": "Map contains # additional Azmeri Spirits",
+     "de": "Karte enthält # zusätzliche Azmeri-Geister",
+     "stat": "maps_with_powerful_bosses_additional_spirit_+",
+     "min": 1,
+     "max": 2,
+     "tiers": [
+      [
+       1,
+       2
+      ]
+     ],
+     "trade": "explicit.stat_775597083"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Overseer Tablet",
+   "names": [
+    "of Crystals"
+   ],
+   "lines": [
+    {
+     "text": "Map contains # additional Essences",
+     "de": "Karte enthält # zusätzliche Essenzen",
+     "stat": "maps_with_powerful_bosses_additional_essence_+",
+     "min": 1,
+     "max": 2,
+     "tiers": [
+      [
+       1,
+       2
+      ]
+     ],
+     "trade": "explicit.stat_2162684861"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Overseer Tablet",
+   "names": [
+    "of Worship"
+   ],
+   "lines": [
+    {
+     "text": "Map contains # additional Shrines",
+     "de": "Karte enthält # zusätzliche Schreine",
+     "stat": "maps_with_powerful_bosses_additional_shrine_+",
+     "min": 1,
+     "max": 2,
+     "tiers": [
+      [
+       1,
+       2
+      ]
+     ],
+     "trade": "explicit.stat_3042527515"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Overseer Tablet",
+   "names": [
+    "of Compartments"
+   ],
+   "lines": [
+    {
+     "text": "Map contains # additional Strongboxes",
+     "de": "Karte enthält # zusätzliche Tresore",
+     "stat": "maps_with_powerful_bosses_additional_strongbox_+",
+     "min": 1,
+     "max": 2,
+     "tiers": [
+      [
+       1,
+       2
+      ]
+     ],
+     "trade": "explicit.stat_3040603554"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Ritual Tablet",
+   "names": [
+    "of Devotion"
+   ],
+   "lines": [
+    {
+     "text": "Deferring Favours at Ritual Altars in Map costs #% reduced Tribute",
+     "de": "Das Aufbewahren von Gaben in Ritual-Altären in der Karte kostet #% verringerten Tribut",
+     "stat": "map_ritual_defer_reward_tribute_cost_+%",
+     "min": 20,
+     "max": 30,
+     "tiers": [
+      [
+       20,
+       30
+      ]
+     ],
+     "trade": "explicit.stat_1345835998",
+     "tradeNegated": true
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Ritual Tablet",
+   "names": [
+    "of the Appeal"
+   ],
+   "lines": [
+    {
+     "text": "Favours Deferred at Ritual Altars in Map reappear #% sooner",
+     "de": "Aufbewahrte Gaben in Ritual-Altären in der Karte erscheinen #% früher wieder",
+     "stat": "map_ritual_deferred_rewards_are_offered_again_+%_sooner",
+     "min": 25,
+     "max": 40,
+     "tiers": [
+      [
+       25,
+       40
+      ]
+     ],
+     "trade": "explicit.stat_28208665"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Ritual Tablet",
+   "names": [
+    "of the Occult"
+   ],
+   "lines": [
+    {
+     "text": "Favours Rerolled at Ritual Altars in Map have #% chance to cost no Tribute",
+     "de": "Neu gewürfelte Gaben in Ritual-Altären in der Karte haben #% Chance, kein Tribut zu kosten",
+     "stat": "map_ritual_offered_rewards_from_rerolls_have_permyriad_chance_to_cost_no_tribute",
+     "min": 3,
+     "max": 6,
+     "tiers": [
+      [
+       3,
+       6
+      ]
+     ],
+     "trade": "explicit.stat_937291386"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Ritual Tablet",
+   "names": [
+    "of Sacrifice"
+   ],
+   "lines": [
+    {
+     "text": "Monsters Sacrificed at Ritual Altars in Map grant #% increased Tribute",
+     "de": "Bei Ritual-Altären geopferte Monster in der Karte gewähren #% erhöhten Tribut",
+     "stat": "map_ritual_tribute_+%",
+     "min": 18,
+     "max": 30,
+     "tiers": [
+      [
+       18,
+       30
+      ]
+     ],
+     "trade": "explicit.stat_159726667"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Ritual Tablet",
+   "names": [
+    "of the Dogma"
+   ],
+   "lines": [
+    {
+     "text": "Rerolling Favours at Ritual Altars in Map costs #% reduced Tribute",
+     "de": "Das Würfeln von Gaben bei Ritual-Altären in der Karte kostet #% verringerten Tribut",
+     "stat": "map_ritual_rewards_reroll_cost_+%_final",
+     "min": 20,
+     "max": 30,
+     "tiers": [
+      [
+       20,
+       30
+      ]
+     ],
+     "trade": "explicit.stat_2282052746",
+     "tradeNegated": true
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Ritual Tablet",
+   "names": [
+    "of the Foundling"
+   ],
+   "lines": [
+    {
+     "text": "Revived Monsters from Ritual Altars in Map have #% increased chance to be Magic",
+     "de": "Wiederbelebte Monster von Ritual-Altären in der Karte haben #% erhöhte Chance, magisch zu sein",
+     "stat": "map_ritual_magic_monsters_+%",
+     "min": 35,
+     "max": 70,
+     "tiers": [
+      [
+       35,
+       70
+      ]
+     ],
+     "trade": "explicit.stat_1031644647"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Ritual Tablet",
+   "names": [
+    "of the Cult"
+   ],
+   "lines": [
+    {
+     "text": "Revived Monsters from Ritual Altars in Map have #% increased chance to be Rare",
+     "de": "Wiederbelebte Monster von Ritual-Altären in der Karte haben #% erhöhte Chance, selten zu sein",
+     "stat": "map_ritual_rare_monsters_+%",
+     "min": 25,
+     "max": 40,
+     "tiers": [
+      [
+       25,
+       40
+      ]
+     ],
+     "trade": "explicit.stat_3979184174"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Ritual Tablet",
+   "names": [
+    "of Prayers"
+   ],
+   "lines": [
+    {
+     "text": "Ritual Altars in Map allow rerolling Favours # additional times",
+     "de": "Gaben von Ritual-Altäre in der Karte können # zusätzliche Male gewürfelt werden",
+     "stat": "map_ritual_additional_reward_rerolls",
+     "min": 1,
+     "max": 3,
+     "tiers": [
+      [
+       1,
+       3
+      ]
+     ],
+     "trade": "explicit.stat_120737942"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Ritual Tablet",
+   "names": [
+    "of Omens"
+   ],
+   "lines": [
+    {
+     "text": "Ritual Favours in Map have #% increased chance to be Omens",
+     "de": "Ritualgaben in der Karte haben #% erhöhte Chance, Omen zu sein",
+     "stat": "map_ritual_omen_chance_+%",
+     "min": 35,
+     "max": 70,
+     "tiers": [
+      [
+       35,
+       70
+      ]
+     ],
+     "trade": "explicit.stat_4219853180"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Temple Tablet",
+   "names": [],
+   "lines": [
+    {
+     "text": "# extra pack of Monsters around Vaal Beacons in Map",
+     "de": "# extra Gruppe von Monstern um Vaal-Leuchtfeuer in der Karte",
+     "stat": "map_incursion_vaal_beacon_extra_packs_+",
+     "min": 1,
+     "max": 1,
+     "tiers": [
+      [
+       1,
+       1
+      ]
+     ],
+     "trade": "explicit.stat_3294218801"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Temple Tablet",
+   "names": [],
+   "lines": [
+    {
+     "text": "#% chance for an extra packs of Monsters around Vaal Beacons in Map",
+     "de": "#% Chance auf eine extra Gruppe von Monstern um Vaal-Leuchtfeuer in der Karte",
+     "stat": "map_incursion_vaal_beacon_extra_packs_chance_%",
+     "min": 30,
+     "max": 60,
+     "tiers": [
+      [
+       30,
+       60
+      ]
+     ],
+     "trade": "explicit.stat_1359775981"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Temple Tablet",
+   "names": [],
+   "lines": [
+    {
+     "text": "#% chance to add a Vaal Beacon Unique Monster to the Map",
+     "de": "#% Chance, der Karte ein einzigartiges Monster von Vaal-Leuchtfeuern hinzuzufügen",
+     "stat": "map_incursion_vaal_beacon_boss_added_to_area_chance_%",
+     "min": 10,
+     "max": 25,
+     "tiers": [
+      [
+       10,
+       25
+      ]
+     ],
+     "trade": "explicit.stat_3937291366"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Temple Tablet",
+   "names": [],
+   "lines": [
+    {
+     "text": "#% chance to gain an additional Crystal from Vaal Beacons in Map",
+     "de": "#% Chance, einen zusätzlichen Kristall von Vaal-Leuchtfeuern in der Karte zu erhalten",
+     "stat": "map_incursion_token_chance_+%",
+     "min": 5,
+     "max": 10,
+     "tiers": [
+      [
+       5,
+       10
+      ]
+     ],
+     "trade": "explicit.stat_1940774881"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Temple Tablet",
+   "names": [],
+   "lines": [
+    {
+     "text": "#% increased chance Vaal Beacon Chests are Rare in Map",
+     "de": "#% erhöhte Chance, dass Vaal-Leuchtfeuer-Truhen in der Karte selten sind",
+     "stat": "map_incursion_vaal_beacon_chest_rare_chance_+%",
+     "min": 30,
+     "max": 60,
+     "tiers": [
+      [
+       30,
+       60
+      ]
+     ],
+     "trade": "explicit.stat_2514439422"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Temple Tablet",
+   "names": [],
+   "lines": [
+    {
+     "text": "#% increased chance Vaal Beacons summon additional Monsters in Map",
+     "de": "#% erhöhte Chance, dass Vaal-Leuchtfeuer in der Karte zusätzliche Monster beschwören",
+     "stat": "map_incursion_vaal_beacon_secondary_encounter_chance_+%",
+     "min": 25,
+     "max": 50,
+     "tiers": [
+      [
+       25,
+       50
+      ]
+     ],
+     "trade": "explicit.stat_632698321"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "tablet": "Temple Tablet",
+   "names": [],
+   "lines": [
+    {
+     "text": "#% increased Pack Size for Monsters around Vaal Beacons in Map",
+     "de": "#% erhöhte Gruppengröße von Monstern um Vaal-Leuchtfeuer in der Karte",
+     "stat": "map_incursion_vaal_beacon_pack_size_+%",
+     "min": 10,
+     "max": 30,
+     "tiers": [
+      [
+       10,
+       30
+      ]
+     ],
+     "trade": "explicit.stat_890040946"
+    }
+   ]
+  }
+ ]
+}

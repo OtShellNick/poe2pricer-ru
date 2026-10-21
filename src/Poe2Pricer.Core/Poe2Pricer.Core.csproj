@@ -12,6 +12,8 @@
     <!-- Built into the assembly: no loose file beside the program, nothing fetched at run time. -->
     <EmbeddedResource Include="../../data/fonts/Caveat-Bold.ttf" LogicalName="Caveat-Bold.ttf" />
     <EmbeddedResource Include="../../data/names/de.json" LogicalName="Names.de.json" />
+    <EmbeddedResource Include="../../data/waystones/mods.json" LogicalName="Waystones.mods.json" />
+    <EmbeddedResource Include="../../data/tablets/mods.json" LogicalName="Tablets.mods.json" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="OpenCvSharp4" Version="4.11.0.20250507" />

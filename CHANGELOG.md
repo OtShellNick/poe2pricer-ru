@@ -3,6 +3,39 @@
 All notable changes to poe2pricer, newest first. The release notes on GitHub say the same
 with more words: https://github.com/saxe78/poe2pricer/releases
 
+## 1.2.0 — 2026-10-21
+
+### Added
+- Waystones tab: profiles (summary values, tier, revives, corrupted, mods in "and" / "or" /
+  "not" groups), the search text for the stash search, and the profile's price on the trade
+  site ("Refresh price").
+- Tablets tab: the same for each kind of tablet, with the uses left.
+- Live price at the tooltip of a waystone or tablet, from the trade site of pathofexile.com,
+  asked in the words of the closest profile with the item's own values (without a profile,
+  exactly as the item is): Settings → Display, "Live price from the trade site" and "incl.
+  premium stash (online)". `Alt+D` ("Force live price") asks for the item exactly as it is,
+  past the profiles.
+- Waystones and tablets in the English and the German game client; the search text and the
+  mod lists follow the client's language.
+- Stash tabs inside a stash folder are found in the keyboard UI (contributed by
+  gazevans-pixel, #2).
+- The log's start line names the date.
+
+### Changed
+- Updates are downloaded and installed only after a click on the message; before, they were
+  downloaded in the background and installed when you quit.
+- A UI Text Size other than medium gives a hint only, without a tray notice (#1).
+- When poe.ninja cannot be reached, the log names the reason (host, secure connection,
+  time-out).
+- Releases are built by GitHub Actions, with `SHA256SUMS.txt`.
+- README and guide: waystones and tablets, with pictures of the program window.
+
+### Fixed
+- Favours: a tooltip over empty cells ended at the screen's edge at large text sizes and hid
+  the items below it (#1).
+- Island Rumours: the island was not recognised when its ship marker is drawn dimmer (#1).
+- A diagnosis taken after the overlay hid itself reported the window shown before.
+
 ## 1.1.2 — 2026-10-20
 
 ### Fixed

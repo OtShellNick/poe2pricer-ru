@@ -1,0 +1,969 @@
+{
+ "source": "Spieldaten (Mods, Stats, Tags, stat_descriptions.csd) und trade2/data/stats, tools/waystone_mods.py",
+ "mods": [
+  {
+   "kind": "prefix",
+   "names": [
+    "Painful"
+   ],
+   "lines": [
+    {
+     "text": "#% increased Monster Damage",
+     "de": "#% erhöhter Monsterschaden",
+     "stat": "map_monsters_damage_+%",
+     "min": 5,
+     "max": 24,
+     "tiers": [
+      [
+       5,
+       9
+      ],
+      [
+       10,
+       14
+      ],
+      [
+       15,
+       19
+      ],
+      [
+       20,
+       24
+      ]
+     ],
+     "trade": "explicit.stat_1890519597"
+    }
+   ]
+  },
+  {
+   "kind": "prefix",
+   "names": [
+    "Tough"
+   ],
+   "lines": [
+    {
+     "text": "#% more Monster Life",
+     "de": "#% mehr Monsterleben",
+     "stat": "map_monsters_life_+%",
+     "min": 10,
+     "max": 30,
+     "tiers": [
+      [
+       10,
+       14
+      ],
+      [
+       15,
+       19
+      ],
+      [
+       20,
+       25
+      ],
+      [
+       26,
+       30
+      ]
+     ],
+     "trade": "explicit.stat_95249895"
+    }
+   ]
+  },
+  {
+   "kind": "prefix",
+   "names": [
+    "Penetrating"
+   ],
+   "lines": [
+    {
+     "text": "Monster Damage Penetrates #% Elemental Resistances",
+     "de": "Monsterschaden durchdringt #% Elementarwiderstände",
+     "stat": "map_monsters_penetrate_elemental_resistances_%",
+     "min": 6,
+     "max": 16,
+     "tiers": [
+      [
+       6,
+       8
+      ],
+      [
+       9,
+       11
+      ],
+      [
+       12,
+       14
+      ],
+      [
+       14,
+       16
+      ]
+     ],
+     "trade": "explicit.stat_1898978455"
+    }
+   ]
+  },
+  {
+   "kind": "prefix",
+   "names": [
+    "Shattering"
+   ],
+   "lines": [
+    {
+     "text": "Monsters Break Armour equal to #% of Physical Damage dealt",
+     "de": "Monster zerbrechen Rüstung in Höhe von #% des verursachten physischen Schadens",
+     "stat": "map_monsters_armour_break_physical_damage_%_dealt_as_armour_break",
+     "min": 15,
+     "max": 45,
+     "tiers": [
+      [
+       15,
+       20
+      ],
+      [
+       20,
+       25
+      ],
+      [
+       25,
+       30
+      ],
+      [
+       30,
+       45
+      ]
+     ],
+     "trade": "explicit.stat_1879340377"
+    }
+   ]
+  },
+  {
+   "kind": "prefix",
+   "names": [
+    "Profane"
+   ],
+   "lines": [
+    {
+     "text": "Monsters deal #% of Damage as Extra Chaos",
+     "de": "Monster verursachen #% des Schadens als extra Chaosschaden",
+     "stat": "map_monsters_%_all_damage_to_gain_as_chaos",
+     "min": 5,
+     "max": 24,
+     "tiers": [
+      [
+       5,
+       9
+      ],
+      [
+       10,
+       14
+      ],
+      [
+       15,
+       19
+      ],
+      [
+       20,
+       24
+      ]
+     ],
+     "trade": "explicit.stat_2200661314"
+    }
+   ]
+  },
+  {
+   "kind": "prefix",
+   "names": [
+    "Frostbitten"
+   ],
+   "lines": [
+    {
+     "text": "Monsters deal #% of Damage as Extra Cold",
+     "de": "Monster verursachen #% des Schadens als extra Kälteschaden",
+     "stat": "map_monsters_%_all_damage_to_gain_as_cold",
+     "min": 5,
+     "max": 24,
+     "tiers": [
+      [
+       5,
+       9
+      ],
+      [
+       10,
+       14
+      ],
+      [
+       15,
+       19
+      ],
+      [
+       20,
+       24
+      ]
+     ],
+     "trade": "explicit.stat_211727"
+    }
+   ]
+  },
+  {
+   "kind": "prefix",
+   "names": [
+    "Infernal"
+   ],
+   "lines": [
+    {
+     "text": "Monsters deal #% of Damage as Extra Fire",
+     "de": "Monster verursachen #% des Schadens als extra Feuerschaden",
+     "stat": "map_monsters_%_all_damage_to_gain_as_fire",
+     "min": 5,
+     "max": 24,
+     "tiers": [
+      [
+       5,
+       9
+      ],
+      [
+       10,
+       14
+      ],
+      [
+       15,
+       19
+      ],
+      [
+       20,
+       24
+      ]
+     ],
+     "trade": "explicit.stat_92381065"
+    }
+   ]
+  },
+  {
+   "kind": "prefix",
+   "names": [
+    "Thunderous"
+   ],
+   "lines": [
+    {
+     "text": "Monsters deal #% of Damage as Extra Lightning",
+     "de": "Monster verursachen #% des Schadens als extra Blitzschaden",
+     "stat": "map_monsters_%_all_damage_to_gain_as_lightning",
+     "min": 5,
+     "max": 24,
+     "tiers": [
+      [
+       5,
+       9
+      ],
+      [
+       10,
+       14
+      ],
+      [
+       15,
+       19
+      ],
+      [
+       20,
+       24
+      ]
+     ],
+     "trade": "explicit.stat_512071314"
+    }
+   ]
+  },
+  {
+   "kind": "prefix",
+   "names": [
+    "Puncturing"
+   ],
+   "lines": [
+    {
+     "text": "Monsters have #% chance to inflict Bleeding on Hit",
+     "de": "Monster haben #% Chance, bei Treffer Bluten zu verursachen",
+     "stat": "map_monsters_chance_to_inflict_bleeding_%",
+     "min": 5,
+     "max": 25,
+     "tiers": [
+      [
+       5,
+       10
+      ],
+      [
+       10,
+       15
+      ],
+      [
+       15,
+       20
+      ],
+      [
+       20,
+       25
+      ]
+     ],
+     "trade": "explicit.stat_2506820610"
+    }
+   ]
+  },
+  {
+   "kind": "prefix",
+   "names": [
+    "Venomous"
+   ],
+   "lines": [
+    {
+     "text": "Monsters have #% chance to Poison on Hit",
+     "de": "Monster haben #% Chance, bei Treffer zu vergiften",
+     "stat": "map_monsters_chance_to_poison_on_hit_%",
+     "min": 13,
+     "max": 40,
+     "tiers": [
+      [
+       13,
+       19
+      ],
+      [
+       20,
+       26
+      ],
+      [
+       27,
+       33
+      ],
+      [
+       34,
+       40
+      ]
+     ],
+     "trade": "explicit.stat_95221307"
+    }
+   ]
+  },
+  {
+   "kind": "prefix",
+   "names": [
+    "Precise"
+   ],
+   "lines": [
+    {
+     "text": "Monsters have #% increased Accuracy Rating",
+     "de": "Monster haben #% erhöhte Treffgenauigkeit",
+     "stat": "map_monsters_accuracy_rating_+%",
+     "min": 10,
+     "max": 50,
+     "tiers": [
+      [
+       10,
+       20
+      ],
+      [
+       20,
+       30
+      ],
+      [
+       30,
+       40
+      ],
+      [
+       40,
+       50
+      ]
+     ],
+     "trade": "explicit.stat_1588049749"
+    }
+   ]
+  },
+  {
+   "kind": "prefix",
+   "names": [
+    "Fleeting"
+   ],
+   "lines": [
+    {
+     "text": "Monsters have #% increased Attack, Cast and Movement Speed",
+     "de": "Monster haben #% erhöhte Angriffs-, Zauber- und Bewegungsgeschwindigkeit",
+     "stat": "map_monster_attack_cast_and_movement_speed_+%",
+     "min": 10,
+     "max": 15,
+     "tiers": [
+      [
+       10,
+       15
+      ],
+      [
+       10,
+       15
+      ]
+     ],
+     "trade": "explicit.stat_3909654181"
+    }
+   ]
+  },
+  {
+   "kind": "prefix",
+   "names": [
+    "Destructive"
+   ],
+   "lines": [
+    {
+     "text": "Monsters have #% increased Critical Hit Chance",
+     "de": "Monster haben #% erhöhte kritische Trefferchance",
+     "stat": "map_monsters_critical_strike_chance_+%",
+     "min": 80,
+     "max": 300,
+     "tiers": [
+      [
+       80,
+       120
+      ],
+      [
+       140,
+       180
+      ],
+      [
+       200,
+       240
+      ],
+      [
+       260,
+       300
+      ]
+     ],
+     "trade": "explicit.stat_2753083623"
+    },
+    {
+     "text": "Monsters have +#% Critical Damage Bonus",
+     "de": "Monster haben +#% zu Bonus für kritische Treffer",
+     "stat": "map_monsters_critical_strike_multiplier_+",
+     "min": 11,
+     "max": 30,
+     "tiers": [
+      [
+       11,
+       15
+      ],
+      [
+       16,
+       20
+      ],
+      [
+       21,
+       25
+      ],
+      [
+       26,
+       30
+      ]
+     ],
+     "trade": "explicit.stat_57326096"
+    }
+   ]
+  },
+  {
+   "kind": "prefix",
+   "names": [
+    "Impacting"
+   ],
+   "lines": [
+    {
+     "text": "Monsters have #% increased Stun Buildup",
+     "de": "Monster haben #% erhöhten Betäubungsaufbau",
+     "stat": "map_monsters_hit_damage_stun_multiplier_+%",
+     "min": 50,
+     "max": 110,
+     "tiers": [
+      [
+       50,
+       60
+      ],
+      [
+       70,
+       80
+      ],
+      [
+       90,
+       100
+      ],
+      [
+       100,
+       110
+      ]
+     ],
+     "trade": "explicit.stat_115425161"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "names": [
+    "of Hexwarding"
+   ],
+   "lines": [
+    {
+     "text": "#% less effect of Curses on Monsters",
+     "de": "#% weniger Wirkung von Flüchen auf Monster",
+     "stat": "map_monsters_curse_effect_on_self_+%_final",
+     "min": 20,
+     "max": 50,
+     "tiers": [
+      [
+       40,
+       50
+      ],
+      [
+       40,
+       50
+      ],
+      [
+       30,
+       40
+      ],
+      [
+       20,
+       30
+      ]
+     ],
+     "trade": "explicit.stat_3796523155"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "names": [
+    "of the Prism"
+   ],
+   "lines": [
+    {
+     "text": "+#% Monster Elemental Resistances",
+     "de": "+#% zu Monster-Elementarwiderständen",
+     "stat": "map_monsters_additional_elemental_resistance",
+     "min": 20,
+     "max": 40,
+     "tiers": [
+      [
+       20,
+       24
+      ],
+      [
+       25,
+       29
+      ],
+      [
+       30,
+       34
+      ],
+      [
+       35,
+       40
+      ]
+     ],
+     "trade": "explicit.stat_1054098949"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "names": [
+    "of Exposure"
+   ],
+   "lines": [
+    {
+     "text": "-#% maximum Player Resistances",
+     "de": "-#% maximale Spielerwiderstände",
+     "stat": "map_additional_player_maximum_resistances_%",
+     "min": 3,
+     "max": 10,
+     "tiers": [
+      [
+       8,
+       10
+      ],
+      [
+       6,
+       8
+      ],
+      [
+       4,
+       6
+      ],
+      [
+       3,
+       4
+      ]
+     ],
+     "trade": "explicit.stat_3376488707"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "names": [
+    "Sleet",
+    "of Sleet"
+   ],
+   "lines": [
+    {
+     "text": "Area has patches of Chilled Ground",
+     "de": "Gebiet hat stellenweise unterkühlenden Boden",
+     "stat": "map_ground_ice_base_magnitude",
+     "trade": "explicit.stat_349586058"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "names": [
+    "Flaming",
+    "of Flames"
+   ],
+   "lines": [
+    {
+     "text": "Area has patches of Ignited Ground",
+     "de": "Gebiet hat stellenweise entzündeten Boden",
+     "stat": "map_base_ground_fire_damage_to_deal_per_10_seconds",
+     "trade": "explicit.stat_133340941"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "names": [
+    "Shocking",
+    "of Shocking"
+   ],
+   "lines": [
+    {
+     "text": "Area has patches of Shocked Ground",
+     "de": "Gebiet hat stellenweise schockenden Boden",
+     "stat": "map_ground_lightning",
+     "trade": "explicit.stat_3477720557"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "names": [
+    "of Overpowering"
+   ],
+   "lines": [
+    {
+     "text": "Monster have #% increased Elemental Ailment Application",
+     "de": "Monster haben #% erhöhte Anwendung von elementaren Beeinträchtigungen",
+     "stat": "map_monsters_elemental_ailment_chance_+%",
+     "min": 60,
+     "max": 130,
+     "tiers": [
+      [
+       60,
+       79
+      ],
+      [
+       80,
+       99
+      ],
+      [
+       100,
+       119
+      ],
+      [
+       120,
+       130
+      ]
+     ],
+     "trade": "explicit.stat_3877264671"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "names": [
+    "of Enduring"
+   ],
+   "lines": [
+    {
+     "text": "Monsters are Armoured",
+     "de": "Monster haben Rüstung",
+     "stat": "map_monsters_additional_strength_ratio_%_for_armour",
+     "trade": "explicit.stat_2539290279"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "names": [
+    "of Evasion"
+   ],
+   "lines": [
+    {
+     "text": "Monsters are Evasive",
+     "de": "Monster sind ausweichend",
+     "stat": "map_monsters_additional_dexterity_ratio_%_for_evasion",
+     "trade": "explicit.stat_2570249991"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "names": [
+    "of Buffering"
+   ],
+   "lines": [
+    {
+     "text": "Monsters gain #% of maximum Life as Extra maximum Energy Shield",
+     "de": "Monster erhalten #% des maximalen Lebens als extra maximalen Energieschild",
+     "stat": "map_monsters_maximum_life_%_to_add_to_maximum_energy_shield",
+     "min": 12,
+     "max": 25,
+     "tiers": [
+      [
+       12,
+       25
+      ]
+     ],
+     "trade": "explicit.stat_2887760183"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "names": [
+    "of the Unwavering"
+   ],
+   "lines": [
+    {
+     "text": "Monsters have #% increased Stun Threshold",
+     "de": "Monster haben #% erhöhte Betäubungsschwelle",
+     "stat": "map_monsters_stun_threshold_+%",
+     "min": 30,
+     "max": 79,
+     "tiers": [
+      [
+       30,
+       39
+      ],
+      [
+       40,
+       49
+      ],
+      [
+       60,
+       69
+      ],
+      [
+       70,
+       79
+      ]
+     ],
+     "trade": "explicit.stat_4101943684"
+    },
+    {
+     "text": "Monsters have #% increased Ailment Threshold",
+     "de": "Monster haben #% erhöhte Schwelle für Beeinträchtigungen",
+     "stat": "map_monsters_ailment_threshold_+%",
+     "min": 30,
+     "max": 79,
+     "tiers": [
+      [
+       30,
+       39
+      ],
+      [
+       50,
+       59
+      ],
+      [
+       70,
+       79
+      ],
+      [
+       70,
+       79
+      ]
+     ],
+     "trade": "explicit.stat_1994551050"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "names": [
+    "of Obstruction"
+   ],
+   "lines": [
+    {
+     "text": "Monsters take #% reduced Extra Damage from Critical Hits",
+     "de": "Monster erleiden #% verringerten extra Schaden von kritischen Treffern",
+     "stat": "map_monsters_base_self_critical_strike_multiplier_-%",
+     "min": 15,
+     "max": 30,
+     "tiers": [
+      [
+       15,
+       19
+      ],
+      [
+       20,
+       25
+      ],
+      [
+       26,
+       30
+      ],
+      [
+       26,
+       30
+      ]
+     ],
+     "trade": "explicit.stat_337935900"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "names": [
+    "of Erosion"
+   ],
+   "lines": [
+    {
+     "text": "Players are periodically Cursed with Elemental Weakness",
+     "de": "Spieler werden periodisch verflucht mit Elementarempfindlichkeit",
+     "stat": "map_elemental_weakness_curse_zones",
+     "trade": "explicit.stat_554690751"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "names": [
+    "of Enfeebling"
+   ],
+   "lines": [
+    {
+     "text": "Players are periodically Cursed with Enfeeble",
+     "de": "Spieler werden periodisch verflucht mit Schwächen",
+     "stat": "map_enfeeble_curse_zones",
+     "trade": "explicit.stat_2029171424"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "names": [
+    "of Slowing"
+   ],
+   "lines": [
+    {
+     "text": "Players are periodically Cursed with Temporal Chains",
+     "de": "Spieler werden periodisch verflucht mit Fesseln der Zeit",
+     "stat": "map_temporal_chains_curse_zones",
+     "trade": "explicit.stat_1629357380"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "names": [
+    "of Drought"
+   ],
+   "lines": [
+    {
+     "text": "Players gain #% reduced Flask Charges",
+     "de": "Spieler erhalten #% verringerte Fläschchenfüllungen",
+     "stat": "map_player_charges_gained_+%",
+     "min": 20,
+     "max": 35,
+     "tiers": [
+      [
+       30,
+       35
+      ],
+      [
+       30,
+       35
+      ],
+      [
+       25,
+       29
+      ],
+      [
+       20,
+       24
+      ]
+     ],
+     "trade": "explicit.stat_2549889921"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "names": [
+    "of Fatigue"
+   ],
+   "lines": [
+    {
+     "text": "Players have #% less Cooldown Recovery Rate",
+     "de": "Spieler haben #% weniger Abklingzeit-Rate",
+     "stat": "map_player_cooldown_speed_+%_final",
+     "min": 15,
+     "max": 30,
+     "tiers": [
+      [
+       25,
+       30
+      ],
+      [
+       25,
+       30
+      ],
+      [
+       20,
+       25
+      ],
+      [
+       15,
+       20
+      ]
+     ],
+     "tradeNegated": true,
+     "trade": "explicit.stat_941368244"
+    }
+   ]
+  },
+  {
+   "kind": "suffix",
+   "names": [
+    "of Smothering"
+   ],
+   "lines": [
+    {
+     "text": "Players have #% less Recovery Rate of Life and Energy Shield",
+     "de": "Spieler haben #% weniger Lebens-, Mana- und Energieschild-Wiederherstellungsrate",
+     "stat": "map_player_life_and_es_recovery_speed_+%_final",
+     "min": 20,
+     "max": 40,
+     "tiers": [
+      [
+       36,
+       40
+      ],
+      [
+       36,
+       40
+      ],
+      [
+       30,
+       35
+      ],
+      [
+       20,
+       29
+      ]
+     ],
+     "trade": "explicit.stat_4181072906"
+    }
+   ]
+  }
+ ]
+}

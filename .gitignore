@@ -6,3 +6,4 @@ work/
 ref/
 sicherung/
 release/
+__pycache__/

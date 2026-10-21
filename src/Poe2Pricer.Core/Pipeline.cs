@@ -50,6 +50,11 @@ public sealed class Pipeline : IDisposable
             ? Occluders.TooltipsAt(frame, window.WindowRight - RemnantReader.Band(Tuning.Remnants.TooltipBandLeft, popup), window.WindowRight + RemnantReader.Band(Tuning.Remnants.TooltipBandRight, popup), popup)
             : [];
 
+    // Title bars of item tooltips anywhere on the frame but its lowest part (the bottom holds
+    // the hotbar and the search box), as the waystone window looks for them.
+    public Box[] WaystoneTooltips(Mat frame, double popup = GameConfig.StandardPopup) =>
+        Occluders.TooltipsOver(frame, new Box(0, 0, frame.Width, (int)(frame.Height * Tuning.Waystones.SearchHeight)), popup);
+
     public Recognition Scan(Mat frame)
     {
         var grid = Locator.Locate(frame);

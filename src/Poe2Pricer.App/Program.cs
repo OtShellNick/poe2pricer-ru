@@ -30,8 +30,10 @@ public static class Program
     {
         // First of all: on install, update and uninstall the setup starts the program with
         // arguments of its own, which this answers and ends the process. On uninstall the entry
-        // that starts the program with Windows goes too.
-        Velopack.VelopackApp.Build().OnBeforeUninstallFastCallback(_ => Autostart.Windows().Apply(false, "")).Run();
+        // that starts the program with Windows goes too. A version downloaded but not installed
+        // (the click's restart failed, the process was ended) is not installed at the next start
+        // by itself: nothing is installed without a click (review before 1.2.0).
+        Velopack.VelopackApp.Build().SetAutoApplyOnStartup(false).OnBeforeUninstallFastCallback(_ => Autostart.Windows().Apply(false, "")).Run();
         Mutex? single = null;
         EventWaitHandle? showRequest = null;
         if (args.Length == 0)
@@ -47,7 +49,8 @@ public static class Program
             showRequest = new EventWaitHandle(false, EventResetMode.AutoReset, InstanceName + ".show");
             // Which copy runs (several may lie around: the unpacked one, a built one), to
             // read the run from the log, and when it ended.
-            FileLog.Write($"Started: {AppInfo.NameAndVersion}, {Environment.ProcessPath}, PID {Environment.ProcessId}");
+            // The log's lines carry the time only; the date here tells which day they belong to.
+            FileLog.Write($"Started: {AppInfo.NameAndVersion}, {DateTime.Now:yyyy-MM-dd}, {Environment.ProcessPath}, PID {Environment.ProcessId}");
         }
         try
         {
@@ -119,6 +122,16 @@ public static class Program
                 shownModel.Warn("gameconfig", new("GameSettingsNotFound", @"C:\Users\Name\Documents\My Games\Path of Exile 2\poe2_production_Config.ini"));
             }
             var w = new MainWindow(shownModel, Path.Combine(AppContext.BaseDirectory, "poe2pricer.ico"));
+            // POE2PRICER_ASK: the question for a profile with changes not saved (AskWindow).
+            if (Environment.GetEnvironmentVariable("POE2PRICER_ASK") is { Length: > 0 } asked)
+            {
+                WindowPicture.Save(Poe2Pricer.Ui.Views.AskWindow.Picture(Texts.Get("UnsavedTitle"), Texts.Get("UnsavedProfile", asked), Texts.Get("Save"), Texts.Get("Discard"), Texts.Get("Cancel")), args[1]);
+                return 0;
+            }
+            // POE2PRICER_PRICE: the profile prices of the Waystones and Tablets tabs asked on the
+            // trade site before the picture is taken (pictures for the guide).
+            if (Environment.GetEnvironmentVariable("POE2PRICER_PRICE") is { Length: > 0 })
+                PriceProfiles(shownModel, settings, Orb);
             int tab = Environment.GetEnvironmentVariable("POE2PRICER_TAB") is { } wanted ? int.Parse(wanted) : 0;
             // POE2PRICER_ROOM: the height of the screen's work area (a low screen, where the tab rolls).
             double room = Environment.GetEnvironmentVariable("POE2PRICER_ROOM") is { Length: > 0 } low ? double.Parse(low, System.Globalization.CultureInfo.InvariantCulture) : double.PositiveInfinity;
@@ -135,13 +148,61 @@ public static class Program
         using var screen = new WindowsGameScreen(gameConfig);
         using var prices = new NinjaPrices(settings);
         var rumourBook = RumourBook.LoadCached();
-        using var engine = new OverlayEngine(GameWindows.Standard(pipeline), screen, prices, () => rumourBook, settings, TimeProvider.System, FileLog.Write);
+        // The trade site, asked for waystone prices with poe.ninja's rates for the currencies.
+        using var trade = new TradeClient(() => prices.Ready, FileLog.Write);
+        // Which listings count follows the settings as they were last saved.
+        var tradeSettings = settings;
+        trade.InPerson = () => tradeSettings.TradeInPerson;
+        using var engine = new OverlayEngine(GameWindows.Standard(pipeline, trade), screen, prices, () => rumourBook, settings, TimeProvider.System, FileLog.Write);
         // A rumour panel read before the lines were drawn has lines without a name, and on a
         // client that is not English nothing else names them: they are looked at again once
         // the drawing is done (it takes a few seconds).
         _ = drawing.ContinueWith(_ => engine.RumoursChanged(), TaskScheduler.Default);
         var model = new MainViewModel(settings, [], rumourBook);
+        // "Price" on the Waystones tab: the cheapest waystone the profile describes, in the
+        // unit of the settings; without poe.ninja's rates there is nothing to reckon it in.
+        // "Refresh price" on the Waystones and Tablets tabs: the cheapest item the profile
+        // describes, in the unit of the settings; not asked (the trade site's limit, no rates
+        // yet): thrown with the reason, which the tab shows instead of a price.
+        async Task<(string Price, string Unit, int Listings)?> ProfilePrice(Task<TradeAnswer> asking, string what)
+        {
+            if (prices.Ready is not { } book)
+                throw new TradeNotAskedException(new TradeAnswer(null, NotAsked.NoRates).Reason());
+            var answer = await asking;
+            if (!answer.Asked)
+                throw new TradeNotAskedException(answer.Reason());
+            if (answer.Price is not { } price)
+                return null;
+            var quote = new Price(price.Divine, book.ExaltedPerDivine, price.Listings, what) { ChaosPerDivine = book.ChaosPerDivine };
+            string unit = quote.UnitIn(model.Settings.PriceUnit);
+            return (quote.TextIn(model.Settings.PriceUnit).Replace(" " + unit, ""), unit, price.Listings);
+        }
+        model.Waystones.PriceLookup = profile => ProfilePrice(trade.ForProfileAsync(profile, prices.Ready?.League ?? ""), "Waystone");
+        model.Waystones.PricesReady = () => prices.Ready is not null;
+        model.Waystones.Log = FileLog.Write;
+        model.Waystones.Dispatch = run => app.Dispatcher.BeginInvoke(run);
+        model.Waystones.IconFor = unit => unit switch { "div" => Orb("Divine_Orb"), "chaos" => Orb("Chaos_Orb"), _ => Orb("Exalted_Orb") };
+        // The profiles saved on their own: the overlay judges and prices tooltips by them from now on.
+        model.Waystones.Saved += _ => engine.Apply(Core.Settings.Load());
+        // The Tablets tab the same way, with the kind's profile.
+        model.Tablets.PriceLookup = profile => ProfilePrice(trade.ForProfileAsync(profile, prices.Ready?.League ?? ""), "Tablet");
+        model.Tablets.PricesReady = () => prices.Ready is not null;
+        model.Tablets.Log = FileLog.Write;
+        model.Tablets.Dispatch = run => app.Dispatcher.BeginInvoke(run);
+        model.Tablets.IconFor = model.Waystones.IconFor;
+        model.Tablets.Saved += _ => engine.Apply(Core.Settings.Load());
         var window = new MainWindow(model, iconPath, Path.Combine(AppContext.BaseDirectory, "data", "guide", "README.html"));
+        // A profile with changes not saved, before another one is chosen (UnsavedProfile) or
+        // before "Exit" (UnsavedProfileQuit): save (true), throw away (false), or stay (null).
+        Func<string, bool?> Asking(string question) => name =>
+            Poe2Pricer.Ui.Views.AskWindow.Ask(window, Texts.Get("UnsavedTitle"), Texts.Get(question, name), Texts.Get("Save"), Texts.Get("Discard"), Texts.Get("Cancel")) switch
+            {
+                0 => true,
+                1 => false,
+                _ => null,
+            };
+        model.Waystones.AskSave = model.Tablets.AskSave = Asking("UnsavedProfile");
+        model.Waystones.AskQuit = model.Tablets.AskQuit = Asking("UnsavedProfileQuit");
         using var tray = new TrayIcon(iconPath);
         // The status line of the program window: what is going on, what went wrong.
         void Told(StatusMessage message) => model.Report(message);
@@ -171,7 +232,7 @@ public static class Program
                 // for the rest of the run.
                 catch (Exception e)
                 {
-                    FileLog.Write("League list not loaded: " + e.Message);
+                    FileLog.Write("League list not loaded: " + e.Message + Causes.Of(e));
                 }
                 _ = app.Dispatcher.BeginInvoke(() =>
                 {
@@ -228,6 +289,8 @@ public static class Program
             keys.Clear();
             keys.Bind(s.ToggleKey, engine.Toggle);
             keys.Bind(s.DiagnoseKey, () => engine.Diagnose(diagnosticsFolder));
+            if (s.ExactKey.Length > 0)
+                keys.Bind(s.ExactKey, engine.Exact);
         }
         Bind(settings);
         // "Mit Windows starten": the entry follows the setting — now, where an entry naming
@@ -248,12 +311,43 @@ public static class Program
         }
         Autostarted(settings);
         // "Check for updates": once per start and once more when it is switched on, in the
-        // background (Updates). An installed copy has the newer version fetched: the status line
-        // and a tray message say so, a click installs it now, otherwise it is installed when the
-        // program quits. An unpacked copy is only told, with the page. A failed request is only
-        // logged: the program does not depend on github.com.
+        // background (Updates). The status line and a tray message name a newer version. An
+        // installed copy downloads and installs it on a click, which starts the program again;
+        // nothing is fetched without that click. An unpacked copy is only told, with the page. A
+        // failed request is only logged: the program does not depend on github.com.
         var updates = new Updates();
         bool updatesChecked = false;
+        bool installing = false;
+        // The click on the version named: downloaded, then installed, which starts the program
+        // again. A second click while that runs does nothing. A failed download is said in the
+        // status line (Velopack throws its own types, hence any exception); the next start names
+        // the version again.
+        void Install(string version)
+        {
+            if (installing)
+                return;
+            // The restart ends the program: profiles not saved are asked about as on "Exit";
+            // Cancel keeps the program, and the update waits for a later click (review before 1.2.0).
+            if (!app.Dispatcher.Invoke(() => model.Waystones.Quitting() && model.Tablets.Quitting()))
+                return;
+            installing = true;
+            Told(new StatusMessage(Texts.Get("UpdateDownloading", version)));
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    // The tray icon goes before the process ends, else Windows shows it until the
+                    // mouse passes over it.
+                    await updates.InstallAsync(FileLog.Write, () => app.Dispatcher.Invoke(tray.Dispose));
+                }
+                catch (Exception e)
+                {
+                    installing = false;
+                    FileLog.Write("Update failed: " + e.Message);
+                    await app.Dispatcher.BeginInvoke(() => Told(StatusMessage.Error(Texts.Get("UpdateFailed", version, e.Message))));
+                }
+            });
+        }
         void CheckUpdates()
         {
             updatesChecked = true;
@@ -261,16 +355,16 @@ public static class Program
             {
                 try
                 {
-                    var found = await updates.LookAsync(FileLog.Write);
-                    FileLog.Write(found is null ? "Update check: none newer" : $"Update check: {found.Version}{(found.Downloaded ? " downloaded" : "")} ({found.Page})");
+                    var found = await updates.LookAsync();
+                    FileLog.Write(found is null ? "Update check: none newer" : $"Update check: {found.Version}{(found.Installable ? ", a click installs it" : "")} ({found.Page})");
                     if (found is null)
                         return;
                     await app.Dispatcher.BeginInvoke(() =>
                     {
-                        if (found.Downloaded)
+                        if (found.Installable)
                         {
-                            Told(StatusMessage.Acting(Texts.Get("UpdateReady", found.Version), updates.ApplyNow));
-                            tray.Notify(Texts.Get("UpdateReadyTray", found.Version), updates.ApplyNow);
+                            Told(StatusMessage.Acting(Texts.Get("UpdateOffered", found.Version), () => Install(found.Version)));
+                            tray.Notify(Texts.Get("UpdateOfferedTray", found.Version), () => Install(found.Version));
                         }
                         else
                         {
@@ -279,9 +373,11 @@ public static class Program
                         }
                     });
                 }
-                catch (Exception e) when (e is System.Net.Http.HttpRequestException or TaskCanceledException or System.Text.Json.JsonException or IOException)
+                catch (Exception e)
                 {
-                    FileLog.Write("Update check failed: " + e.Message);
+                    // Velopack throws types of its own as well; whatever it is goes to the log
+                    // instead of vanishing in a task nobody waits for (review before 1.2.0).
+                    FileLog.Write("Update check failed: " + e.GetType().Name + ": " + e.Message);
                 }
             });
         }
@@ -324,7 +420,7 @@ public static class Program
                 if (t.IsFaulted)
                 {
                     // In the log too: the status line is gone with the next message.
-                    FileLog.Write("Prices not loaded: " + t.Exception!.GetBaseException().Message);
+                    FileLog.Write("Prices not loaded: " + t.Exception!.GetBaseException().Message + Causes.Of(t.Exception!));
                     Failed(Texts.Shown(t.Exception!.GetBaseException()));
                 }
                 else
@@ -403,16 +499,21 @@ public static class Program
         if (keys.Error is { } refused)
             Lasting("hotkeys", new("HotkeysUnavailable", refused));
         // One line for the keys: it shares the cause of the settings and goes with the next save.
-        foreach (var (stored, used) in replacedKeys)
-            Warn(new("KeyUnreadable", stored, used));
+        // A key that could not be read, or the exact-price key left off ("") because another key
+        // of the program holds it.
+        Told KeyTold((string Stored, string Used) k) => k.Used.Length == 0 ? new("ExactKeyTaken", k.Stored) : new("KeyUnreadable", k.Stored, k.Used);
+        foreach (var replaced in replacedKeys)
+            Warn(KeyTold(replaced));
         if (settingsProblem is null && replacedKeys.Count > 0)
-            model.Warn(MainViewModel.SettingsCause, new("KeyUnreadable", replacedKeys[0].Stored, replacedKeys[0].Used));
+            model.Warn(MainViewModel.SettingsCause, KeyTold(replacedKeys[0]));
         // Without the game's settings file the popup size is taken for the standard; with
         // another size set in the game, tooltips and the rumour panel would not be recognised.
         // Looked at again with every save and with the prices drawn, like the text size below.
         bool toldNotFound = false;
         void CheckGameConfig()
         {
+            // The search texts in the words of the client (it may have been switched since).
+            model.Waystones.GameLanguage = model.Tablets.GameLanguage = GameLanguage.Known(gameConfig.Language);
             bool missing = !gameConfig.Found;
             if (missing && !toldNotFound)
                 Warn(new("GameSettingsNotFound", gameConfig.File));
@@ -421,6 +522,7 @@ public static class Program
         }
         CheckGameConfig();
         model.Settings.Saved += _ => CheckGameConfig();
+        model.Settings.Saved += s => tradeSettings = s;
         engine.Draw += _ => app.Dispatcher.BeginInvoke(CheckGameConfig);
         if (gameConfig.Found)
             FileLog.Write($"Game settings: {gameConfig.File}, language {gameConfig.Language}, UI Text Size {gameConfig.TextSize}, Popup Size {gameConfig.PopupSize.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)}");
@@ -428,11 +530,13 @@ public static class Program
         // value is found later — the game writes its settings file while it runs, so a size
         // changed in the game's options after the start shows up with the next prices drawn.
         string toldTextSize = GameConfig.StandardTextSize;
+        // A text size other than the default is a hint on a line of the window, not a tray
+        // notice: at large and extra large the windows were read (issue #1, 20.10.2026).
         void CheckTextSize()
         {
             string now = gameConfig.TextSize;
             if (!gameConfig.TextSizeSupported && now != toldTextSize)
-                Warn(new("GameTextSizeNotDefault", now));
+                FileLog.Write(new Poe2Pricer.Core.Told("GameTextSizeNotDefault", now).English);
             toldTextSize = now;
             model.Warn("textsize", gameConfig.TextSizeSupported ? null : new("GameTextSizeNotDefault", now));
         }
@@ -466,9 +570,37 @@ public static class Program
             window.Show();
         else
             tray.Notify(Texts.Get("RunningInTray", Poe2Pricer.Ui.HotKey.Shown(settings.ToggleKey)));
-        int code = app.Run();
-        updates.ApplyOnExit();
-        return code;
+        return app.Run();
+    }
+
+    // The profile prices of both tabs, asked as the program asks them (ProfilePrice in Main), and
+    // waited for: the windows' thread runs on until each answer is in.
+    private static void PriceProfiles(MainViewModel model, Settings settings, Func<string, ImageSource?> orb)
+    {
+        using var ninja = new NinjaClient();
+        var book = ninja.PricesAsync(settings.League ?? NinjaClient.DefaultLeague(ninja.LeaguesAsync().GetAwaiter().GetResult())).GetAwaiter().GetResult();
+        using var trade = new TradeClient(() => book, Console.WriteLine) { InPerson = () => settings.TradeInPerson };
+        async Task<(string Price, string Unit, int Listings)?> Price(Task<TradeAnswer> asking, string what)
+        {
+            var answer = await asking;
+            if (answer.Price is not { } price)
+                return null;
+            var quote = new Price(price.Divine, book.ExaltedPerDivine, price.Listings, what) { ChaosPerDivine = book.ChaosPerDivine };
+            string unit = quote.UnitIn(settings.PriceUnit);
+            return (quote.TextIn(settings.PriceUnit).Replace(" " + unit, ""), unit, price.Listings);
+        }
+        Func<string, object?> icon = unit => unit switch { "div" => orb("Divine_Orb"), "chaos" => orb("Chaos_Orb"), _ => orb("Exalted_Orb") };
+        model.Waystones.IconFor = model.Tablets.IconFor = icon;
+        model.Waystones.PriceLookup = profile => Price(trade.ForProfileAsync(profile, book.League), "Waystone");
+        model.Tablets.PriceLookup = profile => Price(trade.ForProfileAsync(profile, book.League), "Tablet");
+        // The answers come back on the window's thread, as in the running program.
+        var dispatcher = System.Windows.Threading.Dispatcher.CurrentDispatcher;
+        SynchronizationContext.SetSynchronizationContext(new System.Windows.Threading.DispatcherSynchronizationContext(dispatcher));
+        var frame = new System.Windows.Threading.DispatcherFrame();
+        Task.WhenAll(model.Waystones.PriceCommand.ExecuteAsync(null), model.Tablets.PriceCommand.ExecuteAsync(null))
+            .ContinueWith(_ => frame.Continue = false, TaskScheduler.Default);
+        System.Windows.Threading.Dispatcher.PushFrame(frame);
+        Console.WriteLine($"profile prices: waystone {model.Waystones.ProfilePrice} {model.Waystones.ProfilePriceNote}, tablet {model.Tablets.ProfilePrice} {model.Tablets.ProfilePriceNote}");
     }
 
     private static int Render(string input, string output, string[] before, Pipeline pipeline, Settings settings, ImageSource? divine, ImageSource? exalted, ImageSource? chaos)
@@ -478,8 +610,11 @@ public static class Program
         var book = ninja.PricesAsync(settings.League ?? NinjaClient.DefaultLeague(ninja.LeaguesAsync().GetAwaiter().GetResult())).GetAwaiter().GetResult();
         pipeline.Icons.EnsureAsync(book.Images.Select(p => (p.Key, p.Value.Path))).GetAwaiter().GetResult();
         using var shot = GameCapture.Stored(frame);
-        var context = new LookContext(RumourBook.LoadCached(), settings, Console.WriteLine);
-        var windows = GameWindows.Standard(pipeline);
+        // A waystone's or tablet's tooltip is priced as the overlay prices it: one question to the
+        // trade site, with the live price on (pictures for the guide).
+        var context = new LookContext(RumourBook.LoadCached(), settings with { LiveTradePrice = true }, Console.WriteLine);
+        using var trade = new TradeClient(() => book, Console.WriteLine) { InPerson = () => settings.TradeInPerson };
+        var windows = GameWindows.Standard(pipeline, trade);
         IOpenWindow? open = null;
         // As the overlay does: the first picture is looked at, each further one glanced at and
         // followed (the rumour panel shows its tiers only once a glance found it at rest).
@@ -509,6 +644,15 @@ public static class Program
             return 1;
         }
         var picture = open.LabelAsync(shot, Task.FromResult(book), context).GetAwaiter().GetResult();
+        // The price comes in the background ("…" at the title bar); the overlay takes it at a later
+        // glance, so does this, for at most half a minute.
+        for (int i = 0; i < 60 && picture.Labels.Any(l => l.Mark == "…"); i++)
+        {
+            Thread.Sleep(500);
+            using var glanced = GameCapture.Stored(frame, area: picture.Next.GlanceArea);
+            if (picture.Next.Glance(glanced.Image, book, context) is Glance.Relabel relabel)
+                picture = relabel.Next.LabelAsync(shot, Task.FromResult(book), context).GetAwaiter().GetResult();
+        }
         Console.WriteLine(picture.Status);
         var labels = picture.Labels;
         var rumours = picture.Rumours;
@@ -531,6 +675,8 @@ public static class Program
         using var written = File.Create(output);
         encoder.Save(written);
         Console.WriteLine($"{labels.Length} labels, {labels.Count(l => l.Text is not null)} with a price → {output}");
+        // What the window read, as a diagnosis writes it: beside the picture, same name, .json.
+        File.WriteAllText(Path.ChangeExtension(output, ".json"), System.Text.Json.JsonSerializer.Serialize(picture.Description, JsonFiles.Options));
         return 0;
     }
 }

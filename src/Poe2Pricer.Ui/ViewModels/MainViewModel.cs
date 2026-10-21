@@ -23,7 +23,9 @@ public sealed class MainViewModel : ObservableObject
     // store: writes the settings; the tests pass their own, the program writes settings.json.
     // storeLanguage: writes the chosen language at once; the program writes it into
     // settings.json without touching what else stands there.
-    public MainViewModel(Settings settings, IEnumerable<string> leagues, RumourBook rumours, Action<Settings>? store = null, Action<string>? storeLanguage = null)
+    // storeWaystones: writes the Waystones tab's own save; the program writes it into
+    // settings.json without touching what else stands there.
+    public MainViewModel(Settings settings, IEnumerable<string> leagues, RumourBook rumours, Action<Settings>? store = null, Action<string>? storeLanguage = null, TimeProvider? clock = null, Action<Core.Waystones.WaystoneSettings>? storeWaystones = null, Action<Core.Tablets.TabletSettings>? storeTablets = null)
     {
         this.storeLanguage = storeLanguage ?? (code => (Core.Settings.Load() with { Language = code }).Save());
         language = Languages.FirstOrDefault(l => l.Code == Texts.Language) ?? Languages[0];
@@ -34,6 +36,10 @@ public sealed class MainViewModel : ObservableObject
             next =>
             {
                 (store ?? (s => s.Save()))(next);
+                // The tabs' profiles are saved with it: changes are measured from here. (Called
+                // on a save, long after the constructor has set both tabs.)
+                Waystones?.Accept(next.Waystones);
+                Tablets?.Accept(next.Tablets);
                 var notSaved = Rumours.Save();
                 // Written anew: what could not be read at the start is no longer the matter.
                 Warn(SettingsCause, null);
@@ -43,7 +49,17 @@ public sealed class MainViewModel : ObservableObject
             },
             Report
         );
-        QuitCommand = new RelayCommand(() => Quit?.Invoke());
+        Waystones = new WaystonesViewModel(settings.Waystones, Report, clock, storeWaystones ?? (w => (Core.Settings.LoadForSave() with { Waystones = w }).Save()));
+        Settings.WaystonesSource = Waystones.Current;
+        Tablets = new TabletsViewModel(settings.Tablets, Report, clock, storeTablets ?? (t => (Core.Settings.LoadForSave() with { Tablets = t }).Save()));
+        Settings.TabletsSource = Tablets.Current;
+        // "Exit" with a profile not saved in the Waystones or Tablets tab asks first; "Cancel"
+        // keeps the program running.
+        QuitCommand = new RelayCommand(() =>
+        {
+            if (Waystones.Quitting() && Tablets.Quitting())
+                Quit?.Invoke();
+        });
         Texts.Changed += () => OnPropertyChanged(nameof(Warnings));
     }
 
@@ -91,6 +107,8 @@ public sealed class MainViewModel : ObservableObject
 
     public SettingsViewModel Settings { get; }
     public RumoursViewModel Rumours { get; }
+    public WaystonesViewModel Waystones { get; }
+    public TabletsViewModel Tablets { get; }
     public IRelayCommand QuitCommand { get; }
 
     // Behind the name in the title bar.

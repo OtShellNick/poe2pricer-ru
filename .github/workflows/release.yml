@@ -1,0 +1,97 @@
+name: Release
+
+# A release built from a tag on GitHub's Windows runner, not on a private machine: the two
+# publishes, the two zips, the Velopack installer and update package, and SHA256 sums of every
+# file. The log of this run is public, so anyone can follow which commit the files come from,
+# and anyone can build the same commit with "dotnet publish" themselves.
+# The result is a DRAFT release: its notes are written and it is published by hand. A tag with
+# a suffix (v1.2.0-rc1) makes a draft pre-release, for trying the workflow; installed copies
+# never update to a pre-release or a draft.
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-2025
+    env:
+      TAG: ${{ github.ref_name }}
+      # Velopack's packer; the same version as the Velopack package in Poe2Pricer.App.csproj.
+      VPK_VERSION: 1.2.161
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The token with write access is not left in .git/config while the build runs the
+          # packages' own build steps; the release is made by gh with the token from env.
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Version from the tag
+        shell: pwsh
+        run: |
+          $v = $env:TAG.TrimStart('v')
+          $props = (Select-String -Path Directory.Build.props -Pattern '<Version>([^<]+)</Version>').Matches[0].Groups[1].Value
+          if ($v.Split('-')[0] -ne $props) { throw "Tag $env:TAG does not match the version $props in Directory.Build.props" }
+          "VERSION=$v" >> $env:GITHUB_ENV
+
+      - name: Publish
+        shell: pwsh
+        run: |
+          dotnet publish src/Poe2Pricer.App -c Release -o out/fd "-p:Version=$env:VERSION" --nologo
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          dotnet publish src/Poe2Pricer.App -c Release -r win-x64 --self-contained true -o out/sc "-p:Version=$env:VERSION" --nologo
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          # OpenCvSharp's runtime package can bring an FFmpeg wrapper the program does not use.
+          $ffmpeg = Get-ChildItem out -Recurse -File | Where-Object Name -match 'ffmpeg'
+          if ($ffmpeg) { throw "FFmpeg wrapper in the publish: $($ffmpeg.FullName)" }
+
+      - name: Zips
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory dist | Out-Null
+          foreach ($pair in @(@('sc', "poe2pricer-$env:VERSION-win-x64.zip"), @('fd', "poe2pricer-$env:VERSION-win-x64-framework-dependent.zip"))) {
+            # Everything inside a folder poe2pricer/, as the zips have always been.
+            Remove-Item stage -Recurse -Force -ErrorAction SilentlyContinue
+            New-Item -ItemType Directory stage | Out-Null
+            Copy-Item "out/$($pair[0])" stage/poe2pricer -Recurse
+            Compress-Archive -Path stage/poe2pricer -DestinationPath "dist/$($pair[1])"
+          }
+
+      - name: Installer
+        shell: pwsh
+        run: |
+          dotnet tool install -g vpk --version $env:VPK_VERSION
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          # packId not "poe2pricer": the setup installs to %LOCALAPPDATA%\<packId>, and that folder
+          # holds the program's settings — an existing one would count as "already installed".
+          vpk pack --packId poe2pricer-app --packVersion $env:VERSION --packDir out/sc --runtime win-x64 --channel win `
+            --mainExe poe2pricer.exe --packTitle poe2pricer --packAuthors saxe78 --icon assets/poe2pricer.ico `
+            --shortcuts StartMenuRoot --noPortable --outputDir installer
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          Copy-Item installer/* dist/
+
+      - name: SHA256 sums
+        shell: pwsh
+        run: |
+          $sums = Get-ChildItem dist -File | Sort-Object Name | ForEach-Object {
+            "$((Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant())  $($_.Name)"
+          }
+          $sums | Set-Content -Encoding ascii dist/SHA256SUMS.txt
+          # In the public log as well, not only in the release.
+          $sums | Write-Output
+
+      - name: Draft release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $pre = if ($env:VERSION.Contains('-')) { '--prerelease' } else { $null }
+          $notes = "Built by GitHub Actions from $env:TAG ($env:GITHUB_SHA), run $env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID. SHA256 sums in SHA256SUMS.txt and in the log of the run."
+          gh release create $env:TAG (Get-ChildItem dist -File).FullName --draft $pre --title "poe2pricer $env:VERSION" --notes $notes
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }

@@ -2,10 +2,11 @@
 
 Price overlay for Path of Exile 2. It reads the game window from the screen and writes prices
 from poe.ninja next to what it recognises. It presses no keys, clicks nothing and sends nothing
-about you or your game anywhere. What it does request: prices from poe.ninja and the item
-images they refer to from web.poecdn.com, the community ratings of the island rumours from Gnejs
-PoE Tools and a public Google sheet, and, if you leave "Check for updates" on, once per start the
-newest release from github.com.
+about you anywhere. What it does request: prices from poe.ninja and the item images they refer
+to from web.poecdn.com, the community ratings of the island rumours from Gnejs PoE Tools and a
+public Google sheet, waystone and tablet prices from the trade site of pathofexile.com (the
+item's values and mods, nothing else), and, if you leave "Check for updates" on, once per start
+the newest release from github.com.
 
 | Ritual (Favours) | Expedition remnants |
 |---|---|
@@ -14,6 +15,10 @@ newest release from github.com.
 | Stash tabs | Island Rumours |
 |---|---|
 | ![Orbs tab with a price at every slot, Divine values with the Divine icon](data/guide/stash.png) | ![Rumour panel with the card beside it: expedition tier, rolls, the rumours with their tiers, a new one marked, a rotated one under the line](data/guide/rumours.png) |
+
+| Waystone tooltip | Tablet tooltip |
+|---|---|
+| ![Waystone tooltip with its live price from the trade site at the right end of the title bar](data/guide/waystone.png) | ![Overseer Tablet tooltip with its live price at the right end of the title bar](data/guide/tablet.png) |
 
 ## Features
 
@@ -31,15 +36,38 @@ newest release from github.com.
   under the table, new ones are marked, and an **expedition tier** sums the island up. Opening
   the panel again without moving anything shows the same three and counts as no roll; with
   three on the panel the card reminds you to move an item for more.
+- **Waystones**: a tab in the program window. A profile names what a waystone must have:
+  item rarity, pack size, monster rarity and effectiveness, drop chance, tier, revives,
+  corrupted or not, and mods in groups as on the trade site ("and": every mod, "or": at least
+  one, "not": none). From it come the search text for the game's stash search (copied with a
+  click, it highlights the matching waystones) and the profile's price on the trade site
+  ("Refresh price").
+- **Tablets**: a tab like the Waystones tab, one profile per kind of tablet (Breach,
+  Expedition, Delirium, Ritual, Irradiated, Overseer, Abyss, Temple): uses left at least this
+  many, and the kind's mods in groups.
+- **Live price at the tooltip** of a waystone or tablet under the mouse or cursor, switched on
+  in Settings → Display: the price on the trade site, asked in the words of the closest
+  profile with the item's own values (or exactly as the item is, without a profile), at the
+  right end of the tooltip's title bar. Counted are Instant Buyout listings (with "incl.
+  premium stash (online)" in Settings → Display also sellers who are online); with four or more
+  listings the second cheapest, so that one price fixer does not count. `Alt+D` asks for the
+  item exactly as it is.
 - **Automatic**: with the automatic scan on, prices appear by themselves when one of these
   windows opens and go when it closes. Or by key: `Alt+F` shows and hides them.
-- **Prices from poe.ninja**, refreshed every few minutes. Marks instead of a price: "?" poe.ninja
+- **Prices from poe.ninja**, refreshed every few minutes, in Exalted (or Chaos) and from one
+  Divine on in Divine. The colour is the price band and follows the exchange rate: grey under
+  0.02 div, white under 0.2 div, yellow under 1 div, orange from 1 div; the best item of a
+  window is marked green. Marks instead of a price: "?" poe.ninja
   lists no price for the item; "<" below the price floor you choose; a red "!" a greyed-out
   omen whose kind the symbol alone does not tell (put the mouse or cursor on it, the program
   reads its tooltip and the price follows); "▲" or "▼" in the remnant list, the best reward is
-  scrolled out of view in that direction.
-- **Keyboard and controller UI** of the game, **English and German** game client, any window
-  height (measured from 1080 to 2160 pixels), every Popup Size setting of the game.
+  scrolled out of view in that direction. At a waystone's or tablet's tooltip: "…" the trade
+  site is being asked, "–" it has no listing, "⏳" it is busy or not reachable (the status line
+  says when it is asked again).
+- **Keyboard and controller UI** of the game, **English and German** game client (waystones
+  and tablets too: their tooltips are read in both languages, the search text is written in
+  the client's), any window height (measured from 1080 to 2160 pixels), every Popup Size
+  setting of the game.
 - **No calibration.** Every window is found by a piece of the game's own art.
 - **Runs in the notification area.** A click on the tray icon opens the settings window; the
   program can start with Windows and tells you when a newer version is out.
@@ -47,9 +75,11 @@ newest release from github.com.
 
 ## Download and install
 
-1. Download from the [Releases](https://github.com/saxe78/poe2pricer/releases) page, one of:
+1. Download from the [Releases](https://github.com/saxe78/poe2pricer/releases) page, one of
+   the files below. Every release is built by GitHub Actions from its tag; `SHA256SUMS.txt` in
+   the release and the public log of the run name the checksum of each file.
    - `poe2pricer-app-win-Setup.exe`: installs for your user account, no administrator rights,
-     Start menu entry, uninstall through Windows, and **updates itself**. Recommended.
+     Start menu entry, uninstall through Windows, and **installs updates on a click**. Recommended.
    - `poe2pricer-<version>-win-x64.zip`: the same program to unpack anywhere, about 150 MB,
      no installation; it tells you about new versions but does not update itself.
    - `poe2pricer-<version>-win-x64-framework-dependent.zip`: smaller, needs the
@@ -85,14 +115,23 @@ resets the program.
 - `Alt+Shift+F` saves a diagnosis to `%LOCALAPPDATA%\poe2pricer\diagnostics`: a screenshot and
   what the program made of it. Useful when reporting a wrong price; the screenshot shows your
   game as it was at that moment.
-- The settings window has two tabs: **Settings** (league, keys, automatic scan and its
+- `Alt+D` ("Force live price") at a waystone's or tablet's tooltip asks its price exactly as the
+  item is, every value and every mod, past the profiles; also while the live price is switched
+  off.
+- The settings window has four tabs: **Settings** (league, keys, automatic scan and its
   windows, price floor, the unit prices are written in — Exalted or Chaos, Divine from one
-  Divine on — start with Windows, language) and **Rumours** (the community table of
+  Divine on — the live price at waystone and tablet tooltips and which trade listings count,
+  start with Windows, language), **Rumours** (the community table of
   island rumours, your own ratings and notes, and the weight of each tier for the expedition
-  tier).
+  tier), **Waystones** (profiles for the stash search and the trade site, and the
+  tolerance of the live price) and **Tablets** (the same per kind of tablet).
+- Waystones and tablets: put the mouse or the cursor on one; with the live price switched on
+  in the settings, its price stands at the title bar after a moment (the marks are explained
+  under Features). The search text of the tab goes into the search box of the stash tab and
+  highlights the items that match the profile.
 - "Refresh prices" and "Exit" are in the settings window.
 
-Both keys can be changed in the settings window.
+All three keys can be changed in the settings window.
 
 ## Requirements
 
@@ -101,12 +140,20 @@ Both keys can be changed in the settings window.
 - Path of Exile 2 in **English or German**. In other game languages only the Ritual window and
   the stash tabs are read (they work on pictures, not on text).
 - Game window with an aspect ratio of 16:10 or wider; any height (measured from 1080 to 2160
-  pixels); any Popup Size setting of the game. **UI Text Size** must be the game's standard
-  setting.
+  pixels); any Popup Size setting of the game; any **UI Text Size** (large and extra large
+  checked on pictures at 3440×1440, [issue #1](https://github.com/saxe78/poe2pricer/issues/1)).
 
 ## Known limits
 
-- Larger UI Text Size settings of the game are not supported; the program says so at the start.
+- Larger UI Text Size settings are checked on one player's pictures (3440×1440, issue #1): all
+  four windows read there. The program still notes the setting at the start; if a window shows
+  gaps, a diagnosis helps.
+- The compare view of the game (Ctrl held, tooltips side by side) draws tooltips at about 85 %
+  size; they are not recognised. Release Ctrl before you press the key.
+- Waystone and tablet tooltips are read with the Windows text recognition through the
+  half-transparent tooltip: what is bright behind it can cost a line or a number. The program
+  reads the tooltip several times and joins what it found; a tooltip over a calm background
+  reads best.
 - Aspect ratios narrower than 16:10 are not supported.
 - In the Standard league poe.ninja lists no prices for most uniques; they show "?".
 - Recognition relies on the game's current art and layout. A game update that changes a window
@@ -120,9 +167,10 @@ Both keys can be changed in the settings window.
 
 ## Troubleshooting
 
-**No prices appear.** The window must be one of the four above, the game in English or German
-(the Ritual window and the stash tabs work in any language), UI Text Size at the standard
-setting. Press `Alt+F` once; with the automatic scan off, that is the only way. The log in
+**No prices appear.** The window must be one of those above, the game in English or German
+(the Ritual window and the stash tabs work in any language). Waystone and tablet tooltips need
+the live price switched on in Settings → Display, and the "Stash" switch of the automatic scan
+(or `Alt+F`). Press `Alt+F` once; with the automatic scan off, that is the only way. The log in
 `%LOCALAPPDATA%\poe2pricer\log.txt` says what the program saw ("hidden: …" lines name the
 reason).
 
@@ -148,8 +196,9 @@ front. If it stays, press `Alt+F`.
 With "Check for updates" on (the default), the program asks github.com once at every start
 whether a newer version is out.
 
-- Installed with the setup: the new version is downloaded in the background and installed when
-  you quit poe2pricer, or at once when you click the message in the status line or in the tray.
+- Installed with the setup: the status line and a tray message name the new version; a click
+  on either downloads and installs it and starts poe2pricer again. Nothing is downloaded or
+  installed without that click.
 - Unpacked from a zip: the status line and a tray message tell you; a click opens the download
   page, and you unpack the new zip over the old folder or next to it.
 
@@ -161,33 +210,39 @@ in your browser (the program itself requests nothing for that).
 ## Trust
 
 What the program does and does not do, for anyone weighing whether to run it. The source is
-here, about 14,000 lines of C#; the files that talk to the network are
+here, about 17,000 lines of C#; the files that talk to the network are
 `src/Poe2Pricer.Core/Market/*.cs`, `src/Poe2Pricer.Core/Rumours.cs` and
 `src/Poe2Pricer.App/Updates.cs`.
 
 - It reads the screen (the client area of the game window, by GDI) and draws over it. It
   presses no keys, clicks nothing and touches no other process. The one game file it reads is
-  the game's own settings file, for the popup size.
-- It sends nothing about you or your game. Its requests are plain HTTPS GETs to a fixed set of
-  hosts: poe.ninja (prices), web.poecdn.com (item art, only paths below that host whatever the
+  the game's own settings file, for the popup size, the text size and the client's language.
+- It sends nothing about you. Its requests go to a fixed set of hosts, all HTTPS: poe.ninja (prices), web.poecdn.com (item art, only paths below that host whatever the
   price answer names), poe.gnejs.app and docs.google.com (rumour ratings; the sheet download is
   redirected to googleusercontent.com), api.github.com and github.com (the update check and the
-  update itself; the release files come from release-assets.githubusercontent.com). An answer
+  update itself; the release files come from release-assets.githubusercontent.com), and
+  www.pathofexile.com (the trade site, for waystone and tablet prices: a search as a POST
+  with the query as JSON — a profile's values or the item's — then a GET for the listings; only
+  with the live price switched on in the settings, with `Alt+D`, or on "Refresh price" in the
+  Waystones or Tablets tab, within the limits the site states in its answers, and after a
+  failure only after a pause; without an account or session). An answer
   is read up to 32 MB, except the update package, which Velopack downloads.
 - It has a low-level keyboard hook; that is how Alt+F can work while the game has the focus.
-  The hook sees every key press, compares it with the two bound keys and passes everything else
+  The hook sees every key press, compares it with the three bound keys and passes everything else
   on unchanged. Nothing is stored or sent.
 - The updater is Velopack fetching the releases of this repository; the binaries are not
   signed. The trust is the same as when you download the exe from the releases page yourself:
-  whoever controls this GitHub account. "Check for updates" can be switched off, and a zip copy
-  never updates itself.
+  whoever controls this GitHub account. "Check for updates" can be switched off; with it on,
+  nothing is downloaded or installed until you click the message; a zip copy never updates
+  itself.
 - The item art it downloads is the one place where data from the network meets a parser. It
   is decoded by the Windows Imaging Component, the decoder of the Explorer and the browsers,
   patched with Windows, not by the one OpenCV ships; and only after the file's header has
   passed (a PNG with an alpha channel, at most 1024 pixels a side).
 - The only step with administrator rights is installing the Windows text recognition with
   `dism.exe`, and it asks first.
-- What it keeps, all under `%LOCALAPPDATA%\poe2pricer`: your settings, a log of its own
+- What it keeps, all under `%LOCALAPPDATA%\poe2pricer`: your settings (with the waystone and
+  tablet profiles), a log of its own
   doings, the price cache, the item art and the rumour table. No picture of your game is
   written unless you press the diagnostics key. A diagnosis is a picture of the game window and
   a JSON with your settings (without the file paths in them, which carry your Windows user
@@ -220,13 +275,14 @@ the pictures above were made).
 
 Every window is found by a piece of the game's own art (an anchor) at a known place, so the
 program needs no calibration. Items in the Ritual grid are recognised against the catalogue
-pictures; stash slots against the poe.ninja item art; remnant rows and tooltip titles are read
-with Windows OCR; rumour lines are matched as pictures against the game's texts drawn in the
+pictures; stash slots against the poe.ninja item art; remnant rows, tooltip titles and the lines
+of waystone and tablet tooltips are read with Windows OCR and matched against the known lines
+from the game files; rumour lines are matched as pictures against the game's texts drawn in the
 game's handwriting. Popups of the game (tooltips, notifications, the confirmation dialog) are
 found by their art and whatever lies under them is not trusted.
 
 All thresholds and measures are in `src/Poe2Pricer.Core/Tuning.cs`, each with the reason it
-stands where it stands. They were measured on test pictures at window heights from 1080 to 2160
+stands where it stands. They were measured on game pictures at window heights from 1080 to 2160
 and at every Popup Size of the game.
 
 ## Tech
@@ -239,8 +295,9 @@ keyboard hook of its own. Screen capture by GDI.
 ## Data from the game
 
 `data/catalog` (item pictures and names), `data/ui` (pieces of the game's interface used as
-templates), `data/names` (German item names) and the rumour texts are material of Grinding Gear
-Games, taken from the game files or from poe2db.tw and web.poecdn.com. The pictures above are
+templates), `data/names` (German item names), `data/waystones` and `data/tablets` (the mod lines
+in English and German, with the trade site's ids; `tools/waystone_mods.py`,
+`tools/tablet_mods.py`) and the rumour texts are material of Grinding Gear Games, taken from the game files or from poe2db.tw and web.poecdn.com. The pictures above are
 cut-outs of the game with the overlay drawn on. See `THIRD_PARTY_NOTICES.md` for this and for
 the licences of the libraries and fonts used.
 

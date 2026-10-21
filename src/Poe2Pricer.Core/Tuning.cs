@@ -347,6 +347,14 @@ public static class Tuning
         // least UndimmedFactor × as bright as the band above it (at least UndimmedFloor). A
         // bright overlay seen through the tooltip (an FPS graph) stays dark on both sides; that
         // case is why the test exists. Factor, bands and floor: chosen.
+        // Over empty grid cells (black) the scene is as dark below the border as the body
+        // above it, and the border row is the only bright thing: it counts when both sides
+        // are darker than DarkSides and the row is bright on its whole width (10th percentile
+        // at least FullWidthOverDark; a graph line through a dark scene is jagged and is not).
+        // Measured 20.10.2026 on a 3440 × 1440 client with the tooltip over empty cells: above
+        // 6, border row median 58 with a 10th percentile of 17, below 6.
+        public const int DarkSides = 8;
+        public const int FullWidthOverDark = 12;
         public const int UndimmedAboveFrom = 10;
         public const int UndimmedAboveTo = 3;
         public const int UndimmedBelowFrom = 4;
@@ -443,10 +451,9 @@ public static class Tuning
         public const int ReferenceWidth = 2560;
         public const int ControllerNarrower = 5;
         // A tab inside a stash folder, keyboard UI: the folder's second row of tab buttons
-        // pushes the whole tab down by this much at 1440. Measured at 2560x1440 (Currency tab,
-        // cross-correlation peak at 47) and on a 3840x2160 picture brought to 1440 (Essence
-        // tab: .68 at the top-level place, .99 this far lower), so it scales with the height
-        // like the rest of the UI; 1080 not measured. The controller UI does not move the tab.
+        // pushes the whole tab down by this much at 1440 (measured on an Essence tab in a
+        // folder: .68 at the top-level place, .99 this far lower; Orbs tab in a folder: 47 at
+        // 1440, 35 at 1080, 71 at 2160, so it scales with the height like the rest).
         public const int FolderDrop = 47;
         public const int Shrink = 4;
         public const int TilesAcross = 5;
@@ -595,7 +602,10 @@ public static class Tuning
         // coloured.
         public const int MarkerInner = 44;
         public const int MarkerOuter = 64;
-        public const int SailWhite = 200;
+        // SailWhite was 200 until 21.10.2026: on a 3440 × 1440 client (issue #1) the sails
+        // reach only about 185 of 255 and the marker was never found; at 140 they fill .35 of
+        // the inner box there, and on the pictures taken here they still fill .40 and more.
+        public const int SailWhite = 140;
         public const int SailGrey = 77;
         public const int SquareDark = 70;
         public const double SailsAtLeast = .35;
@@ -886,5 +896,53 @@ public static class Tuning
         // Item art larger than this a side is not decoded: poe.ninja's is 48 to 256 pixels. The
         // size stands in the file's header and is checked before the decoder sets memory aside.
         public const int IconMaxEdge = 1024;
+    }
+
+    public static class Waystones
+    {
+        // The part of the frame (from the top) a tooltip title bar is looked for in.
+        public const double SearchHeight = .85;
+
+        // A tooltip body in reference pixels (1440 high, popup 1): the tallest seen (8 mods,
+        // Alt held: Prefix/Suffix marks and the flavour text) is about 560; the parser stops
+        // at the flavour text, so a region that reaches below the tooltip costs only OCR time.
+        public const int BodyHeight = 720;
+
+        // Widest title bar read: a tooltip whose right end was not found counts to the
+        // picture's edge (OccluderDetector.TooltipsOver).
+        public const int MaxWidth = 1100;
+
+        // How far the title bar may move between glances and still be the same tooltip.
+        public const int GlanceSlack = 3;
+
+        // The band the glance searches for the title bar's left end: from GlanceSlack left of
+        // it to this far right of it — wider than the end piece (OccluderDetector finds nothing
+        // in a band narrower than its template; review 20.10.).
+        public const int GlanceBand = 120;
+
+        // The price plate ends this far left of the bar's right end.
+        public const int PriceInset = 56;
+
+        // Tooltips remembered as not a waystone's (place and look of the title row).
+        public const int RejectedKept = 16;
+
+        // The title bar must be missed by this many glances in a row before the tooltip
+        // counts as gone: a single capture mid-redraw of the tooltip must not close it.
+        public const int GoneAfterMisses = 4;
+
+        // The glance compares the title row (name and "Waystone (Tier n)") with its look at
+        // the last reading, at a quarter of the size: the same tooltip correlates near 1,
+        // another item's tooltip at the same place or none at all far below GlanceMatch.
+        // Live, the end piece of the bar was not found by every glance (20.10.: "gone" after
+        // 4 glances while the tooltip stood), the whole row is steadier than its end.
+        public const double GlanceMatch = .80;
+        public const int GlanceShrink = 4;
+
+        // A price the site did not answer (limit, no rates) is asked for again after this.
+        public static readonly TimeSpan AskAgainAfter = TimeSpan.FromSeconds(15);
+
+        // The trade site not asked (its limit, its refusal, a failure): asked again once it is
+        // free, but not sooner than this.
+        public static readonly TimeSpan TradeRetry = TimeSpan.FromSeconds(3);
     }
 }

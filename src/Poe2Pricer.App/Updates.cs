@@ -5,18 +5,19 @@ using Velopack.Sources;
 
 namespace Poe2Pricer.App;
 
-// "Check for updates", in two ways. A copy installed by the setup (Velopack) fetches a newer
-// version in the background and installs it when the program quits, or at once on a click. A
-// copy that was only unpacked can be told that there is one, with the page to get it from.
+// "Check for updates", in two ways. A copy installed by the setup (Velopack) is told that a
+// newer version is out; a click on the message downloads it and installs it, which starts the
+// program again. Nothing is downloaded or installed without that click. A copy that was only
+// unpacked is told as well, with the page to get it from.
 // POE2PRICER_UPDATE_SOURCE: a folder with a packed release in place of github.com, to run an
 // update through on one machine before a release is public.
 public sealed class Updates
 {
-    // Downloaded: an installed copy, the version lies ready; otherwise only the page.
-    public sealed record Found(string Version, string Page, bool Downloaded);
+    // Installable: an installed copy, a click installs it; otherwise only the page.
+    public sealed record Found(string Version, string Page, bool Installable);
 
     private readonly UpdateManager manager;
-    private UpdateInfo? staged;
+    private UpdateInfo? offered;
 
     public Updates()
     {
@@ -33,9 +34,9 @@ public sealed class Updates
 
     public bool Installed => manager.IsInstalled;
 
-    // Looks for a newer version; an installed copy fetches it right away. null: none. What the
-    // request throws (no network, no release yet) is the caller's to log.
-    public async Task<Found?> LookAsync(Action<string> log)
+    // Looks for a newer version. null: none. What the request throws (no network, no release
+    // yet) is the caller's to log.
+    public async Task<Found?> LookAsync()
     {
         if (!Installed)
         {
@@ -46,25 +47,21 @@ public sealed class Updates
         var info = await manager.CheckForUpdatesAsync();
         if (info is null)
             return null;
-        string version = info.TargetFullRelease.Version.ToString();
-        log($"Update {version} found, downloading");
-        await manager.DownloadUpdatesAsync(info);
-        staged = info;
-        return new(version, UpdateCheck.ReleasesPage, true);
+        offered = info;
+        return new(info.TargetFullRelease.Version.ToString(), UpdateCheck.ReleasesPage, true);
     }
 
-    // Installs the fetched version now and starts the program again (a click).
-    public void ApplyNow()
+    // The click: downloads the offered version, then installs it and starts the program again
+    // (the process ends in here; beforeRestart runs first). What the download or the install
+    // throws is the caller's to show.
+    public async Task InstallAsync(Action<string> log, Action beforeRestart)
     {
-        if (staged is not null)
-            manager.ApplyUpdatesAndRestart(staged);
-    }
-
-    // At the end of the run: the fetched version is installed once the program is gone, without
-    // starting it again.
-    public void ApplyOnExit()
-    {
-        if (staged is not null)
-            manager.WaitExitThenApplyUpdates(staged, silent: true, restart: false);
+        if (offered is null)
+            return;
+        log($"Update {offered.TargetFullRelease.Version}: downloading");
+        await manager.DownloadUpdatesAsync(offered);
+        log("Update downloaded, installing and restarting");
+        beforeRestart();
+        manager.ApplyUpdatesAndRestart(offered);
     }
 }

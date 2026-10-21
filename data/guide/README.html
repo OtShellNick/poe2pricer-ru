@@ -68,10 +68,10 @@
 <div class="head">
   <div>
     <h1><img class="icon" src="icon.png" width="96" height="96" alt="">poe2pricer</h1>
-    <p class="tagline en">Market prices from poe.ninja · Favours · Remnants · Island Rumours · Stash tabs</p>
-    <p class="tagline de">Marktpreise von poe.ninja · Gaben · Relikte · Inselgerüchte · Truhen-Tabs</p>
-    <!-- The version is written here by tools/build_release.py; a test checks it against the program's. -->
-    <p class="meta">Version <span id="version">1.1.2</span> · saxe78 · <a href="https://github.com/saxe78/poe2pricer">github.com/saxe78/poe2pricer</a> · MIT</p>
+    <p class="tagline en">Market prices from poe.ninja · Favours · Remnants · Island Rumours · Stash tabs · Waystones · Tablets</p>
+    <p class="tagline de">Marktpreise von poe.ninja · Gaben · Relikte · Inselgerüchte · Truhen-Tabs · Waystones · Tablets</p>
+    <!-- The version is written here by tools/build_release.py. -->
+    <p class="meta">Version <span id="version">1.2.0</span> · saxe78 · <a href="https://github.com/saxe78/poe2pricer">github.com/saxe78/poe2pricer</a> · MIT</p>
   </div>
   <div class="switch" role="group" aria-label="Language">
     <button type="button" data-set="en">English</button>
@@ -84,25 +84,28 @@
 <p class="en">poe2pricer reads the Path of Exile 2 window from the screen and writes prices from poe.ninja
 next to what it recognises: the <strong>Ritual</strong> window (Favours), the <strong>Expedition
 remnant list</strong> (Runeshape Combinations), the <strong>special stash tabs</strong> and the
-<strong>Island Rumours</strong> panel of the Atlas. No key is pressed, nothing is clicked, and
-nothing about you or your game is sent anywhere: the program only reads the screen and draws over
-the game. What it requests: prices from poe.ninja and the item images they refer to from
-web.poecdn.com, the rumour ratings from Gnejs PoE Tools and a public Google sheet, and once per
-start the newest release from github.com (can be switched off).</p>
+<strong>Island Rumours</strong> panel of the Atlas; and it prices <strong>waystones</strong> and
+<strong>tablets</strong> at their tooltip on the trade site. No key is pressed, nothing is clicked, and
+nothing about you is sent anywhere: the program only reads the screen and draws over the game. What
+it requests: prices from poe.ninja and the item images they refer to from web.poecdn.com, the rumour
+ratings from Gnejs PoE Tools and a public Google sheet, waystone and tablet prices from the trade site
+of pathofexile.com (the item's values and mods, nothing else), and once per start the newest release
+from github.com (can be switched off).</p>
 <p class="de">poe2pricer liest das Fenster von Path of Exile 2 vom Bildschirm und schreibt Preise von poe.ninja
 neben das, was es erkennt: das <strong>Ritual</strong>-Fenster (Gaben), die <strong>Relikt-Liste der
 Expedition</strong> (Runenformen-Kombinationen), die <strong>besonderen Truhen-Tabs</strong> und das
-<strong>Inselgerüchte</strong>-Fenster des Atlas. Keine Taste wird gedrückt, nichts geklickt, und
-nichts über dich oder dein Spiel wird irgendwohin gesendet: das Programm liest nur den Bildschirm und
-zeichnet über das Spiel. Was es abruft: Preise von poe.ninja und die zugehörigen Gegenstandsbilder
-von web.poecdn.com, die Gerüchte-Wertungen von Gnejs PoE Tools und einem öffentlichen Google-Sheet,
-und einmal je Start die neueste Veröffentlichung von
-github.com (abschaltbar).</p>
+<strong>Inselgerüchte</strong>-Fenster des Atlas; und es bepreist <strong>Waystones</strong> und
+<strong>Tablets</strong> an ihrem Tooltip auf der Trade-Seite. Keine Taste wird gedrückt, nichts geklickt,
+und nichts über dich wird irgendwohin gesendet: das Programm liest nur den Bildschirm und zeichnet über
+das Spiel. Was es abruft: Preise von poe.ninja und die zugehörigen Gegenstandsbilder von web.poecdn.com,
+die Gerüchte-Wertungen von Gnejs PoE Tools und einem öffentlichen Google-Sheet, Waystone- und
+Tablet-Preise von der Trade-Seite von pathofexile.com (die Werte und Mods des Items, sonst nichts), und
+einmal je Start die neueste Veröffentlichung von github.com (abschaltbar).</p>
 
 
 <h2 id="start"><span class="en">Getting started</span><span class="de">Erste Schritte</span></h2>
 <ol class="en">
-  <li>Run <code>poe2pricer-app-win-Setup.exe</code> (installs for your user account, updates itself),
+  <li>Run <code>poe2pricer-app-win-Setup.exe</code> (installs for your user account, installs updates on a click),
       or unpack the zip anywhere and start <code>poe2pricer.exe</code>. The installed folder holds the
       program in <code>current</code>, which every update replaces, and a starter
       <code>poe2pricer.exe</code> beside it that always starts the current version.</li>
@@ -118,8 +121,8 @@ github.com (abschaltbar).</p>
       hand.</li>
 </ol>
 <ol class="de">
-  <li><code>poe2pricer-app-win-Setup.exe</code> ausführen (installiert für dein Benutzerkonto, aktualisiert
-      sich selbst), oder das Zip irgendwohin entpacken und <code>poe2pricer.exe</code> starten. Im
+  <li><code>poe2pricer-app-win-Setup.exe</code> ausführen (installiert für dein Benutzerkonto, installiert
+      Updates per Klick), oder das Zip irgendwohin entpacken und <code>poe2pricer.exe</code> starten. Im
       installierten Ordner liegt das Programm in <code>current</code>, das jedes Update ersetzt, und daneben ein
       Starter <code>poe2pricer.exe</code>, der immer die aktuelle Fassung startet.</li>
   <li>Beim ersten Start prüft das Programm, ob Windows seine <strong>Texterkennung für Englisch
@@ -134,12 +137,15 @@ github.com (abschaltbar).</p>
       Hand.</li>
 </ol>
 <div class="note en">The game must run in <strong>English or German</strong> for the remnant list,
-tooltips and rumours (they are read as text). The Ritual window and the stash tabs work in any
-game language. <strong>UI Text Size</strong> must be the game's standard setting; any Popup Size
-is fine.</div>
-<div class="note de">Das Spiel muss für Relikt-Liste, Tooltips und Gerüchte auf <strong>Englisch oder
-Deutsch</strong> laufen (sie werden als Text gelesen). Ritual-Fenster und Truhen-Tabs gehen in jeder
-Spielsprache. <strong>UI Text Size</strong> muss auf der Standardstufe stehen; die Popup Size ist
+the tooltips (waystones, tablets, omens) and the rumours: they are read as text. The Ritual window and
+the stash tabs work in any game language. Any <strong>UI Text Size</strong>: large and extra large are checked on one player's
+pictures at 3440×1440 (<a href="https://github.com/saxe78/poe2pricer/issues/1">issue #1</a>), all four
+windows read there; the program notes the setting at the start. Any Popup Size is fine.</div>
+<div class="note de">Das Spiel muss für Relikt-Liste, Tooltips (Waystones, Tablets, Omen) und Gerüchte auf
+<strong>Englisch oder Deutsch</strong> laufen: sie werden als Text gelesen. Ritual-Fenster und Truhen-Tabs
+gehen in jeder Spielsprache. Jede <strong>UI Text Size</strong>: „large“ und „extra large“ sind an den
+Bildern eines Spielers bei 3440×1440 geprüft (<a href="https://github.com/saxe78/poe2pricer/issues/1">Issue #1</a>),
+alle vier Fenster lesen dort richtig; das Programm nennt die Einstellung beim Start. Die Popup Size ist
 beliebig.</div>
 
 <h2 id="league"><span class="en">Choose your league</span><span class="de">Liga wählen</span></h2>
@@ -152,11 +158,13 @@ Hardcore-Liga. In Standard führt poe.ninja für die meisten Uniques keine Preis
 
 <h2 id="prices"><span class="en">See prices</span><span class="de">Preise sehen</span></h2>
 <h3><span class="en">What the numbers and marks mean</span><span class="de">Was Zahlen und Zeichen bedeuten</span></h3>
-<p class="en">Prices are in Exalted Orbs (white numbers); large values are shown in Divine Orbs, orange with
-the Divine icon. The most valuable item of a window is marked in green. Prices are refreshed every few minutes;
+<p class="en">Prices are in Exalted Orbs (or Chaos, see Settings); from one Divine on they are shown in Divine Orbs
+with the Divine icon. The colour is the price band, so it follows the exchange rate: grey under 0.02 div,
+white under 0.2 div, yellow under 1 div, orange from 1 div. The most valuable item of a window is marked in green. Prices are refreshed every few minutes;
 <strong>Refresh prices</strong> in the settings window fetches them at once.</p>
-<p class="de">Preise sind in Exalted Orbs (weiße Zahlen); große Werte stehen in Divine Orbs, orange mit
-Divine-Symbol. Der wertvollste Gegenstand eines Fensters ist grün markiert. Preise werden alle paar Minuten aktualisiert;
+<p class="de">Preise stehen in Exalted Orbs (oder Chaos, siehe Einstellungen); ab einem Divine in Divine Orbs mit
+Divine-Symbol. Die Farbe ist die Preisstufe und folgt dem Kurs: grau unter 0,02 div, weiß unter 0,2 div,
+gelb unter 1 div, orange ab 1 div. Der wertvollste Gegenstand eines Fensters ist grün markiert. Preise werden alle paar Minuten aktualisiert;
 <strong>Preisupdate</strong> im Einstellungsfenster holt sie sofort.</p>
 <table class="en">
   <tr><th>Mark</th><th>Meaning</th></tr>
@@ -164,6 +172,7 @@ Divine-Symbol. Der wertvollste Gegenstand eines Fensters ist grün markiert. Pre
   <tr><td><code>&lt;</code></td><td>Below your price floor.</td></tr>
   <tr><td><code>!</code> (red)</td><td>A greyed-out omen whose kind cannot be told from its symbol alone. Put the mouse or the controller cursor on it: the program reads its tooltip, and the price follows.</td></tr>
   <tr><td><code>▲</code> <code>▼</code></td><td>In the remnant list: the best reward is scrolled out of view in that direction.</td></tr>
+  <tr><td><code>…</code> <code>–</code> <code>⏳</code></td><td>At a waystone's or tablet's tooltip: the price is being asked, no listing, the trade site busy (see <a href="#waystones">Waystones</a>).</td></tr>
 </table>
 <table class="de">
   <tr><th>Zeichen</th><th>Bedeutung</th></tr>
@@ -171,6 +180,7 @@ Divine-Symbol. Der wertvollste Gegenstand eines Fensters ist grün markiert. Pre
   <tr><td><code>&lt;</code></td><td>Unter deiner Preisschwelle.</td></tr>
   <tr><td><code>!</code> (rot)</td><td>Ein ausgegrautes Omen, dessen Art sich am Symbol allein nicht erkennen lässt. Maus oder Controller-Cursor darauf: das Programm liest den Tooltip, und der Preis folgt.</td></tr>
   <tr><td><code>▲</code> <code>▼</code></td><td>In der Relikt-Liste: die beste Belohnung liegt in dieser Richtung außerhalb des Sichtbereichs.</td></tr>
+  <tr><td><code>…</code> <code>–</code> <code>⏳</code></td><td>Am Tooltip eines Waystones oder Tablets: der Preis wird gefragt, kein Angebot, die Trade-Seite ausgelastet (siehe <a href="#waystones">Waystones</a>).</td></tr>
 </table>
 
 <h3><span class="en">Ritual window (Favours)</span><span class="de">Ritual-Fenster (Gaben)</span></h3>
@@ -197,6 +207,235 @@ filled slot gets the price per item. A slot below the price floor shows a grey "
 <p class="de">Orbs, Essenzen, Breach, Delirium, Expedition, Ritual, Abyss, Tablets und Sockelbares: jedes
 belegte Feld bekommt den Preis je Stück. Ein Feld unter der Schwelle zeigt ein graues „&lt;“.</p>
 <figure><img src="stash.png" width="900" height="914" alt="Orbs tab: a price at every filled slot, Divine values in orange with the Divine icon, &lt; below the price floor, ? without a market price"><figcaption class="en">Orbs tab: a price at every filled slot.</figcaption><figcaption class="de">Orbs-Tab: ein Preis an jedem belegten Feld.</figcaption></figure>
+<h2 id="waystones"><span class="en">Waystones</span><span class="de">Waystones</span></h2>
+<p class="en">The <strong>Waystones</strong> tab of the program window holds your waystone profiles. A
+profile says what a waystone must have. From it come three things: a <strong>search text</strong>
+for the stash search of the game, the profile's <strong>price</strong> on the trade site, and the
+words in which the <strong>live price</strong> at a waystone's tooltip is asked.</p>
+<p class="de">Der Tab <strong>Waystones</strong> des Programmfensters hält deine Waystone-Profile. Ein
+Profil sagt, was ein Waystone haben muss. Daraus entstehen drei Dinge: ein <strong>Suchtext</strong>
+für die Stash-Suche des Spiels, der <strong>Preis</strong> des Profils auf der Trade-Seite, und die
+Worte, in denen der <strong>Live-Preis</strong> am Tooltip eines Waystones gefragt wird.</p>
+<figure><img src="window-waystones.png" width="780" height="775" alt="The Waystones tab: profile with tolerance, properties, one mod group, the search text."><figcaption class="en">The Waystones tab with a profile: properties, one "and" group with two mods, the search text built from it.</figcaption><figcaption class="de">Der Tab Waystones mit einem Profil: Item-Eigenschaften, eine „und“-Gruppe mit zwei Mods, der daraus gebaute Suchtext.</figcaption></figure>
+
+<h3><span class="en">Profiles</span><span class="de">Profile</span></h3>
+<ul class="en">
+  <li>Pick a profile from the list, or type a new name into it to start one.</li>
+  <li><strong>✓</strong> saves the profile (on its own, the other settings are not touched);
+  <strong>Save</strong> at the foot saves it together with everything else. <strong>✕</strong>
+  removes it; when the last one goes, an empty "default" is left.</li>
+  <li>Choosing another profile, or <strong>Exit</strong>, while the one shown has changes not saved
+  asks: <em>Save</em>, <em>Discard</em> (back to the saved state) or <em>Cancel</em> (stay). Changing
+  tabs does not ask; the changes stay in the tab.</li>
+  <li><strong>Tolerance %</strong>, under the list, lowers the values the live price asks for by that
+  much, so that enough listings are found, and lets a value that much under a minimum count as
+  met.</li>
+</ul>
+<ul class="de">
+  <li>Wähle ein Profil aus der Liste, oder tippe einen neuen Namen hinein, um eines anzulegen.</li>
+  <li><strong>✓</strong> speichert das Profil (für sich, die übrigen Einstellungen bleiben unberührt);
+  <strong>Speichern</strong> im Fuß speichert es zusammen mit allem anderen. <strong>✕</strong>
+  löscht es; geht das letzte, bleibt ein leeres „default“.</li>
+  <li>Wählst du ein anderes Profil oder <strong>Beenden</strong>, während das gezeigte ungespeicherte
+  Änderungen hat, fragt das Programm: <em>Speichern</em>, <em>Verwerfen</em> (zurück zum gespeicherten
+  Stand) oder <em>Abbrechen</em> (bleiben). Ein Wechsel des Tabs fragt nicht; die Änderungen bleiben im Tab.</li>
+  <li><strong>Toleranz %</strong>, unter der Liste, senkt die Werte, nach denen der Live-Preis fragt, um so
+  viel Prozent, damit genug Angebote gefunden werden, und lässt einen Wert, der so viel unter einem
+  Mindestwert liegt, noch als erfüllt gelten.</li>
+</ul>
+
+<h3><span class="en">Properties</span><span class="de">Item-Eigenschaften</span></h3>
+<p class="en">Item rarity, pack size, monster rarity, monster effectiveness and waystone drop chance are
+each "at least". Tier and revives take a range ("15 to 16"; one side may stay empty). Corrupted:
+any, yes or no. An empty field asks nothing.</p>
+<p class="de">Item Rarity, Pack Size, Monster Rarity, Monster Effectiveness und Waystone Drop Chance gelten
+jeweils als „mindestens“. Stufe und Revives nehmen einen Bereich („15 bis 16“; eine Seite darf leer
+bleiben). Corrupted: egal, ja oder nein. Ein leeres Feld fragt nichts.</p>
+
+<h3><span class="en">Mods in groups</span><span class="de">Mods in Gruppen</span></h3>
+<p class="en">Mods stand in groups, as in the stat filters of the trade site. Each group has its kind in its
+head:</p>
+<p class="de">Mods stehen in Gruppen, wie bei den Stat-Filtern der Trade-Seite. Jede Gruppe hat ihre Art im
+Kopf:</p>
+<table class="en">
+  <tr><th>Kind</th><th>The waystone must have</th></tr>
+  <tr><td>and</td><td>every mod of the group, each at least its value</td></tr>
+  <tr><td>or</td><td>at least one mod of the group</td></tr>
+  <tr><td>not</td><td>none of the group's mods (no value field)</td></tr>
+</table>
+<table class="de">
+  <tr><th>Art</th><th>Der Waystone muss haben</th></tr>
+  <tr><td>und</td><td>jeden Mod der Gruppe, jeden mindestens mit seinem Wert</td></tr>
+  <tr><td>oder</td><td>mindestens einen Mod der Gruppe</td></tr>
+  <tr><td>nicht</td><td>keinen der Mods der Gruppe (kein Wertfeld)</td></tr>
+</table>
+<ul class="en">
+  <li>All groups must hold at once. Group 1 is "and"; <strong>Add group</strong> puts an "or" group
+  right after its own, with its first row; the kind can be changed in the group's head.</li>
+  <li><strong>Add mod</strong> adds a row to the group; ✕ removes a row or a group. A group holds up
+  to eight mods (a waystone carries eight), a tablet's four.</li>
+  <li>Typing into a row narrows its list to the mods that contain the text. A mod chosen in a group
+  is not offered again in that group (a line stands on an item once); another group may name it
+  again.</li>
+  <li>The value field: the least value; empty, it shows the span the mod rolls.</li>
+</ul>
+<ul class="de">
+  <li>Alle Gruppen müssen zugleich gelten. Gruppe 1 ist „und“; <strong>Neue Gruppe</strong> setzt eine
+  „oder“-Gruppe direkt hinter die eigene, mit ihrer ersten Zeile; die Art lässt sich im Kopf der
+  Gruppe ändern.</li>
+  <li><strong>Neuer Mod</strong> fügt der Gruppe eine Zeile hinzu; ✕ entfernt eine Zeile oder eine
+  Gruppe. Eine Gruppe fasst bis zu acht Mods (ein Waystone trägt acht), beim Tablet vier.</li>
+  <li>Tippen in eine Zeile engt ihre Liste auf die Mods ein, die den Text enthalten. Ein Mod, der in
+  einer Gruppe gewählt ist, wird in dieser Gruppe nicht noch einmal angeboten (eine Zeile steht einmal
+  auf einem Item); eine andere Gruppe darf ihn wieder nennen.</li>
+  <li>Das Wertfeld: der kleinste Wert; leer zeigt es die Spanne, die der Mod würfelt.</li>
+</ul>
+<p class="en">Example: group 1 "and" with more Monster Life ≥ 20; group 2 "or" with Ailment Threshold ≥ 60
+and Stun Threshold ≥ 60; group 3 "not" with Ignited Ground. That is: more life, at least one of the
+two thresholds, and no ignited ground.</p>
+<p class="de">Beispiel: Gruppe 1 „und“ mit more Monster Life ≥ 20; Gruppe 2 „oder“ mit Ailment Threshold ≥ 60
+und Stun Threshold ≥ 60; Gruppe 3 „nicht“ mit Ignited Ground. Das heißt: mehr Leben, mindestens eine
+der beiden Schwellen, und kein entzündeter Boden.</p>
+
+<h3><span class="en">Search text for the stash</span><span class="de">Suchtext für den Stash</span></h3>
+<p class="en"><strong>Copy</strong> puts it on the clipboard; paste it into the search box of a stash tab, and
+the waystones that match the profile light up. It is written in the words of your game client
+(English or German). The game's search box takes 250 characters; the counter under the text says
+how many are used, and a text that is too long is marked.</p>
+<p class="de"><strong>Kopieren</strong> legt ihn in die Zwischenablage; füge ihn in das Suchfeld eines Stash-Tabs
+ein, und die Waystones, die zum Profil passen, leuchten auf. Er steht in den Worten deines Spielclients
+(Englisch oder Deutsch). Das Suchfeld des Spiels nimmt 250 Zeichen; der Zähler unter dem Text sagt, wie
+viele belegt sind, und ein zu langer Text wird markiert.</p>
+
+<h3><span class="en">The profile's price</span><span class="de">Preis des Profils</span></h3>
+<p class="en"><strong>Refresh price</strong> asks the trade site of pathofexile.com for the cheapest waystone the
+profile describes; the answer shows the price, the number of listings and the time it was asked.
+Before that an Exalted Orb and "→ Refresh price" stand there: nothing is asked by itself (the
+trade site's limit is shared with the live price in the game). An asked price is kept for the
+profile while the program runs. Counted are Instant Buyout listings, and with "incl. premium
+stash (online)" in Settings → Display also those of sellers who are online; offline sellers never.
+With four or more listings the second cheapest counts, so that one price fixer does not.</p>
+<p class="de"><strong>Preis abfragen</strong> fragt die Trade-Seite von pathofexile.com nach dem günstigsten
+Waystone, den das Profil beschreibt; die Antwort zeigt den Preis, die Zahl der Angebote und die Uhrzeit
+der Abfrage. Vorher stehen dort ein Exalted Orb und „→ Preis abfragen“: von selbst wird nichts gefragt
+(die Grenze der Trade-Seite teilt sich der Preis mit dem Live-Preis im Spiel).
+Ein abgefragter Preis bleibt beim Profil, solange das Programm läuft. Es zählen Sofortkauf-Angebote, mit
+„inkl. Premium-Stash (online)“ in Einstellungen → Anzeige auch die von Verkäufern, die online sind;
+Verkäufer offline nie. Ab vier Angeboten zählt das zweitgünstigste, damit ein einzelner Preisdrücker
+nicht zählt.</p>
+
+<h3><span class="en">Live price at the tooltip</span><span class="de">Live-Preis am Tooltip</span></h3>
+<p class="en">Switched on in Settings → Display ("Live price from the trade site", one switch for waystones
+and tablets), the program reads the tooltip of the waystone under your mouse or cursor (in a stash
+tab, the inventory, anywhere) and writes its price at the right end of the title bar. The "Stash"
+switch of the automatic scan covers the tooltips as well; with it off, <kbd>Alt</kbd>+<kbd>F</kbd>
+shows them.</p>
+<p class="de">In Einstellungen → Anzeige eingeschaltet („Live-Preis von der Trade-Seite“, ein Schalter für
+Waystones und Tablets), liest das Programm den Tooltip des Waystones unter Maus oder Cursor (im Stash-Tab,
+im Inventar, überall) und schreibt seinen Preis rechts an die Titelleiste. Der Schalter „Truhe“ des
+Auto-Scans gilt auch für die Tooltips; ist er aus, zeigt <kbd>Alt</kbd>+<kbd>F</kbd> sie.</p>
+<figure><img src="waystone.png" width="900" height="435" alt="Waystone tooltip with its price at the right end of the title bar."><figcaption class="en">A waystone's tooltip with its live price at the title bar.</figcaption><figcaption class="de">Der Tooltip eines Waystones mit seinem Live-Preis an der Titelleiste.</figcaption></figure>
+<table class="en">
+  <tr><th>At the title bar</th><th>Meaning</th></tr>
+  <tr><td>a price</td><td>The cheapest listing of a waystone like this one (counted as above).</td></tr>
+  <tr><td><code>…</code></td><td>The trade site is being asked.</td></tr>
+  <tr><td><code>–</code></td><td>No listing. Asked again after a while.</td></tr>
+  <tr><td><code>⏳</code></td><td>Not asked: the trade site is busy or not reachable; the status line says how long until it is asked again.</td></tr>
+</table>
+<table class="de">
+  <tr><th>An der Titelleiste</th><th>Bedeutung</th></tr>
+  <tr><td>ein Preis</td><td>Das günstigste Angebot eines Waystones wie dieses (gezählt wie oben).</td></tr>
+  <tr><td><code>…</code></td><td>Die Trade-Seite wird gefragt.</td></tr>
+  <tr><td><code>–</code></td><td>Kein Angebot. Nach einer Weile wird neu gefragt.</td></tr>
+  <tr><td><code>⏳</code></td><td>Nicht gefragt: die Trade-Seite ist ausgelastet oder nicht erreichbar; die Statuszeile sagt, wann neu gefragt wird.</td></tr>
+</table>
+<p class="en">The price takes a moment: the trade site allows a few requests in ten seconds, and the program
+keeps under that. An answer is kept for ten minutes: the same waystone shown again within that time
+is not asked anew. After a failure of the site (not reachable, an error page) the program waits a
+minute before it asks again, twice as long after each further failure, ten minutes at most.
+<kbd>Alt</kbd>+<kbd>D</kbd> ("Force live price") asks for the waystone under the mouse exactly as it
+is, past the profiles, also while the live price is switched off. When nothing of a tooltip could
+be read (no value, no mod), no price is asked; the status line says "tooltip text not read".</p>
+<p class="de">Der Preis braucht einen Moment: Die Trade-Seite erlaubt wenige Anfragen in zehn Sekunden, und
+das Programm bleibt darunter. Eine Antwort wird zehn Minuten aufgehoben: derselbe Waystone, in dieser
+Zeit noch einmal gezeigt, wird nicht neu gefragt. Nach einem Ausfall der Seite (nicht erreichbar, eine
+Fehlerseite) wartet das Programm eine Minute, bevor es wieder fragt, nach jedem weiteren Ausfall doppelt
+so lange, höchstens zehn Minuten. <kbd>Alt</kbd>+<kbd>D</kbd> („Live-Preis erzwingen“) fragt den Waystone unter der Maus exakt so,
+wie er ist, an den Profilen vorbei, auch bei ausgeschaltetem Live-Preis. Konnte vom Tooltip nichts gelesen
+werden (kein Wert, kein Mod), wird nicht gefragt; die Statuszeile sagt „Tooltip-Text nicht gelesen“.</p>
+
+<h3><span class="en">How the question is formed</span><span class="de">Wie die Frage entsteht</span></h3>
+<p class="en">The <strong>profile</strong> says <em>what</em> is asked about, the <strong>waystone</strong> gives the numbers. With several
+profiles saved, the one the waystone has most in common with (the most conditions met; an "or" group
+counts as one; the one in use in the tab on a tie) sets the question: the properties and mods it
+names, each with the waystone's own value lowered by the tolerance. A wanted mod the waystone lacks,
+or an excluded mod it has, is left out, so the price is that of this waystone, not a better one.
+Without a profile, or when nothing of the profile is left for this waystone, it is asked for
+exactly as it is, every value and every mod; that finds fewer listings, and a strong waystone may
+find none ("–").</p>
+<p class="de">Das <strong>Profil</strong> sagt, <em>wonach</em> gefragt wird, der <strong>Waystone</strong> liefert die Zahlen. Sind mehrere
+Profile gespeichert, bestimmt das mit den meisten Gemeinsamkeiten (die meisten erfüllten Bedingungen; eine
+„oder“-Gruppe zählt als eine; bei Gleichstand das im Tab gewählte) die Frage: die Eigenschaften und Mods,
+die es nennt, jeweils mit dem eigenen Wert des Waystones, um die Toleranz gesenkt. Ein gewünschter Mod,
+den der Waystone nicht hat, oder ein ausgeschlossener, den er hat, bleibt weg; der Preis ist also der
+dieses Waystones, nicht der eines besseren. Ohne Profil, oder wenn vom Profil für diesen Waystone nichts
+übrig bleibt, wird er exakt gefragt, wie er ist, jeder Wert und jeder Mod; das findet weniger Angebote,
+und ein starker Waystone findet womöglich keines („–“).</p>
+
+<h3><span class="en">German game client</span><span class="de">Deutscher Spielclient</span></h3>
+<p class="en">Waystone and tablet tooltips are read in English and in German, with <kbd>Alt</kbd> held (the
+title in English) or without. In a German client the search text, the mod lists and the kinds of
+tablets in the program window are German; a profile keeps the English names of its mods and holds
+in both languages.</p>
+<p class="de">Waystone- und Tablet-Tooltips werden auf Englisch und auf Deutsch gelesen, mit gedrückter
+<kbd>Alt</kbd>-Taste (der Titel englisch) oder ohne. Im deutschen Client sind Suchtext, Mod-Listen und
+Tablet-Arten im Programmfenster deutsch; ein Profil behält die englischen Namen seiner Mods und gilt in
+beiden Sprachen.</p>
+
+<p class="en">Nothing is sent to the game for this: the tooltip is read from the screen like every other
+window. The trade site is asked without an account or session; a request holds the profile's or
+the item's values and mods, nothing about you.</p>
+<p class="de">Dafür wird nichts ins Spiel gesendet: der Tooltip wird wie jedes andere Fenster vom Bildschirm
+gelesen. Die Trade-Seite wird ohne Konto oder Sitzung gefragt; eine Anfrage enthält die Werte und Mods des
+Profils oder des Items, nichts über dich.</p>
+
+<h2 id="tablets"><span class="en">Tablets</span><span class="de">Tablets</span></h2>
+<p class="en">The <strong>Tablets</strong> tab works like the Waystones tab, with one profile per kind of tablet:
+pick the kind (Breach, Expedition, Delirium, Ritual, Irradiated, Overseer, Abyss, Temple) and the
+fields below belong to it. A kind with a profile is marked "●" in the list. ✓ saves the kind's
+profile; ✕ clears its fields, and tablets of that kind are then asked for exactly as they are.</p>
+<p class="de">Der Tab <strong>Tablets</strong> arbeitet wie der Tab Waystones, mit einem Profil je Art: wähle die Art
+(Breach, Expedition, Delirium, Ritual, Irradiated, Overseer, Abyss, Temple), und die Felder darunter
+gehören zu ihr. Eine Art mit Profil ist in der Liste mit „●“ markiert. ✓ speichert das Profil der Art;
+✕ leert ihre Felder, und Tablets dieser Art werden dann exakt gefragt, wie sie sind.</p>
+<figure><img src="window-tablets.png" width="780" height="775" alt="The Tablets tab: Overseer Tablet profile with uses left and an or group of two mods."><figcaption class="en">The Tablets tab: an Overseer Tablet profile with uses left and an "or" group.</figcaption><figcaption class="de">Der Tab Tablets: ein Profil für das Overseer Tablet mit Nutzungen und einer „oder“-Gruppe.</figcaption></figure>
+<ul class="en">
+  <li><strong>Uses left</strong> (under Properties): a tablet starts with 10 uses and loses one per map;
+  the profile asks for at least this many.</li>
+  <li><strong>Mods</strong>: the lines every tablet can carry and the lines only this kind rolls, in groups
+  as for waystones, up to four per group.</li>
+  <li><strong>Search text</strong>: the kind by name, the uses, the mods.</li>
+  <li><strong>Price</strong>: the cheapest tablet of the kind the profile describes (no uniques), asked with
+  "Refresh price", counted as for waystones.</li>
+  <li><strong>Live price at the tooltip</strong>: as for waystones; the tablet's kind chooses the profile, a
+  kind without one is asked for exactly as the tablet is.</li>
+  <li>On an Overseer Tablet, "an additional Essence" (or Shrine) and "# additional Essences" (or Shrines)
+  read alike at 1; a profile that names one is asked for either.</li>
+</ul>
+<ul class="de">
+  <li><strong>Nutzungen übrig</strong> (unter Item-Eigenschaften): ein Tablet beginnt mit 10 Nutzungen und
+  verliert eine je Map; das Profil fragt nach mindestens so vielen.</li>
+  <li><strong>Mods</strong>: die Zeilen, die jedes Tablet tragen kann, und die, die nur diese Art würfelt, in
+  Gruppen wie bei Waystones, bis zu vier je Gruppe.</li>
+  <li><strong>Suchtext</strong>: die Art beim Namen, die Nutzungen, die Mods.</li>
+  <li><strong>Preis</strong>: das günstigste Tablet der Art, das das Profil beschreibt (keine Uniques), abgefragt
+  mit „Preis abfragen“, gezählt wie bei Waystones.</li>
+  <li><strong>Live-Preis am Tooltip</strong>: wie bei Waystones; die Art des Tablets wählt das Profil, eine Art
+  ohne Profil wird exakt gefragt, wie das Tablet ist.</li>
+  <li>Auf einem Overseer Tablet lesen sich „an additional Essence“ (oder Shrine) und „# additional
+  Essences“ (oder Shrines) bei 1 gleich; ein Profil, das eines davon nennt, fragt nach beiden.</li>
+</ul>
+<figure><img src="tablet.png" width="900" height="354" alt="Overseer Tablet tooltip with its price at the right end of the title bar."><figcaption class="en">An Overseer Tablet's tooltip with its live price.</figcaption><figcaption class="de">Der Tooltip eines Overseer Tablets mit seinem Live-Preis.</figcaption></figure>
 <h2 id="rumours"><span class="en">Island Rumours</span><span class="de">Inselgerüchte</span></h2>
 <p class="en">On the Atlas, the Island Rumours panel of an uncharted island lists the rumours of the island.
 poe2pricer shows a table beside the panel as soon as it has come to rest: for each rumour its
@@ -252,18 +491,21 @@ lassen sich mit „+ Eigene Zeile hinzufügen“ anlegen. Unter der Tabelle steh
 Stufen für das Expeditionstier (anfangs S+ 6 … F 1). Alles gilt nach <strong>Speichern</strong>.</p>
 
 <h2 id="settings"><span class="en">Settings</span><span class="de">Einstellungen</span></h2>
+<figure><img src="window-settings.png" width="780" height="775" alt="The Settings tab of the program window."><figcaption class="en">The Settings tab.</figcaption><figcaption class="de">Der Tab Einstellungen.</figcaption></figure>
 <table class="en">
   <tr><th>Setting</th><th>What it does</th></tr>
   <tr><td>League</td><td>Which league's prices are shown. "Auto" follows the current league.</td></tr>
   <tr><td>Hide prices below</td><td>The price floor, in Exalted, Chaos or Divine Orbs. Applies to Favours, remnant rewards (value of the whole row) and stash tabs (price per item). Does not affect the mark on the best item.</td></tr>
   <tr><td>Prices in</td><td>The unit prices are written in below one Divine Orb: Exalted (standard) or Chaos, for late in a league when exalts are cheap. From one Divine on prices are always in Divine.</td></tr>
-  <tr><td>Hotkeys</td><td>Click a field, then press the key or combination. The keys work only while the game is in the foreground.</td></tr>
+  <tr><td>Live price from the trade site</td><td>Prices the waystone or tablet under the mouse or cursor at its tooltip (see <a href="#waystones">Waystones</a>). One switch for both.</td></tr>
+  <tr><td>incl. premium stash (online)</td><td>Which trade listings count for every waystone and tablet price: by default only Instant Buyout; ticked, also items in premium stash tabs whose seller is online. Offline sellers never count.</td></tr>
+  <tr><td>Hotkeys</td><td>"Toggle overlay", "Save diagnostics" and "Force live price". Click a field, then press the key or combination. The keys work only while the game is in the foreground. A "Force live price" key that is already one of the other two is switched off, with a note.</td></tr>
   <tr><td>Extended diagnostics</td><td>Off by default. On, the program also keeps pictures of moments it decided on its own (today: a reroll it detected in the Ritual window, and a first reading of the Ritual window that a later one corrected), a few of each kind, in the diagnostics folder — for a bug report. Off, only the diagnostics key writes there. Nothing is sent anywhere either way.</td></tr>
-  <tr><td>Auto-scan</td><td>Which windows show prices by themselves while they are open: Ritual, Expedition (rumours and remnants), stash. The hotkey always shows all of them.</td></tr>
+  <tr><td>Auto-scan</td><td>Which windows show prices by themselves while they are open: Ritual, Expedition (rumours and remnants), stash (also the waystone and tablet tooltips). The hotkey always shows all of them.</td></tr>
   <tr><td>Scan intervals</td><td>How often the program looks at the screen while no window is shown and while one is. If the game stutters, raise both.</td></tr>
   <tr><td>Start with Windows</td><td>Starts poe2pricer in the tray when you sign in. Applied or removed on save.</td></tr>
-  <tr><td>Check for updates</td><td>Asks github.com once at every start whether a newer version is out. Installed with the setup: it is downloaded in the background and installed when you quit, or at once when you click the message. Unpacked from a zip: the message leads to the download page.</td></tr>
-  <tr><td>Game settings file</td><td>The game's options file (poe2_production_Config.ini). The program reads the Popup Size and the game language from it; normally it finds the file by itself.</td></tr>
+  <tr><td>Check for updates</td><td>Asks github.com once at every start whether a newer version is out. Installed with the setup: the message names it; a click downloads and installs it and starts poe2pricer again, nothing happens without the click. Unpacked from a zip: the message leads to the download page.</td></tr>
+  <tr><td>Game settings file</td><td>The game's options file (poe2_production_Config.ini). The program reads the Popup Size, the UI Text Size and the game language from it; normally it finds the file by itself.</td></tr>
   <tr><td>Program language</td><td>English or German for the settings window and the messages.</td></tr>
 </table>
 <table class="de">
@@ -271,13 +513,15 @@ Stufen für das Expeditionstier (anfangs S+ 6 … F 1). Alles gilt nach <strong>
   <tr><td>Liga</td><td>Welche Liga die Preise liefert. „Auto“ folgt der aktuellen Liga.</td></tr>
   <tr><td>Preise ausblenden unter</td><td>Die Schwelle, in Exalted, Chaos oder Divine Orbs. Gilt für Gaben, Relikt-Belohnungen (Wert der ganzen Zeile) und Truhen-Tabs (Preis je Stück). Die Markierung des besten Gegenstands bleibt.</td></tr>
   <tr><td>Preise in</td><td>Die Einheit, in der Preise unter einem Divine Orb stehen: Exalted (Standard) oder Chaos, für das Ligaende, wenn Exalted billig sind. Ab einem Divine immer in Divine.</td></tr>
-  <tr><td>Tastenkürzel</td><td>Feld anklicken, dann Taste oder Kombination drücken. Die Tasten wirken nur, während das Spiel im Vordergrund ist.</td></tr>
+  <tr><td>Live-Preis von der Trade-Seite</td><td>Bepreist den Waystone oder das Tablet unter Maus oder Cursor an seinem Tooltip (siehe <a href="#waystones">Waystones</a>). Ein Schalter für beide.</td></tr>
+  <tr><td>inkl. Premium-Stash (online)</td><td>Welche Angebote der Trade-Seite für jeden Waystone- und Tablet-Preis zählen: als Vorgabe nur Sofortkauf; angehakt auch Items in Premium-Stash-Tabs, deren Verkäufer online ist. Verkäufer offline zählen nie.</td></tr>
+  <tr><td>Tastenkürzel</td><td>„Overlay ein/aus“, „Diagnose speichern“ und „Live-Preis erzwingen“. Feld anklicken, dann Taste oder Kombination drücken. Die Tasten wirken nur, während das Spiel im Vordergrund ist. Ist die Taste für „Live-Preis erzwingen“ schon eine der beiden anderen, ist sie aus, mit Hinweis.</td></tr>
   <tr><td>Erweiterte Diagnose</td><td>Aus als Vorgabe. Eingeschaltet hebt das Programm zusätzlich Bilder von Momenten auf, in denen es selbst entschieden hat (heute: ein erkannter Wurf im Ritual-Fenster, und eine erste Lesung des Ritual-Fensters, die eine spätere berichtigt hat), wenige je Art, im Diagnoseordner — für eine Fehlermeldung. Aus: nur die Diagnose-Taste schreibt dort. Gesendet wird so oder so nichts.</td></tr>
-  <tr><td>Auto-Scan</td><td>Welche Fenster von selbst Preise zeigen, solange sie offen sind: Ritual, Expedition (Gerüchte und Relikte), Truhe. Die Taste zeigt immer alle.</td></tr>
+  <tr><td>Auto-Scan</td><td>Welche Fenster von selbst Preise zeigen, solange sie offen sind: Ritual, Expedition (Gerüchte und Relikte), Truhe (auch die Tooltips von Waystones und Tablets). Die Taste zeigt immer alle.</td></tr>
   <tr><td>Scan-Intervalle</td><td>Wie oft das Programm auf den Bildschirm sieht, während kein Fenster gezeigt wird und während eines gezeigt wird. Ruckelt das Spiel, beide erhöhen.</td></tr>
   <tr><td>Mit Windows starten</td><td>Startet poe2pricer beim Anmelden im Tray. Wird beim Speichern gesetzt oder entfernt.</td></tr>
-  <tr><td>Nach Updates suchen</td><td>Fragt bei jedem Start einmal bei github.com an, ob eine neuere Version da ist. Mit dem Setup installiert: sie wird im Hintergrund geladen und beim Beenden installiert, oder sofort per Klick auf die Meldung. Aus dem Zip entpackt: die Meldung führt zur Download-Seite.</td></tr>
-  <tr><td>Datei der Spieleinstellungen</td><td>Die Optionsdatei des Spiels (poe2_production_Config.ini). Das Programm liest daraus Popup Size und Spielsprache; normalerweise findet es die Datei selbst.</td></tr>
+  <tr><td>Nach Updates suchen</td><td>Fragt bei jedem Start einmal bei github.com an, ob eine neuere Version da ist. Mit dem Setup installiert: die Meldung nennt sie; ein Klick lädt sie herunter, installiert sie und startet poe2pricer neu, ohne Klick geschieht nichts. Aus dem Zip entpackt: die Meldung führt zur Download-Seite.</td></tr>
+  <tr><td>Datei der Spieleinstellungen</td><td>Die Optionsdatei des Spiels (poe2_production_Config.ini). Das Programm liest daraus Popup Size, UI Text Size und Spielsprache; normalerweise findet es die Datei selbst.</td></tr>
   <tr><td>Sprache des Programms</td><td>Englisch oder Deutsch für Einstellungsfenster und Meldungen.</td></tr>
 </table>
 <p class="en">Closing the window minimises it to the tray; <strong>Exit</strong> quits the program. Settings
@@ -290,21 +534,24 @@ Einstellungen liegen in <code>%LOCALAPPDATA%\poe2pricer</code>.</p>
   <tr><th>Key</th><th>Action</th></tr>
   <tr><td><kbd>Alt</kbd>+<kbd>F</kbd></td><td>Show or hide the prices for the window that is open in the game.</td></tr>
   <tr><td><kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd></td><td>Save a diagnosis (a screenshot and what the program made of it) to <code>%LOCALAPPDATA%\poe2pricer\diagnostics</code>.</td></tr>
+  <tr><td><kbd>Alt</kbd>+<kbd>D</kbd></td><td>"Force live price": at a waystone's or tablet's tooltip, ask its price exactly as the item is, every value and every mod, past the profiles, until the mouse or cursor leaves it; also while the live price is switched off.</td></tr>
 </table>
 <table class="de">
   <tr><th>Taste</th><th>Wirkung</th></tr>
   <tr><td><kbd>Alt</kbd>+<kbd>F</kbd></td><td>Preise für das offene Spielfenster zeigen oder verstecken.</td></tr>
   <tr><td><kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd></td><td>Eine Diagnose (Screenshot und was das Programm daraus gemacht hat) nach <code>%LOCALAPPDATA%\poe2pricer\diagnostics</code> speichern.</td></tr>
+  <tr><td><kbd>Alt</kbd>+<kbd>D</kbd></td><td>„Live-Preis erzwingen“: am Tooltip eines Waystones oder Tablets seinen Preis exakt so fragen, wie es ist, jeder Wert und jeder Mod, an den Profilen vorbei, bis Maus oder Cursor es verlassen; auch bei ausgeschaltetem Live-Preis.</td></tr>
 </table>
-<p class="en">Both keys can be changed in the settings window. They work only while the game is in the
+<p class="en">All three keys can be changed in the settings window. They work only while the game is in the
 foreground.</p>
-<p class="de">Beide Tasten lassen sich im Einstellungsfenster ändern. Sie wirken nur, während das Spiel im
+<p class="de">Alle drei Tasten lassen sich im Einstellungsfenster ändern. Sie wirken nur, während das Spiel im
 Vordergrund ist.</p>
 
 <h2 id="trouble"><span class="en">Tips &amp; troubleshooting</span><span class="de">Tipps &amp; Fehlersuche</span></h2>
 <ul class="en">
-  <li><strong>No prices appear.</strong> The window must be one of the four above, the game in
-      English or German for the text windows, UI Text Size at the standard setting. Press
+  <li><strong>No prices appear.</strong> The window must be one of those above, the game in
+      English or German for the text windows. Waystone and tablet tooltips need the live price on
+      (Settings → Display) and the "Stash" switch of the auto-scan, or <kbd>Alt</kbd>+<kbd>F</kbd>. Press
       <kbd>Alt</kbd>+<kbd>F</kbd> once. The log in <code>%LOCALAPPDATA%\poe2pricer\log.txt</code>
       says what the program saw; lines starting with "hidden:" name the reason.</li>
   <li><strong>Prices appear late or the game stutters.</strong> Raise the scan intervals in the
@@ -317,15 +564,23 @@ Vordergrund ist.</p>
   <li><strong>The settings window is gone.</strong> It is in the tray: click the poe2pricer icon
       in the notification area, or start <code>poe2pricer.exe</code> again, which brings the
       running one's window to the front.</li>
-  <li><strong>"UI Text Size is not the default."</strong> The game's larger text sizes are not
-      supported; set it back to the standard size in the game's options.</li>
+  <li><strong>"UI Text Size in the game is large / extra large."</strong> Only a note: large and
+      extra large are checked on one player's pictures (issue #1). If a window shows gaps, press the
+      diagnostics key there and report the files.</li>
+  <li><strong>No price with Ctrl held.</strong> The game's compare view (tooltips side by side) draws
+      them at about 85 % size, which the program does not recognise. Release Ctrl first.</li>
+  <li><strong>A waystone or tablet shows "–".</strong> The trade site has no listing like it; a waystone
+      asked for exactly as it is (no profile fits) rarely finds one. A profile for such waystones
+      asks only for what it names.</li>
   <li><strong>Windows SmartScreen or a virus scanner warns.</strong> The program is not signed.
       Its source is public; the installation of the text recognition runs Windows' own
       <code>dism.exe</code>, no scripts.</li>
 </ul>
 <ul class="de">
-  <li><strong>Es erscheinen keine Preise.</strong> Das Fenster muss eines der vier oben sein, das
-      Spiel für die Textfenster auf Englisch oder Deutsch, UI Text Size auf der Standardstufe.
+  <li><strong>Es erscheinen keine Preise.</strong> Das Fenster muss eines der oben genannten sein, das
+      Spiel für die Textfenster auf Englisch oder Deutsch. Tooltips von Waystones und Tablets brauchen
+      den eingeschalteten Live-Preis (Einstellungen → Anzeige) und den Schalter „Truhe“ des Auto-Scans,
+      oder <kbd>Alt</kbd>+<kbd>F</kbd>.
       Einmal <kbd>Alt</kbd>+<kbd>F</kbd> drücken. Das Protokoll in
       <code>%LOCALAPPDATA%\poe2pricer\log.txt</code> sagt, was das Programm gesehen hat; Zeilen mit
       „hidden:“ nennen den Grund.</li>
@@ -339,8 +594,15 @@ Vordergrund ist.</p>
   <li><strong>Das Einstellungsfenster ist weg.</strong> Es ist im Tray: auf das poe2pricer-Symbol im
       Infobereich klicken, oder <code>poe2pricer.exe</code> erneut starten, das holt das Fenster des
       laufenden Programms nach vorn.</li>
-  <li><strong>„UI Text Size ist nicht Standard.“</strong> Die größeren Textstufen des Spiels werden
-      nicht unterstützt; in den Spieloptionen auf die Standardstufe zurückstellen.</li>
+  <li><strong>„UI Text Size im Spiel ist large / extra large.“</strong> Nur ein Hinweis: „large“ und
+      „extra large“ sind an den Bildern eines Spielers geprüft (Issue #1). Zeigt ein Fenster Lücken,
+      dort die Diagnose-Taste drücken und die Dateien melden.</li>
+  <li><strong>Kein Preis bei gedrückter Strg-Taste.</strong> Die Vergleichsansicht des Spiels (Tooltips
+      nebeneinander) zeichnet sie auf etwa 85 % verkleinert, das erkennt das Programm nicht. Strg vorher
+      loslassen.</li>
+  <li><strong>Ein Waystone oder Tablet zeigt „–“.</strong> Die Trade-Seite hat kein solches Angebot; ein
+      Waystone, der exakt gefragt wird (kein Profil passt), findet selten eines. Ein Profil für solche
+      Waystones fragt nur nach dem, was es nennt.</li>
   <li><strong>Windows SmartScreen oder ein Virenscanner warnt.</strong> Das Programm ist nicht
       signiert. Der Quelltext ist öffentlich; die Installation der Texterkennung läuft über Windows'
       eigenes <code>dism.exe</code>, ohne Skripte.</li>

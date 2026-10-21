@@ -21,7 +21,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Subtitle" xml:space="preserve">
-    <value>Marktpreise von poe.ninja · Gaben · Relikte · Gerüchte von der Insel · Truhen-Tabs</value>
+    <value>Marktpreise von poe.ninja · Gaben · Relikte · Gerüchte von der Insel · Truhen-Tabs · Waystones · Tablets</value>
   </data>
   <data name="TipClose" xml:space="preserve">
     <value>Schließen</value>
@@ -141,7 +141,7 @@
     <value>Nach Updates suchen</value>
   </data>
   <data name="TipCheckForUpdates" xml:space="preserve">
-    <value>Fragt bei jedem Start einmal bei github.com an, ob eine neuere Version auf der Release-Seite liegt; sonst wird nichts gesendet, und nichts wird von selbst installiert. Eine neuere Version steht dann in der Statuszeile und als Tray-Meldung.</value>
+    <value>Fragt bei jedem Start einmal bei github.com an, ob eine neuere Version auf der Release-Seite liegt; sonst wird nichts gesendet, und ohne deinen Klick wird nichts heruntergeladen oder installiert. Eine neuere Version steht dann in der Statuszeile und als Tray-Meldung.</value>
   </data>
   <data name="UpdateAvailable" xml:space="preserve">
     <value>Version {0} ist verfügbar. Hier klicken für die Download-Seite.</value>
@@ -149,11 +149,17 @@
   <data name="UpdateAvailableTray" xml:space="preserve">
     <value>poe2pricer {0} ist verfügbar. Klicken öffnet die Download-Seite.</value>
   </data>
-  <data name="UpdateReady" xml:space="preserve">
-    <value>Version {0} ist heruntergeladen. Hier klicken, um sie zu installieren und poe2pricer neu zu starten; sonst wird sie beim Beenden installiert.</value>
+  <data name="UpdateOffered" xml:space="preserve">
+    <value>Version {0} ist verfügbar. Hier klicken, um sie herunterzuladen und zu installieren; poe2pricer startet neu, das Spiel bleibt unberührt.</value>
   </data>
-  <data name="UpdateReadyTray" xml:space="preserve">
-    <value>poe2pricer {0} ist heruntergeladen. Klicken installiert jetzt; sonst beim Beenden.</value>
+  <data name="UpdateOfferedTray" xml:space="preserve">
+    <value>poe2pricer {0} ist verfügbar. Klicken lädt sie herunter und installiert sie.</value>
+  </data>
+  <data name="UpdateDownloading" xml:space="preserve">
+    <value>Version {0} wird heruntergeladen …</value>
+  </data>
+  <data name="UpdateFailed" xml:space="preserve">
+    <value>Version {0} konnte nicht heruntergeladen werden: {1}. Der nächste Start nennt sie wieder.</value>
   </data>
   <data name="GroupIslandRumours" xml:space="preserve">
     <value>GERÜCHTE VON DER INSEL</value>
@@ -539,7 +545,7 @@ Einzelheiten: {1}</value>
     <value>Num</value>
   </data>
   <data name="GameTextSizeNotDefault" xml:space="preserve">
-    <value>Die UI-Textgröße des Spiels steht auf „{0}“, nicht auf Standard. Das wird nicht unterstützt: Truhen-Tabs zeigen weniger Preise, und der Tribut-Dialog im Ritual wird nicht erkannt.</value>
+    <value>Die UI-Textgröße des Spiels steht auf „{0}“. Das Programm ist auf Standard (medium) vermessen; bei dieser Größe liest es die Fenster der bisher eingesandten Bilder, zeigt ein Fenster aber Lücken, dort die Diagnose-Taste drücken und die Dateien melden.</value>
   </data>
   <data name="OverlayNew" xml:space="preserve">
     <value>neu</value>
@@ -569,9 +575,243 @@ Einzelheiten: {1}</value>
     <value>vollständig</value>
   </data>
   <data name="GroupExpeditionTier" xml:space="preserve">
-    <value>Gewichte für das Expeditionstier</value>
+    <value>GEWICHTE FÜR DAS EXPEDITIONSTIER</value>
   </data>
   <data name="ExpeditionTierHint" xml:space="preserve">
     <value>Das Expeditionstier einer Insel ist das Mittel dieser Gewichte über alle dort gesehenen Gerüchte (eigene Wertungen zuerst), gezeigt als höchste Stufe, die das Mittel erreicht. Wirksam mit dem Speichern.</value>
+  </data>
+  <data name="TabletStatus" xml:space="preserve">
+    <value>{0} · {1}</value>
+  </data>
+  <data name="TabTablets" xml:space="preserve">
+    <value>Tablets</value>
+  </data>
+  <data name="TipTabletKind" xml:space="preserve">
+    <value>Die Art des Tablets. Jede Art hat ein eigenes Profil; die Felder darunter gehören zur hier gewählten Art, und eine Art mit Profil ist in der Liste markiert. ✕ leert die Felder.</value>
+  </data>
+  <data name="TipTabletRemoveProfile" xml:space="preserve">
+    <value>Die Felder leeren: die Art hat dann kein Profil, und ihre Tablets werden exakt nach ihren eigenen Mods bepreist</value>
+  </data>
+  <data name="TipTabletTolerance" xml:space="preserve">
+    <value>In Prozent. Der eigene Wert eines Mods auf dem Tablet, um so viel gesenkt, ist das Minimum, nach dem die Trade-Seite gefragt wird: 36 mit 10 % fragt nach 33 oder mehr, 2 bleibt 2. Ein Minimum des Profils gilt als erreicht, wenn der Wert nicht mehr als so viel darunter liegt.</value>
+  </data>
+  <data name="FieldUses" xml:space="preserve">
+    <value>Nutzungen übrig</value>
+  </data>
+  <data name="TipTabletUses" xml:space="preserve">
+    <value>Ein Tablet beginnt mit 10 Nutzungen und verliert eine je Map. Die Trade-Seite wird nach Tablets mit mindestens so vielen gefragt; Suchtext und Tooltip-Urteil nehmen es ebenso.</value>
+  </data>
+  <data name="TipTabletMods" xml:space="preserve">
+    <value>Höchstens vier Mods je Gruppe, so viele wie ein Tablet trägt</value>
+  </data>
+  <data name="TabletProfileSaved" xml:space="preserve">
+    <value>Profil für {0} gespeichert</value>
+  </data>
+  <data name="TipTablets" xml:space="preserve">
+    <value>Der Suchtext kommt ins Suchfeld eines Stash-Tabs: er hebt die Tablets dieser Art hervor, die zum Profil passen. Der Preis ist das günstigste Tablet der Art, das das Profil beschreibt, auf der Trade-Seite von pathofexile.com (keine Uniques), abgefragt nur mit „Preis abfragen“. Am Tooltip bestimmt das Profil, wonach gefragt wird; eine Art ohne Profil wird exakt so gefragt, wie das Tablet ist. Die Seite nennt eine Grenze von wenigen Anfragen je zehn Sekunden; das Programm bleibt darunter.</value>
+  </data>
+  <data name="TooltipExact" xml:space="preserve">
+    <value>exakt, ohne Profil</value>
+  </data>
+  <data name="RuleAnd" xml:space="preserve">
+    <value>und</value>
+  </data>
+  <data name="RuleOr" xml:space="preserve">
+    <value>oder</value>
+  </data>
+  <data name="RuleNot" xml:space="preserve">
+    <value>nicht</value>
+  </data>
+  <data name="RuleGroup" xml:space="preserve">
+    <value>Gruppe {0}</value>
+  </data>
+  <data name="AddGroup" xml:space="preserve">
+    <value>Neue Gruppe</value>
+  </data>
+  <data name="TipAddGroup" xml:space="preserve">
+    <value>Eine neue Gruppe direkt nach dieser; ihre Zeilen zählen zusammen nach ihrem Typ, die Gruppen alle zusammen.</value>
+  </data>
+  <data name="TipRemoveGroup" xml:space="preserve">
+    <value>Diese Gruppe mit ihren Zeilen entfernen</value>
+  </data>
+  <data name="TipGroupKind" xml:space="preserve">
+    <value>und: jede Zeile der Gruppe ist Pflicht. oder: mindestens eine Zeile der Gruppe genügt. nicht: keine der Zeilen darf da sein. Alle Gruppen zusammen müssen gelten.</value>
+  </data>
+  <data name="UnsavedProfile" xml:space="preserve">
+    <value>„{0}“ hat Änderungen, die nicht gespeichert sind. Vor dem Wechsel speichern?</value>
+  </data>
+  <data name="ExactPriceKey" xml:space="preserve">
+    <value>Live-Preis erzwingen</value>
+  </data>
+  <data name="TipExactPriceKey" xml:space="preserve">
+    <value>Am Tooltip eines Waystones oder Tablets: sein Live-Preis exakt so gefragt, wie es ist, jeder Wert und jeder Mod, an den Profilen vorbei. Bis Maus oder Cursor das Item verlassen. Feld anklicken, dann eine Taste oder Tastenkombination drücken.</value>
+  </data>
+  <data name="TradeBusy" xml:space="preserve">
+    <value>Trade-Seite ausgelastet, erneut in {0} s</value>
+  </data>
+  <data name="TradeNoRates" xml:space="preserve">
+    <value>wartet auf die Kurse von poe.ninja</value>
+  </data>
+  <data name="RefreshProfilePrice" xml:space="preserve">
+    <value>Preis abfragen</value>
+  </data>
+  <data name="ProfilePriceAsk" xml:space="preserve">
+    <value>→ Preis abfragen</value>
+  </data>
+  <data name="ExactKeyTaken" xml:space="preserve">
+    <value>Die Taste {0} zum Erzwingen des Live-Preises ist schon eine der beiden anderen Tasten und deshalb aus. Im Einstellungsfenster eine freie Taste setzen.</value>
+  </data>
+  <data name="TradeInPerson" xml:space="preserve">
+    <value>inkl. Premium-Stash (online)</value>
+  </data>
+  <data name="TipTradeInPerson" xml:space="preserve">
+    <value>Welche Angebote der Trade-Seite für jeden Waystone- und Tablet-Preis zählen, live und in den Tabs. Standard nur Sofortkauf: was Ange aus Händler-Tabs verkauft, sofort gekauft, auch wenn der Verkäufer offline ist. Angehakt: dazu Items in Premium-Stash-Tabs, deren Verkäufer online ist (anschreiben, persönlich handeln). Verkäufer offline zählen nie: deren Angebote sind oft Monate alt und längst verkauft.</value>
+  </data>
+  <data name="WaystoneStatus" xml:space="preserve">
+    <value>Waystone (Stufe {0}) · {1}</value>
+  </data>
+  <data name="WaystoneNoPrice" xml:space="preserve">
+    <value>kein Angebot</value>
+  </data>
+  <data name="WaystonePriceOff" xml:space="preserve">
+    <value>Live-Preis aus</value>
+  </data>
+  <data name="TabWaystones" xml:space="preserve">
+    <value>Waystones</value>
+  </data>
+  <data name="GroupWaystoneSearch" xml:space="preserve">
+    <value>SUCHTEXT FÜR DEN STASH</value>
+  </data>
+  <data name="WaystoneCopy" xml:space="preserve">
+    <value>Kopieren</value>
+  </data>
+  <data name="WaystoneSearchLength" xml:space="preserve">
+    <value>{0} von {1} Zeichen</value>
+  </data>
+  <data name="WaystoneSearchTooLong" xml:space="preserve">
+    <value>Zu lang für das Suchfeld des Spiels: einen Mod oder einen Wert weglassen.</value>
+  </data>
+  <data name="WaystoneSearchCopied" xml:space="preserve">
+    <value>Suchtext kopiert</value>
+  </data>
+  <data name="WaystoneProfileNoPrice" xml:space="preserve">
+    <value>kein Angebot</value>
+  </data>
+  <data name="WaystonePriceAsking" xml:space="preserve">
+    <value>Preis wird ermittelt …</value>
+  </data>
+  <data name="GroupWaystoneProfile" xml:space="preserve">
+    <value>PROFIL</value>
+  </data>
+  <data name="FieldItemRarity" xml:space="preserve">
+    <value>Item Rarity</value>
+  </data>
+  <data name="FieldPackSize" xml:space="preserve">
+    <value>Pack Size</value>
+  </data>
+  <data name="FieldMonsterRarity" xml:space="preserve">
+    <value>Monster Rarity</value>
+  </data>
+  <data name="FieldEffectiveness" xml:space="preserve">
+    <value>Monster Effectiveness</value>
+  </data>
+  <data name="FieldDropChance" xml:space="preserve">
+    <value>Waystone Drop Chance</value>
+  </data>
+  <data name="FieldTier" xml:space="preserve">
+    <value>Stufe</value>
+  </data>
+  <data name="FieldRevives" xml:space="preserve">
+    <value>Revives</value>
+  </data>
+  <data name="FieldTo" xml:space="preserve">
+    <value>bis</value>
+  </data>
+  <data name="FieldCorrupted" xml:space="preserve">
+    <value>Corrupted</value>
+  </data>
+  <data name="WaystoneCorruptedAny" xml:space="preserve">
+    <value>egal</value>
+  </data>
+  <data name="WaystoneCorruptedYes" xml:space="preserve">
+    <value>corrupted</value>
+  </data>
+  <data name="WaystoneCorruptedNo" xml:space="preserve">
+    <value>nicht corrupted</value>
+  </data>
+  <data name="WaystoneAddMod" xml:space="preserve">
+    <value>Neuer Mod</value>
+  </data>
+  <data name="WaystoneMinValue" xml:space="preserve">
+    <value>mindestens</value>
+  </data>
+  <data name="WaystoneTolerance" xml:space="preserve">
+    <value>Toleranz %</value>
+  </data>
+  <data name="TipWaystoneTolerance" xml:space="preserve">
+    <value>In Prozent. Die eigenen Werte des Waystones, jeweils um so viel gesenkt, sind das Minimum, nach dem die Trade-Seite gefragt wird: 59 % Rarity mit 10 % fragt nach 54 % oder mehr. Ein Minimum des Profils gilt als erreicht, wenn der Wert nicht mehr als so viel darunter liegt. Mods, die das Profil ausschließt, werden auch dort ausgeschlossen.</value>
+  </data>
+  <data name="TipWaystones" xml:space="preserve">
+    <value>Der Suchtext kommt ins Suchfeld eines Stash-Tabs: er hebt die Waystones hervor, die zum Profil passen. Der Preis ist der günstigste Waystone, den das Profil beschreibt, auf der Trade-Seite von pathofexile.com, abgefragt nur mit „Preis abfragen“ (Sofortkauf; mit „inkl. Premium-Stash (online)“ in den Einstellungen auch Verkäufer, die online sind). Die Seite nennt eine Grenze von wenigen Anfragen je zehn Sekunden; das Programm bleibt darunter und fragt den Preis eines Waystones höchstens alle zehn Minuten.</value>
+  </data>
+  <data name="GroupWaystoneMods" xml:space="preserve">
+    <value>MODS</value>
+  </data>
+  <data name="TipWaystoneFilter" xml:space="preserve">
+    <value>Einen Teil des Mod-Texts tippen: die Liste zeigt nur Mods, die ihn enthalten.</value>
+  </data>
+  <data name="WaystoneListings_one" xml:space="preserve">
+    <value>{0} Angebot</value>
+  </data>
+  <data name="WaystoneListings_other" xml:space="preserve">
+    <value>{0} Angebote</value>
+  </data>
+  <data name="TipWaystoneProfile" xml:space="preserve">
+    <value>Die gespeicherten Profile. Ein neuer Name beginnt ein Profil mit den Feldern, wie sie stehen; gespeichert wird es mit Speichern. ✕ entfernt das gewählte Profil.</value>
+  </data>
+  <data name="TipWaystoneSaveProfile" xml:space="preserve">
+    <value>Dieses Profil speichern (die Profile werden getrennt von den Programmeinstellungen gespeichert)</value>
+  </data>
+  <data name="WaystoneProfileSaved" xml:space="preserve">
+    <value>Profil „{0}“ gespeichert</value>
+  </data>
+  <data name="TipWaystoneRefreshPrice" xml:space="preserve">
+    <value>Die Trade-Seite nach dem günstigsten Item fragen, das das Profil beschreibt. Nur diese Schaltfläche fragt: die Seite erlaubt wenige Anfragen in zehn Sekunden, und der Live-Preis im Spiel braucht sie auch.</value>
+  </data>
+  <data name="WaystonePricesLoading" xml:space="preserve">
+    <value>Preise werden geladen …</value>
+  </data>
+  <data name="GroupProperties" xml:space="preserve">
+    <value>ITEM-EIGENSCHAFTEN</value>
+  </data>
+  <data name="LiveTradePrice" xml:space="preserve">
+    <value>Live-Preis von der Trade-Seite</value>
+  </data>
+  <data name="TipLiveTradePrice" xml:space="preserve">
+    <value>Live-Preis am Tooltip eines Waystones oder Tablets: die Trade-Seite wird nach dem günstigsten gleichen Angebot gefragt, der Preis steht rechts an der Titelleiste. Aus: es wird nichts gefragt und am Tooltip nichts gezeichnet; die Taste „Live-Preis erzwingen“ fragt trotzdem.</value>
+  </data>
+  <data name="UnsavedTitle" xml:space="preserve">
+    <value>NICHT GESPEICHERT</value>
+  </data>
+  <data name="Discard" xml:space="preserve">
+    <value>Verwerfen</value>
+  </data>
+  <data name="UnsavedProfileQuit" xml:space="preserve">
+    <value>„{0}“ hat Änderungen, die nicht gespeichert sind. Vor dem Beenden speichern?</value>
+  </data>
+  <data name="TradeUnreachable" xml:space="preserve">
+    <value>Trade-Seite nicht erreichbar ({0}), erneut in {1} s</value>
+  </data>
+  <data name="TooltipNotRead" xml:space="preserve">
+    <value>Tooltip-Text nicht gelesen (Spielsprache?), kein Preis</value>
+  </data>
+  <data name="ProfileRemoved" xml:space="preserve">
+    <value>Profil „{0}“ entfernt.</value>
+  </data>
+  <data name="InvalidInTab" xml:space="preserve">
+    <value>Nicht gespeichert: ein Feld im Tab {0} enthält keine Zahl.</value>
+  </data>
+  <data name="ModUnknown" xml:space="preserve">
+    <value>Der Mod „{0}“ steht nicht mehr in der Liste des Spiels; seine Zeile bleibt leer. Neu wählen und speichern.</value>
   </data>
 </root>

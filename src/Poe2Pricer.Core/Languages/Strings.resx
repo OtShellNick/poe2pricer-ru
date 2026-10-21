@@ -18,7 +18,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Subtitle" xml:space="preserve">
-    <value>Market prices from poe.ninja · Favours · Remnants · Island Rumours · Stash tabs</value>
+    <value>Market prices from poe.ninja · Favours · Remnants · Island Rumours · Stash tabs · Waystones · Tablets</value>
   </data>
   <data name="TipClose" xml:space="preserve">
     <value>Close</value>
@@ -138,7 +138,7 @@
     <value>Check for updates</value>
   </data>
   <data name="TipCheckForUpdates" xml:space="preserve">
-    <value>Asks github.com once at every start whether a newer version is on the Releases page; nothing else is sent, and nothing is installed by itself. A newer version is shown in the status line and as a tray message.</value>
+    <value>Asks github.com once at every start whether a newer version is on the Releases page; nothing else is sent, and nothing is downloaded or installed without your click. A newer version is shown in the status line and as a tray message.</value>
   </data>
   <data name="UpdateAvailable" xml:space="preserve">
     <value>Version {0} is available. Click here for the download page.</value>
@@ -146,11 +146,17 @@
   <data name="UpdateAvailableTray" xml:space="preserve">
     <value>poe2pricer {0} is available. Click to open the download page.</value>
   </data>
-  <data name="UpdateReady" xml:space="preserve">
-    <value>Version {0} is downloaded. Click here to install it and restart poe2pricer; otherwise it is installed when you quit.</value>
+  <data name="UpdateOffered" xml:space="preserve">
+    <value>Version {0} is available. Click here to download and install it; poe2pricer starts again, the game is not touched.</value>
   </data>
-  <data name="UpdateReadyTray" xml:space="preserve">
-    <value>poe2pricer {0} is downloaded. Click to install it now; otherwise it is installed when you quit.</value>
+  <data name="UpdateOfferedTray" xml:space="preserve">
+    <value>poe2pricer {0} is available. Click to download and install it.</value>
+  </data>
+  <data name="UpdateDownloading" xml:space="preserve">
+    <value>Downloading version {0} …</value>
+  </data>
+  <data name="UpdateFailed" xml:space="preserve">
+    <value>Version {0} could not be downloaded: {1}. The next start names it again.</value>
   </data>
   <data name="GroupIslandRumours" xml:space="preserve">
     <value>ISLAND RUMOURS</value>
@@ -536,7 +542,7 @@ Details: {1}</value>
     <value>Num Lock</value>
   </data>
   <data name="GameTextSizeNotDefault" xml:space="preserve">
-    <value>UI Text Size in the game is set to "{0}", not the default. This is not supported: stash tabs show fewer prices, and the tribute dialog in a Ritual is not detected.</value>
+    <value>UI Text Size in the game is "{0}". The program is measured at the default (medium); at this size it reads the windows in the pictures sent so far, but if a window shows gaps, press the diagnostics key there and report the files.</value>
   </data>
   <data name="OverlayNew" xml:space="preserve">
     <value>new</value>
@@ -566,9 +572,243 @@ Details: {1}</value>
     <value>complete</value>
   </data>
   <data name="GroupExpeditionTier" xml:space="preserve">
-    <value>Expedition tier weights</value>
+    <value>EXPEDITION TIER WEIGHTS</value>
   </data>
   <data name="ExpeditionTierHint" xml:space="preserve">
     <value>The expedition tier of an island is the mean of these weights over every rumour seen there (custom tiers count first), shown as the highest tier the mean reaches. Applied on save.</value>
+  </data>
+  <data name="TabletStatus" xml:space="preserve">
+    <value>{0} · {1}</value>
+  </data>
+  <data name="TabTablets" xml:space="preserve">
+    <value>Tablets</value>
+  </data>
+  <data name="TipTabletKind" xml:space="preserve">
+    <value>The kind of tablet. Each kind has one profile of its own; the fields below belong to the kind chosen here, and a kind with a profile is marked in the list. ✕ clears the fields.</value>
+  </data>
+  <data name="TipTabletRemoveProfile" xml:space="preserve">
+    <value>Clear the fields: the kind has no profile then, and its tablets are priced exactly by their own mods</value>
+  </data>
+  <data name="TipTabletTolerance" xml:space="preserve">
+    <value>In percent. A mod's own value on the tablet, lowered by this much, is the minimum the trade site is asked for: 36 with 10 % asks for 33 or more, 2 stays 2. A profile's minimum counts as met when the value is not more than this much under it.</value>
+  </data>
+  <data name="FieldUses" xml:space="preserve">
+    <value>Uses left</value>
+  </data>
+  <data name="TipTabletUses" xml:space="preserve">
+    <value>A tablet starts with 10 uses and loses one per map. The trade site is asked for tablets with at least this many left; the search text and the tooltip's judgement take it as well.</value>
+  </data>
+  <data name="TipTabletMods" xml:space="preserve">
+    <value>Four mods a group at most, as many as a tablet carries</value>
+  </data>
+  <data name="TabletProfileSaved" xml:space="preserve">
+    <value>Profile for {0} saved</value>
+  </data>
+  <data name="TipTablets" xml:space="preserve">
+    <value>The search text goes into the search box of a stash tab: it highlights the tablets of this kind that match the profile. The price is the cheapest tablet of the kind the profile describes on the trade site of pathofexile.com (no uniques), asked with "Refresh price" only. At a tooltip the profile names what is asked for; a kind without a profile is asked for exactly as the tablet is. The site states a limit of a few requests per ten seconds; the program keeps under it.</value>
+  </data>
+  <data name="TooltipExact" xml:space="preserve">
+    <value>exact, no profile</value>
+  </data>
+  <data name="RuleAnd" xml:space="preserve">
+    <value>and</value>
+  </data>
+  <data name="RuleOr" xml:space="preserve">
+    <value>or</value>
+  </data>
+  <data name="RuleNot" xml:space="preserve">
+    <value>not</value>
+  </data>
+  <data name="RuleGroup" xml:space="preserve">
+    <value>Group {0}</value>
+  </data>
+  <data name="AddGroup" xml:space="preserve">
+    <value>Add group</value>
+  </data>
+  <data name="TipAddGroup" xml:space="preserve">
+    <value>A new group right after this one; its rows count together by its kind, the groups all together.</value>
+  </data>
+  <data name="TipRemoveGroup" xml:space="preserve">
+    <value>Remove this group with its rows</value>
+  </data>
+  <data name="TipGroupKind" xml:space="preserve">
+    <value>and: every row of the group is required. or: at least one row of the group will do. not: none of the rows may be there. All groups together must hold.</value>
+  </data>
+  <data name="UnsavedProfile" xml:space="preserve">
+    <value>"{0}" has changes that are not saved. Save them before you leave it?</value>
+  </data>
+  <data name="ExactPriceKey" xml:space="preserve">
+    <value>Force live price</value>
+  </data>
+  <data name="TipExactPriceKey" xml:space="preserve">
+    <value>At a waystone's or tablet's tooltip: its live price asked exactly as the item is, every value and every mod, past the profiles. Until the mouse or cursor leaves the item. Click the field, then press a key or key combination.</value>
+  </data>
+  <data name="TradeBusy" xml:space="preserve">
+    <value>trade site busy, again in {0} s</value>
+  </data>
+  <data name="TradeNoRates" xml:space="preserve">
+    <value>waiting for poe.ninja's rates</value>
+  </data>
+  <data name="RefreshProfilePrice" xml:space="preserve">
+    <value>Refresh price</value>
+  </data>
+  <data name="ProfilePriceAsk" xml:space="preserve">
+    <value>→ Refresh price</value>
+  </data>
+  <data name="ExactKeyTaken" xml:space="preserve">
+    <value>The key {0} to force a live price is already one of the other two keys, so it is off. Set a free key in the settings window.</value>
+  </data>
+  <data name="TradeInPerson" xml:space="preserve">
+    <value>incl. premium stash (online)</value>
+  </data>
+  <data name="TipTradeInPerson" xml:space="preserve">
+    <value>Which offers on the trade site count for every waystone and tablet price, live and in the tabs. By default only Instant Buyout: what Ange sells from merchant tabs, bought at once even while the seller is offline. Ticked: also items in premium stash tabs whose seller is online (whisper and trade in person). Offline sellers never count: their listings are often months old and long sold.</value>
+  </data>
+  <data name="WaystoneStatus" xml:space="preserve">
+    <value>Waystone (Tier {0}) · {1}</value>
+  </data>
+  <data name="WaystoneNoPrice" xml:space="preserve">
+    <value>no listing</value>
+  </data>
+  <data name="WaystonePriceOff" xml:space="preserve">
+    <value>live price off</value>
+  </data>
+  <data name="TabWaystones" xml:space="preserve">
+    <value>Waystones</value>
+  </data>
+  <data name="GroupWaystoneSearch" xml:space="preserve">
+    <value>SEARCH TEXT FOR THE STASH</value>
+  </data>
+  <data name="WaystoneCopy" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="WaystoneSearchLength" xml:space="preserve">
+    <value>{0} of {1} characters</value>
+  </data>
+  <data name="WaystoneSearchTooLong" xml:space="preserve">
+    <value>Too long for the game's search box: drop a mod or a value.</value>
+  </data>
+  <data name="WaystoneSearchCopied" xml:space="preserve">
+    <value>Search text copied</value>
+  </data>
+  <data name="WaystoneProfileNoPrice" xml:space="preserve">
+    <value>no listing</value>
+  </data>
+  <data name="WaystonePriceAsking" xml:space="preserve">
+    <value>asking for the price…</value>
+  </data>
+  <data name="GroupWaystoneProfile" xml:space="preserve">
+    <value>PROFILE</value>
+  </data>
+  <data name="FieldItemRarity" xml:space="preserve">
+    <value>Item rarity</value>
+  </data>
+  <data name="FieldPackSize" xml:space="preserve">
+    <value>Pack size</value>
+  </data>
+  <data name="FieldMonsterRarity" xml:space="preserve">
+    <value>Monster rarity</value>
+  </data>
+  <data name="FieldEffectiveness" xml:space="preserve">
+    <value>Monster effectiveness</value>
+  </data>
+  <data name="FieldDropChance" xml:space="preserve">
+    <value>Waystone drop chance</value>
+  </data>
+  <data name="FieldTier" xml:space="preserve">
+    <value>Tier</value>
+  </data>
+  <data name="FieldRevives" xml:space="preserve">
+    <value>Revives</value>
+  </data>
+  <data name="FieldTo" xml:space="preserve">
+    <value>to</value>
+  </data>
+  <data name="FieldCorrupted" xml:space="preserve">
+    <value>Corrupted</value>
+  </data>
+  <data name="WaystoneCorruptedAny" xml:space="preserve">
+    <value>any</value>
+  </data>
+  <data name="WaystoneCorruptedYes" xml:space="preserve">
+    <value>corrupted</value>
+  </data>
+  <data name="WaystoneCorruptedNo" xml:space="preserve">
+    <value>not corrupted</value>
+  </data>
+  <data name="WaystoneAddMod" xml:space="preserve">
+    <value>Add mod</value>
+  </data>
+  <data name="WaystoneMinValue" xml:space="preserve">
+    <value>at least</value>
+  </data>
+  <data name="WaystoneTolerance" xml:space="preserve">
+    <value>Tolerance %</value>
+  </data>
+  <data name="TipWaystoneTolerance" xml:space="preserve">
+    <value>In percent. The waystone's own values, each lowered by this much, are the minimum the trade site is asked for: 59 % rarity with 10 % asks for 54 % or more. A profile's minimum counts as met when the value is not more than this much under it. Mods the profile excludes are excluded there too.</value>
+  </data>
+  <data name="TipWaystones" xml:space="preserve">
+    <value>The search text goes into the search box of a stash tab: it highlights the waystones that match the profile. The price is the cheapest waystone the profile describes on the trade site of pathofexile.com, asked with "Refresh price" only (Instant Buyout; with "incl. premium stash (online)" in the settings also sellers who are online). The site states a limit of a few requests per ten seconds; the program keeps under it and asks the price of a waystone once every ten minutes at most.</value>
+  </data>
+  <data name="GroupWaystoneMods" xml:space="preserve">
+    <value>MODS</value>
+  </data>
+  <data name="TipWaystoneFilter" xml:space="preserve">
+    <value>Type a part of the mod's text: the list shows only mods that hold it.</value>
+  </data>
+  <data name="WaystoneListings_one" xml:space="preserve">
+    <value>{0} listing</value>
+  </data>
+  <data name="WaystoneListings_other" xml:space="preserve">
+    <value>{0} listings</value>
+  </data>
+  <data name="TipWaystoneProfile" xml:space="preserve">
+    <value>The saved profiles. Type a new name to start a profile from the fields as they stand; it is saved with Save. ✕ removes the chosen profile.</value>
+  </data>
+  <data name="TipWaystoneSaveProfile" xml:space="preserve">
+    <value>Save this profile (the profiles are saved apart from the program settings)</value>
+  </data>
+  <data name="WaystoneProfileSaved" xml:space="preserve">
+    <value>Profile "{0}" saved</value>
+  </data>
+  <data name="TipWaystoneRefreshPrice" xml:space="preserve">
+    <value>Ask the trade site for the cheapest item the profile describes. Only this button asks: the site allows a few requests in ten seconds, and the live price in the game needs them too.</value>
+  </data>
+  <data name="WaystonePricesLoading" xml:space="preserve">
+    <value>prices loading…</value>
+  </data>
+  <data name="GroupProperties" xml:space="preserve">
+    <value>PROPERTIES</value>
+  </data>
+  <data name="LiveTradePrice" xml:space="preserve">
+    <value>Live price from the trade site</value>
+  </data>
+  <data name="TipLiveTradePrice" xml:space="preserve">
+    <value>Live price at the tooltip of a waystone or tablet: the trade site is asked for the cheapest offer like it, and the price stands at the right end of the title bar. Off: nothing is asked and nothing drawn at the tooltip; the key "Force live price" asks all the same.</value>
+  </data>
+  <data name="UnsavedTitle" xml:space="preserve">
+    <value>UNSAVED CHANGES</value>
+  </data>
+  <data name="Discard" xml:space="preserve">
+    <value>Discard</value>
+  </data>
+  <data name="UnsavedProfileQuit" xml:space="preserve">
+    <value>"{0}" has changes that are not saved. Save them before the program ends?</value>
+  </data>
+  <data name="TradeUnreachable" xml:space="preserve">
+    <value>trade site not reachable ({0}), again in {1} s</value>
+  </data>
+  <data name="TooltipNotRead" xml:space="preserve">
+    <value>tooltip text not read (game language?), no price</value>
+  </data>
+  <data name="ProfileRemoved" xml:space="preserve">
+    <value>Profile "{0}" removed.</value>
+  </data>
+  <data name="InvalidInTab" xml:space="preserve">
+    <value>Not saved: a field on the {0} tab holds no number.</value>
+  </data>
+  <data name="ModUnknown" xml:space="preserve">
+    <value>The mod "{0}" is no longer in the game's list; its row stays empty. Choose it anew and save.</value>
   </data>
 </root>

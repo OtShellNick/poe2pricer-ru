@@ -147,8 +147,20 @@ public sealed record HotKey(bool Alt, bool Ctrl, bool Shift, Key Key)
             bad = [(s.ToggleKey ?? "", standard.ToggleKey), (s.DiagnoseKey ?? "", standard.DiagnoseKey)];
             (toggle, diagnose) = (standard.ToggleKey, standard.DiagnoseKey);
         }
+        // The exact-price key may be empty (not bound). Unreadable, it gives way to its
+        // standard; the key of one of the two, it stays empty rather than taking some other key
+        // another program may hold (an older settings file has none, so Alt+D comes in; one of
+        // the two may be Alt+D already: review before 1.2.0, 21.10.2026). Used "": off.
+        string exact = string.IsNullOrWhiteSpace(s.ExactKey) ? "" : Kept(s.ExactKey, standard.ExactKey);
+        if (exact.Length > 0 && (Parse(exact) == Parse(toggle) || Parse(exact) == Parse(diagnose)))
+        {
+            bad.RemoveAll(b => b.Item2 == standard.ExactKey);
+            bad.Add((exact, ""));
+            exact = "";
+        }
         replaced = bad;
-        return bad.Count == 0 ? s : s with { ToggleKey = toggle, DiagnoseKey = diagnose };
+        // An exact key of null (a hand-edited file) comes back as "", else the start fell over it.
+        return bad.Count == 0 && exact == s.ExactKey ? s : s with { ToggleKey = toggle, DiagnoseKey = diagnose, ExactKey = exact };
     }
 
     // A saved key in the window's own wording ("Alt+Shift+Next" → "Alt+Shift+Page Down"); what

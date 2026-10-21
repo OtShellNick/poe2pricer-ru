@@ -10,6 +10,19 @@ public sealed record Settings
     public string ToggleKey { get; init; } = "Alt+F";
     public string DiagnoseKey { get; init; } = "Alt+Shift+F";
 
+    // At a waystone's or tablet's tooltip: its price asked exactly as it is, past the profiles
+    // (TooltipGameWindow.Exact).
+    public string ExactKey { get; init; } = "Alt+D";
+
+    // The live price at a waystone's or tablet's tooltip, asked on the trade site by itself;
+    // off, nothing is asked or drawn at the tooltip. One switch for both kinds (21.10.2026);
+    // the exact-price key (ExactKey) asks even while it is off.
+    public bool LiveTradePrice { get; init; }
+
+    // Trade prices (live and profile): Instant Buyout only (false), or also sellers online in
+    // person (true) — TradeClient.InPerson.
+    public bool TradeInPerson { get; init; }
+
     // Look every AutoIntervalSeconds for the windows ticked below while none is shown
     // (deliberate load; the key always looks for all). As fast as the control allows by
     // default (Tuning.Control.AutoMinimumSeconds): prices as soon as a window opens. The
@@ -68,6 +81,13 @@ public sealed record Settings
     // layout.
     public string DataDirectory { get; init; } = "";
 
+    // The Waystones tab: profiles for the stash search and the trade query, the live price at
+    // the tooltip.
+    public Waystones.WaystoneSettings Waystones { get; init; } = new();
+
+    // The Tablets tab: one profile per kind of tablet, the live price at the tooltip.
+    public Tablets.TabletSettings Tablets { get; init; } = new();
+
     public static string ShippedDataPath => Path.Combine(AppContext.BaseDirectory, "data", "catalog");
 
     // Not written: derived, and the shipped path names the install folder, with the user's name
@@ -90,6 +110,18 @@ public sealed record Settings
 
     // problem: something the user should know (the file could not be read), else null.
     public static Settings Load(out Told? problem) => Load(FilePath, out problem);
+
+    // The settings as saved, for a save that writes back one part of them (a tab's ✓). A file
+    // that cannot be read right now (locked by a virus scanner, cut off) must not be written
+    // over with the standard settings and that part: thrown, and the save fails and says so
+    // (review before 1.2.0). No file yet: the standard settings.
+    public static Settings LoadForSave() => LoadForSave(FilePath);
+
+    public static Settings LoadForSave(string file)
+    {
+        var settings = Load(file, out var problem);
+        return problem is null ? settings : throw new IOException(problem.Shown);
+    }
 
     // An unreadable file must not keep the program from starting: a file cut off while it was
     // written (crash, power loss) would otherwise throw at every start until it is deleted by

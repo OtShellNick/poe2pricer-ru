@@ -50,18 +50,18 @@ public sealed class StashTabReader
     // every tab 298 px right and 55 px lower at 16:9; wider than that it keeps its distance to
     // the middle (measured: at 2.4:1 it stands half the extra width further right), narrower
     // it stands Tune.ControllerNarrower px further right (measured at 16:10 only).
-    // Keyboard UI inside a stash folder: Tune.FolderDrop lower. The controller UI shows the
-    // folder as a line of text above the title bar and leaves the tab where it is.
+    // Keyboard UI inside a stash folder: Tune.FolderDrop lower, under the folder's second row
+    // of tab buttons. The controller UI has no second row: the folder's name is a small line
+    // above the tab's title bar and the tab stays where it is (Orbs tab in a folder: found at
+    // the usual place, .80).
     private (UiMode Mode, int Dx, int Dy)[] Placements(int width)
     {
         int wider = width - Tune.ReferenceWidth;
         int shift = wider >= 0 ? wider / 2 : Tune.ControllerNarrower;
-        int cx = layout.ControllerOffset.X + shift,
-            cy = layout.ControllerOffset.Y;
         return
         [
             (UiMode.KeyboardMouse, 0, 0),
-            (UiMode.Controller, cx, cy),
+            (UiMode.Controller, layout.ControllerOffset.X + shift, layout.ControllerOffset.Y),
             (UiMode.KeyboardMouse, 0, Tune.FolderDrop),
         ];
     }

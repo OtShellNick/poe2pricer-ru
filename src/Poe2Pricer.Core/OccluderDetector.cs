@@ -294,7 +294,8 @@ public sealed class OccluderDetector : IDisposable
             if (seen == 0 || seen < (x1 - x0) * Tune.VisibleBorder)
                 continue;
             Array.Sort(row, 0, seen);
-            if (row[seen / 2] >= Tune.BrightBorder && row[seen / 10] >= Tune.FullWidth && Undimmed(gray, columns.AsSpan(0, seen), y, popup))
+            if (row[seen / 2] >= Tune.BrightBorder && row[seen / 10] >= Tune.FullWidth
+                && (Undimmed(gray, columns.AsSpan(0, seen), y, popup) || DarkOnBothSides(gray, columns.AsSpan(0, seen), y, popup) && row[seen / 10] >= Tune.FullWidthOverDark))
                 return y;
         }
         return gray.Height;
@@ -580,6 +581,18 @@ public sealed class OccluderDetector : IDisposable
         return below >= Tune.UndimmedFactor * Math.Max(Tune.UndimmedFloor, above);
     }
 
+    // A border over empty, black grid cells: dark above (the tooltip's body) and dark below.
+    private static bool DarkOnBothSides(Mat gray, ReadOnlySpan<int> columns, int y, double popup)
+    {
+        int aboveFrom = Px(Tune.UndimmedAboveFrom, popup),
+            aboveTo = Px(Tune.UndimmedAboveTo, popup),
+            belowFrom = Px(Tune.UndimmedBelowFrom, popup),
+            belowTo = Px(Tune.UndimmedBelowTo, popup);
+        if (y - aboveFrom < 0 || y + belowTo > gray.Height)
+            return false;
+        return Mean(gray, columns, y - aboveFrom, y - aboveTo) <= Tune.DarkSides && Mean(gray, columns, y + belowFrom, y + belowTo) <= Tune.DarkSides;
+    }
+
     private static double Mean(Mat gray, ReadOnlySpan<int> columns, int from, int to)
     {
         long sum = 0;
@@ -618,13 +631,13 @@ public sealed class OccluderDetector : IDisposable
     }
 
     // Highest score of each template anywhere in the frame, for calibrating the thresholds.
-    public Dictionary<string, double> BestScores(Mat bgr)
+    public Dictionary<string, double> BestScores(Mat bgr, double popup = GameConfig.StandardPopup)
     {
         using var gray = new Mat();
         Cv2.CvtColor(bgr, gray, ColorConversionCodes.BGR2GRAY);
         var all = new Rect(0, 0, gray.Width, gray.Height);
         var best = new Dictionary<string, double>();
-        foreach (var (style, left, _, _, _) in Caps(GameConfig.StandardPopup))
+        foreach (var (style, left, _, _, _) in Caps(popup))
             best[style] = Max(gray, all, left);
         best["close"] = Max(gray, all, close);
         best["alt"] = Max(gray, all, hints[0]);
