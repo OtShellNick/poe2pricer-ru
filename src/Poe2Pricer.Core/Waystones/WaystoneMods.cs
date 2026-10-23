@@ -156,8 +156,30 @@ public static partial class WaystoneMods
 
     // A value far beyond what the mod rolls is a misread: a "%" read as a digit makes it about
     // ten times as big ("226" for "22%"). Up to twice the highest roll stays, in case a
-    // corrupted or otherwise enhanced waystone shows more than the game files list.
-    public static int? Plausible(int? value, int? max) => value is { } v && max is { } m && Math.Abs(v) > 2 * m ? null : value;
+    // corrupted or otherwise enhanced waystone shows more than the game files list. With Alt
+    // held, the line shows its own roll beside the value ("18(15-19)%", "27(30-25)%" for a
+    // "less" mod); a value outside that span is a misread too. (A precaution, 22.10.2026: no
+    // picture of the measurement showed one; the third reading, TextPrep.Undimmed, fills more
+    // values, and so has more chances to fill one wrongly.)
+    // A 0 is a misread too: no mod rolls 0 ("Monsters have 0% increased Effectiveness" is not
+    // a line the game shows; the OCR read one on a tablet, 23.10.2026).
+    public static int? Plausible(int? value, int? max, string line)
+    {
+        if (value is not { } v || v == 0)
+            return null;
+        if (max is { } m && Math.Abs(v) > 2 * m)
+            return null;
+        // A span the OCR garbled into more digits than an int holds is no span (R5).
+        if (RollSpan().Match(line) is { Success: true } roll
+            && int.TryParse(roll.Groups["lo"].Value, System.Globalization.NumberStyles.AllowLeadingSign, System.Globalization.CultureInfo.InvariantCulture, out int lo)
+            && int.TryParse(roll.Groups["hi"].Value, System.Globalization.NumberStyles.AllowLeadingSign, System.Globalization.CultureInfo.InvariantCulture, out int hi))
+        {
+            (lo, hi) = (Math.Abs(lo), Math.Abs(hi));
+            if (Math.Abs(v) < Math.Min(lo, hi) || Math.Abs(v) > Math.Max(lo, hi))
+                return null;
+        }
+        return value;
+    }
 
     public const int MinimumKey = 6;
 
@@ -168,7 +190,7 @@ public static partial class WaystoneMods
     // One letter in six may be off; at least two.
     public static int Tolerance(int keyLength) => Math.Max(2, keyLength / 6);
 
-    [GeneratedRegex(@"\((\s*-?\d+\s*(-|–|to)\s*-?\d+\s*)\)")]
+    [GeneratedRegex(@"\((\s*(?<lo>-?\d+)\s*(-|–|to)\s*(?<hi>-?\d+)\s*)\)")]
     private static partial Regex RollSpan();
 
     [GeneratedRegex(@"\s+T\s?\d{1,2}\s*$", RegexOptions.IgnoreCase)]

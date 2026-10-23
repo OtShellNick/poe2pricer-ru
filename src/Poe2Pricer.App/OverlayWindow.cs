@@ -7,12 +7,17 @@ using Poe2Pricer.Core.Market;
 
 namespace Poe2Pricer.App;
 
-// Transparent, click-through, never focused, always on top, and left out of screen captures
-// (SetWindowDisplayAffinity 0x11), so the tool never sees its own labels. Window styles as
-// in Dev-Jahn/poe2-ritual-checker Overlay.cs (MIT).
+// Transparent, click-through, never focused, always on top. Left out of screen captures
+// (SetWindowDisplayAffinity 0x11) while the game is read from the screen, so the tool never
+// sees its own labels — which also keeps the labels out of every recording, and makes the
+// NVIDIA app refuse to record the desktop at all; with the game read from its own window
+// (Settings.CaptureGameWindow) the flag is off. Window styles as in
+// Dev-Jahn/poe2-ritual-checker Overlay.cs (MIT).
 public sealed class OverlayWindow : Window
 {
     private readonly LabelLayer layer = new();
+    private bool excluded = true;
+    private nint hwnd;
 
     public OverlayWindow(ImageSource? divine, ImageSource? exalted, ImageSource? chaos)
     {
@@ -32,8 +37,19 @@ public sealed class OverlayWindow : Window
             var hwnd = new WindowInteropHelper(this).Handle;
             // WS_EX_NOACTIVATE | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW
             SetWindowLongPtrW(hwnd, -20, GetWindowLongPtrW(hwnd, -20) | 0x08000000 | 0x20 | 0x80);
-            SetWindowDisplayAffinity(hwnd, 0x11);
+            this.hwnd = hwnd;
+            SetWindowDisplayAffinity(hwnd, excluded ? 0x11u : 0u);
         };
+    }
+
+    // Keep the window out of screen captures (0x11, WDA_EXCLUDEFROMCAPTURE) or let them see
+    // it. Takes effect at once; before the window exists, when it is created. Any thread: the
+    // flag is a plain field and SetWindowDisplayAffinity takes the handle.
+    public void ExcludeFromCapture(bool exclude)
+    {
+        excluded = exclude;
+        if (hwnd != 0)
+            SetWindowDisplayAffinity(hwnd, exclude ? 0x11u : 0u);
     }
 
     // scale: screen pixels per pixel of the labels' coordinates (the game runs at another

@@ -52,7 +52,8 @@ public sealed class GameConfig
     }
 
     // A measure taken at the game's standard popup size, at this popup size: tooltips, the
-    // rumour panel and the remnant list grow and shrink with it. The one place for it.
+    // rumour panel and the remnant list grow and shrink with it. The one place for it; the
+    // tribute dialog uses it with the text scale (TextScale) the same way.
     public static int Scaled(int standard, double popup) => popup == StandardPopup ? standard : (int)Math.Round(standard * popup);
 
     public void Use(string? other)
@@ -123,11 +124,20 @@ public sealed class GameConfig
         }
     }
 
-    // The program is measured at the standard size only. With "large" or "extra_large" stash
-    // tabs lose prices (the larger tier marks count as covered) and the tribute dialog of a
-    // ritual is not found (its button grows with the lettering): not supported, and the user
-    // is told so at the start.
-    public bool TextSizeSupported => TextSize == StandardTextSize;
+    // The three sizes the game offers are measured (testdata/textsize: Large and Extra Large
+    // on two players' pictures at 1080, 1440, 2160 and 3440, every window; 23.10.2026). A value
+    // the program does not know (a game update) is told at the start (Program.CheckTextSize)
+    // and read as the standard.
+    public bool TextSizeSupported => TextSize is StandardTextSize or "large" or "extra_large";
+
+    // How much larger the game draws its lettering at this UI Text Size (Tuning.TextSizes); an
+    // unknown value counts as the standard.
+    public static double TextScale(string textSize) => textSize switch
+    {
+        "large" => Tuning.TextSizes.Large,
+        "extra_large" => Tuning.TextSizes.ExtraLarge,
+        _ => 1,
+    };
 
     private void Look()
     {

@@ -154,8 +154,10 @@ public sealed record HotKey(bool Alt, bool Ctrl, bool Shift, Key Key)
         string exact = string.IsNullOrWhiteSpace(s.ExactKey) ? "" : Kept(s.ExactKey, standard.ExactKey);
         if (exact.Length > 0 && (Parse(exact) == Parse(toggle) || Parse(exact) == Parse(diagnose)))
         {
+            // Named as the file has it, not as its replacement ("Alt+D" after an unreadable
+            // key; OFFEN Z7).
             bad.RemoveAll(b => b.Item2 == standard.ExactKey);
-            bad.Add((exact, ""));
+            bad.Add((s.ExactKey!, ""));
             exact = "";
         }
         replaced = bad;

@@ -199,9 +199,18 @@ public sealed class OverlayEngine : IDisposable
         }
     }
 
+    // A window's name as part of a file name: letters and digits, the rest a dash.
+    private static string Slug(string name) =>
+        string.Concat(name.ToLowerInvariant().Select(c => char.IsLetterOrDigit(c) ? c : '-')).Trim('-');
+
+    // The kinds of evidence being written right now: one picture of a kind at a time, so a
+    // burst of glance losses does not pile up clones of the whole frame and encoders beside the
+    // game (R3); the newest few are what matter. (Not inFlight: that counts the engine's work.)
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, byte> writing = new();
+
     private void Keep(string what, Mat picture)
     {
-        if (!KeepsEvidence)
+        if (!KeepsEvidence || !writing.TryAdd(what, 0))
             return;
         string folder = EvidenceFolder!;
         var copy = picture.Clone();
@@ -223,6 +232,7 @@ public sealed class OverlayEngine : IDisposable
             }
             finally
             {
+                writing.TryRemove(what, out _);
                 copy.Dispose();
                 Interlocked.Decrement(ref inFlight);
             }
@@ -555,6 +565,13 @@ public sealed class OverlayEngine : IDisposable
             switch (seen)
             {
                 case Glance.Gone gone:
+                    // The picture the glance lost the window on (with extended diagnostics;
+                    // the newest few of each window). Live, the stash tab and the remnant list
+                    // are lost within a second of being shown and found again a moment later
+                    // (log of 22./23.10.2026: 41 stash losses within 0.2 s of a show), while
+                    // every stored picture glances as it looks; what the live picture holds at
+                    // that moment is not known.
+                    Keep("glance-gone-" + Slug(window.Window.Profile.Name), frame.Image);
                     frame.Dispose();
                     log($"Time: quick check capture {capture} ms, check {check} ms");
                     log("hidden (quick check): " + gone.Why);

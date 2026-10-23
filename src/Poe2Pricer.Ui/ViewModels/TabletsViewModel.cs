@@ -20,7 +20,10 @@ public sealed class KindChoice(string name) : ObservableObject
         set
         {
             if (SetProperty(ref shown, value))
+            {
                 OnPropertyChanged(nameof(Text));
+                OnPropertyChanged(nameof(Label));
+            }
         }
     }
 
@@ -30,11 +33,19 @@ public sealed class KindChoice(string name) : ObservableObject
         set
         {
             if (SetProperty(ref hasProfile, value))
+            {
                 OnPropertyChanged(nameof(Text));
+                OnPropertyChanged(nameof(Marker));
+            }
         }
     }
 
     public string Text => (HasProfile ? "● " : "    ") + (Shown ?? Name);
+
+    // The list draws the mark in a column of its own (MainWindow.xaml), so that the names line
+    // up with and without one: four spaces are not as wide as "● " (OFFEN Z7).
+    public string Marker => HasProfile ? "●" : "";
+    public string Label => Shown ?? Name;
 
     public override string ToString() => Text;
 }

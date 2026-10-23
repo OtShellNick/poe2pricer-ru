@@ -190,6 +190,18 @@ I cannot be held liable for any damage arising out of the use of this font.
 dafont.com lists the font as "100% Free" with the author's note: "free for anyone to use
 anywhere at any time in any way they like, no strings attached".
 
+## Game interface pieces (`data/ui`, game material)
+
+The small pictures in `data/ui` are pieces of the interface of Path of Exile 2, used as
+templates to find windows, tooltips, buttons and stash tabs in a capture: cut from the game's
+interface files or from screenshots of the game. `data/ui/glyphs` holds 15 such pictures of
+the lettering of item tooltips, the digits 0 to 9, the brackets, the minus, plus and per cent
+signs, cut from screenshots at popup size 1.0; poe2pricer compares them with a tooltip where
+the text recognition left a number out. All of these are material of Grinding Gear Games. The
+tooltip lettering is set in the typeface Fontin SmallCaps by Jos Buivenga (exljbris,
+https://www.exljbris.com), which is **not** included: poe2pricer ships no font file of it and
+draws no text with it, only these cut-outs of the game's own rendering.
+
 ## Rumour texts (game data)
 
 The 20 texts of the Island Rumours ("All that glitters...", "Somethin' fishy...", …) and the names

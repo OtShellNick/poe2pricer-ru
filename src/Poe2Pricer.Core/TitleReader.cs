@@ -7,6 +7,25 @@ using Tune = Poe2Pricer.Core.Tuning.Titles;
 
 namespace Poe2Pricer.Core;
 
+// How a region is prepared before the OCR reads it (TitleReader.ReadRegionAsync). Plain: as it
+// is. Binarised: black and white at an Otsu threshold (a half transparent tooltip over the
+// stash: the tab list and the map behind it fall below the threshold for the most part).
+// Undimmed: only the pixels brighter than anything behind a tooltip (Tuning.Titles.Undimmed),
+// in their colours, the rest black: the stash's tier marks and stack numbers, which show
+// through a tooltip dimmed and pass the Otsu threshold next to a line of its text, are gone
+// (the author's diagnoses 21.10.2026, OFFEN Z3).
+public enum TextPrep { Plain, Binarised, Undimmed }
+
+// A word the OCR read, with its box in picture pixels; a line of such words, in reading order.
+public sealed record OcrWord(string Text, Rect Box);
+
+public sealed record OcrLine(string Text, IReadOnlyList<OcrWord> Words)
+{
+    public double CenterY => Words.Average(w => w.Box.Y + w.Box.Height / 2.0);
+    public int Left => Words.Min(w => w.Box.Left);
+    public int Right => Words.Max(w => w.Box.Right);
+}
+
 // Reads the title bar of a tooltip with Windows OCR. Uniques and rares show their base type
 // as a second line, and overlays drawn on top (an FPS graph) add lines of their own, so all
 // lines are returned and matched against the catalog.
@@ -49,26 +68,12 @@ public sealed class TitleReader
     }
 
     // Any screen region, enlarged 2× before OCR; returns lines with their vertical centre and
-    // where they begin and end (screen coordinates).
-    public async Task<(string Text, double CenterY, double Left, double Right)[]> ReadRegionAsync(Mat bgr, Rect region, double scale = 2, bool binarize = false)
+    // where they begin and end (screen coordinates). prep: how the picture is prepared.
+    public async Task<(string Text, double CenterY, double Left, double Right)[]> ReadRegionAsync(Mat bgr, Rect region, double scale = 2, TextPrep prep = TextPrep.Plain)
     {
-        // What of the region lies in the picture; the lines are placed from there, so that a
-        // region cut at the left or upper edge places its lines right. A region outside the
-        // picture has no lines.
-        var area = region.Intersect(new Rect(0, 0, bgr.Width, bgr.Height));
-        if (area.Width <= 0 || area.Height <= 0)
+        var (area, result) = await RecognizeRegionAsync(bgr, region, scale, prep);
+        if (result is null)
             return [];
-        using var crop = new Mat(bgr, area);
-        using var large = new Mat();
-        Cv2.Resize(crop, large, new Size(), scale, scale, InterpolationFlags.Cubic);
-        if (binarize)
-        {
-            using var gray = new Mat();
-            Cv2.CvtColor(large, gray, ColorConversionCodes.BGR2GRAY);
-            Cv2.Threshold(gray, gray, 0, 255, ThresholdTypes.Binary | ThresholdTypes.Otsu);
-            Cv2.CvtColor(gray, large, ColorConversionCodes.GRAY2BGR);
-        }
-        var result = await TextAsync(large);
         return result
             .Lines.Select(l =>
                 (
@@ -79,6 +84,75 @@ public sealed class TitleReader
                 )
             )
             .ToArray();
+    }
+
+    // The same, with each word's box (picture pixels): where a line's number must lie
+    // (NumberGlyphs.Gap).
+    public async Task<OcrLine[]> ReadLinesAsync(Mat bgr, Rect region, double scale = 2, TextPrep prep = TextPrep.Plain)
+    {
+        var (area, result) = await RecognizeRegionAsync(bgr, region, scale, prep);
+        if (result is null)
+            return [];
+        return result.Lines
+            .Select(l => new OcrLine(
+                l.Text,
+                l.Words.Select(w => new OcrWord(w.Text, new Rect(
+                    area.X + (int)Math.Round(w.BoundingRect.X / scale),
+                    area.Y + (int)Math.Round(w.BoundingRect.Y / scale),
+                    (int)Math.Round(w.BoundingRect.Width / scale),
+                    (int)Math.Round(w.BoundingRect.Height / scale)))).ToArray()))
+            .ToArray();
+    }
+
+    private async Task<(Rect Area, OcrResult? Result)> RecognizeRegionAsync(Mat bgr, Rect region, double scale, TextPrep prep)
+    {
+        // What of the region lies in the picture; the lines are placed from there, so that a
+        // region cut at the left or upper edge places its lines right. A region outside the
+        // picture has no lines.
+        var area = region.Intersect(new Rect(0, 0, bgr.Width, bgr.Height));
+        if (area.Width <= 0 || area.Height <= 0)
+            return (area, null);
+        using var crop = new Mat(bgr, area);
+        using var large = new Mat();
+        if (prep == TextPrep.Undimmed)
+        {
+            using var kept = Undimmed(crop);
+            Cv2.Resize(kept, large, new Size(), scale, scale, InterpolationFlags.Cubic);
+        }
+        else
+            Cv2.Resize(crop, large, new Size(), scale, scale, InterpolationFlags.Cubic);
+        if (prep == TextPrep.Binarised)
+        {
+            using var gray = new Mat();
+            Cv2.CvtColor(large, gray, ColorConversionCodes.BGR2GRAY);
+            Cv2.Threshold(gray, gray, 0, 255, ThresholdTypes.Binary | ThresholdTypes.Otsu);
+            Cv2.CvtColor(gray, large, ColorConversionCodes.GRAY2BGR);
+        }
+        return (area, await TextAsync(large));
+    }
+
+    // Only the pixels brighter than anything behind a tooltip (Tune.Undimmed), in their
+    // colours, the rest black (TextPrep.Undimmed); gray: the same as one grey channel.
+    public static Mat Undimmed(Mat crop, bool gray = false)
+    {
+        using var most = new Mat();
+        var channels = crop.Split();
+        Cv2.Max(channels[0], channels[1], most);
+        Cv2.Max(most, channels[2], most);
+        foreach (var channel in channels)
+            channel.Dispose();
+        using var mask = new Mat();
+        Cv2.Threshold(most, mask, Tune.Undimmed - 1, 255, ThresholdTypes.Binary);
+        var kept = new Mat(crop.Size(), gray ? MatType.CV_8UC1 : MatType.CV_8UC3, Scalar.All(0));
+        if (gray)
+        {
+            using var channel = new Mat();
+            Cv2.CvtColor(crop, channel, ColorConversionCodes.BGR2GRAY);
+            channel.CopyTo(kept, mask);
+        }
+        else
+            crop.CopyTo(kept, mask);
+        return kept;
     }
 
     private async Task<string[]> RecognizeAsync(Mat image) => (await TextAsync(image)).Lines.Select(l => l.Text).ToArray();

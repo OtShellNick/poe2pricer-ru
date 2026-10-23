@@ -3,6 +3,52 @@
 All notable changes to poe2pricer, newest first. The release notes on GitHub say the same
 with more words: https://github.com/saxe78/poe2pricer/releases
 
+## 1.3.0 — 2026-10-23
+
+### Added
+- A notice before the first start, once: what the program does and does not do, and that GGG
+  approves no third-party tool; "Run" or "Quit". Copies from before see it once at the first
+  start after the update. README and Help: "Third-party tools and GGG", with GGG's statements,
+  their sources, and where the program stands to them.
+- Settings → Prices and display: "Capture the game window only" (on). The game is read from
+  its own window through Windows.Graphics.Capture instead of the screen, so the overlay no
+  longer has to hide from screen captures: the NVIDIA app, OBS and Game Bar record the desktop
+  again, and the prices are in the video. The game gets no message for it. Needs Windows 11;
+  on Windows 10, and after a missing or black picture, the screen is read for the run, with a
+  line in the window. Off reads the screen as before.
+
+### Fixed
+- Ritual with a controller: the tribute dialog ("Offer all remaining Tribute to the king?") is
+  recognised at UI Text Size Large and Extra Large too, so the items under it get no price
+  on its text (#1).
+- Ritual: a dialog that opens while the prices are shown (tribute, reroll) is found at once
+  even when it does not dim the window behind it; before, the prices stayed on its text.
+- Stash tabs at UI Text Size Large and Extra Large: items with a tier mark, and stacks with a
+  large number or mark, get their price (#1).
+- Waystone and tablet tooltips over a stash tab: lines garbled by the stash showing through
+  the tooltip are read all the same, and a tooltip the stash cut short keeps its mods.
+- Waystone and tablet tooltips: a number the text recognition leaves out (above all the roll
+  shown with Alt held, "32(30-40)%") is read from the game's own digits; a value read as 0 is
+  not taken.
+- Waystone and tablet tooltips: a mod wrapped onto two lines counts once.
+- Tablets tab, Overseer Tablet: a group that asks for both wordings of a twin pair (the prefix
+  "Map contains an additional Essence" and the suffix "Map contains # additional Essences")
+  means both, in the stash search, the trade query and the judgement at the tooltip; in
+  separate groups a row still takes the other wording too.
+- Tablets tab: the kinds without a profile line up with the marked ones in the kind list.
+- The warning about a "force live price" key that is off because another key holds it names
+  the key as the settings file has it.
+
+### Changed
+- No more warning about the game's UI Text Size: Large and Extra Large are checked on two
+  players' pictures at 1080, 1440, 2160 and 3440, every window (#1). Only a size the program
+  does not know is noted at the start, as a closable line in the window's brass colour.
+- Settings: the "Display" box is "Prices and display" and holds the league too, in a row like
+  the two below it, with a small refresh sign in place of the "Refresh prices" button.
+- The build's inputs are fixed: `global.json` names the SDK version, `packages.lock.json`
+  files the package versions with their hashes, and the release workflow restores in locked
+  mode, so no package can change under a commit.
+
 ## 1.2.0 — 2026-10-21
 
 ### Added

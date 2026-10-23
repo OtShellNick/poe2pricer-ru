@@ -43,16 +43,18 @@ public static class TabletSearch
             terms.Add(SearchRegex.Quote(w.Kind(kind)));
         if (profile.UsesMin is { } uses)
             terms.Add(SearchRegex.Quote("^" + SearchRegex.AtLeast(uses, 10) + w.Uses));
-        terms.AddRange(profile.Groups.SearchTerms((r, withMinimum) => r.Mod is { } mod ? Pattern(mod, withMinimum ? r.Min : null, w) : null));
+        var paired = profile.Groups.Paired();
+        terms.AddRange(profile.Groups.SearchTerms((r, withMinimum) => r.Mod is { } mod ? Pattern(mod, withMinimum ? r.Min : null, w, withTwin: !paired.Contains(r)) : null));
         return string.Join(" ", terms);
     }
 
     // A mod's pattern; with a twin, either wording — the twin only when it can meet the minimum:
-    // one without "#" stands for 1 (review before 1.2.0: "≥ 2 Strongboxes" found one).
-    private static string Pattern(TabletMod mod, int? minimum, Wording w)
+    // one without "#" stands for 1 (review before 1.2.0: "≥ 2 Strongboxes" found one) — and not
+    // when the group holds the twin as a row of its own (TabletGroups.Paired).
+    private static string Pattern(TabletMod mod, int? minimum, Wording w, bool withTwin)
     {
         string own = SearchRegex.ModPattern(w.Text(mod), mod.Max, minimum, w.Pool);
-        if (mod.Twin is not { } twin || (!twin.HasValue && minimum is > 1))
+        if (!withTwin || mod.Twin is not { } twin || (!twin.HasValue && minimum is > 1))
             return own;
         return own + "|" + SearchRegex.ModPattern(w.Text(twin), twin.Max, twin.HasValue ? minimum : null, w.Pool);
     }

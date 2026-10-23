@@ -104,8 +104,12 @@ public static partial class TabletTooltip
             {
                 // A line with a count shows "an additional" for 1 ("Map contains # additional
                 // Essences" at 1 reads as the generic prefix's text): that wording is 1.
-                int? value = found.Mod.HasValue ? WaystoneMods.Plausible(WaystoneMods.ValueOf(line), found.Mod.Max) : found.Mod.Twin is not null ? 1 : null;
-                mods.Add(new(found.Mod, value, line, found.Distance));
+                int? value = found.Mod.HasValue ? WaystoneMods.Plausible(WaystoneMods.ValueOf(line), found.Mod.Max, line) : found.Mod.Twin is not null ? 1 : null;
+                // A mod wrapped onto two lines (WaystoneTooltip.Parse): one mod.
+                if (mods.Count > 0 && mods[^1].Mod == found.Mod)
+                    mods[^1] = mods[^1] with { Value = mods[^1].Value ?? value, Line = mods[^1].Line + " " + line };
+                else
+                    mods.Add(new(found.Mod, value, line, found.Distance));
             }
             else
                 unread.Add(line);

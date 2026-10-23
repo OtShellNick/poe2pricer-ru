@@ -102,9 +102,9 @@ public static partial class WaystoneTooltip
                 corrupted = true;
                 continue;
             }
-            if (Summary(line, key, Revives, RevivesLimit, ref revives) || Summary(line, key, ItemRarity, SummaryLimit, ref itemRarity)
-                || Summary(line, key, PackSize, SummaryLimit, ref packSize) || Summary(line, key, MonsterRarity, SummaryLimit, ref monsterRarity)
-                || Summary(line, key, Effectiveness, SummaryLimit, ref effectiveness) || Summary(line, key, DropChance, SummaryLimit, ref dropChance))
+            if (Summary(line, key, Revives, 0, RevivesLimit, ref revives) || Summary(line, key, ItemRarity, 1, SummaryLimit, ref itemRarity)
+                || Summary(line, key, PackSize, 1, SummaryLimit, ref packSize) || Summary(line, key, MonsterRarity, 1, SummaryLimit, ref monsterRarity)
+                || Summary(line, key, Effectiveness, 1, SummaryLimit, ref effectiveness) || Summary(line, key, DropChance, 1, SummaryLimit, ref dropChance))
                 continue;
             if (key is "prefix" or "suffix" or "prafix" || key.Length < WaystoneMods.MinimumKey)
                 continue;
@@ -115,8 +115,15 @@ public static partial class WaystoneTooltip
                 int? value = found.Mod.HasValue ? WaystoneMods.ValueOf(line) : null;
                 if (value is { } v && found.Mod.Text.Contains("-#"))
                     value = Math.Abs(v);
-                value = WaystoneMods.Plausible(value, found.Mod.Max);
-                mods.Add(new(found.Mod, value, line, found.Distance));
+                value = WaystoneMods.Plausible(value, found.Mod.Max, line);
+                // A mod wrapped onto two lines (a long German one at UI Text Size Extra Large,
+                // 22.10.2026): the second line fits the same mod as a part of it, even with a
+                // stray line between them (stash tier marks read through the tooltip). One mod,
+                // with the value from whichever line carries it; the game lists no mod twice.
+                if (mods.Count > 0 && mods[^1].Mod == found.Mod)
+                    mods[^1] = mods[^1] with { Value = mods[^1].Value ?? value, Line = mods[^1].Line + " " + line };
+                else
+                    mods.Add(new(found.Mod, value, line, found.Distance));
             }
             else
                 unread.Add(line);
@@ -128,18 +135,22 @@ public static partial class WaystoneTooltip
     // letters off at most ("AVAILABLé"); the value is the number before the per cent sign,
     // which the OCR writes as "0/0", "0/6" or "04" as often as "%", "O" standing in for a 0.
     // A value beyond what the game rolls (a "+" read as a digit: "+70%" → "4700/0") is not
-    // taken: the line stays without value, and the next reading may do better.
+    // taken: the line stays without value, and the next reading may do better. Nor is a value
+    // below minimum: the game shows "Revives Available: 0", but a rarity, pack size,
+    // effectiveness or drop chance line only with a value, so a 0 there is a misread ("+19%"
+    // behind a dimmed tier mark of the stash read as "*00/0", the author's diagnosis 21.10.2026
+    // 16:32).
     // labels: the label in English and in German (ClientStrings of the game files, as KeyOf
     // gives them).
-    private static bool Summary(string line, string key, string[] labels, int limit, ref int? value)
+    private static bool Summary(string line, string key, string[] labels, int minimum, int limit, ref int? value)
     {
         if (!labels.Any(label => Math.Abs(key.Length - label.Length) <= 2 && TitleReader.Distance(key.Length > label.Length + 2 ? key[..(label.Length + 2)] : key, label) <= 2))
             return false;
         int colon = line.IndexOf(':');
         string after = PerCent().Replace(colon >= 0 ? line[(colon + 1)..] : line, "$1%").Trim();
-        if (SummaryValue().Match(after) is { Success: true } m && int.Parse(m.Groups[1].Value) is var v && v <= limit)
+        if (SummaryValue().Match(after) is { Success: true } m && int.Parse(m.Groups[1].Value) is var v && v >= minimum && v <= limit)
             value = v;
-        else if (after.TrimEnd('%') is "O" or "o" or "0")
+        else if (minimum == 0 && after.TrimEnd('%') is "O" or "o" or "0")
             value = 0;
         return true;
     }

@@ -14,6 +14,7 @@ public sealed class Pipeline : IDisposable
     public OccluderDetector Occluders { get; }
     public SelectionDetector Selection { get; }
     public TitleReader Titles { get; }
+    public NumberGlyphs Glyphs { get; }
     public RemnantReader Remnants { get; }
     public RumourReader Rumours { get; }
     public StashTabReader Stash { get; }
@@ -34,6 +35,7 @@ public sealed class Pipeline : IDisposable
         Occluders = new OccluderDetector(uiDirectory);
         Selection = new SelectionDetector(uiDirectory);
         Titles = new TitleReader();
+        Glyphs = new NumberGlyphs(uiDirectory);
         Remnants = new RemnantReader(uiDirectory, Titles);
         Rumours = new RumourReader(uiDirectory, Titles, rumourShapes);
         Stash = new StashTabReader(uiDirectory);
@@ -71,6 +73,7 @@ public sealed class Pipeline : IDisposable
         Locator.Dispose();
         Occluders.Dispose();
         Selection.Dispose();
+        Glyphs.Dispose();
         Remnants.Dispose();
         Rumours.Dispose();
         Icons.Dispose();

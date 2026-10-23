@@ -52,6 +52,7 @@ public sealed class SettingsViewModel : ObservableObject
     private bool startWithWindows;
     private bool extendedDiagnostics;
     private bool tradeInPerson;
+    private bool captureGameWindow;
     private bool liveTradePrice;
     private bool checkForUpdates;
     private bool floorInvalid;
@@ -84,6 +85,7 @@ public sealed class SettingsViewModel : ObservableObject
         startWithWindows = settings.StartWithWindows;
         extendedDiagnostics = settings.ExtendedDiagnostics;
         tradeInPerson = settings.TradeInPerson;
+        captureGameWindow = settings.CaptureGameWindow;
         liveTradePrice = settings.LiveTradePrice;
         checkForUpdates = settings.CheckForUpdates;
         interval = Shown(settings.AutoIntervalSeconds);
@@ -157,6 +159,8 @@ public sealed class SettingsViewModel : ObservableObject
     // The language was chosen and saved by the window's list (MainViewModel): the next save
     // of this page must not write the old one back.
     public void SetLanguage(string language) => settings = settings with { Language = language };
+    // Likewise a hint closed with its "✕" (MainViewModel.CloseHint).
+    public void SetHiddenHint(string hint) => settings = settings with { HiddenHint = hint };
     public IReadOnlyList<string> Units { get; } = ["ex", "chaos", "div"];
     // The unit prices are written in below one divine (Settings.PriceUnit).
     public IReadOnlyList<string> PriceUnits { get; } = ["ex", "chaos"];
@@ -247,6 +251,13 @@ public sealed class SettingsViewModel : ObservableObject
     {
         get => tradeInPerson;
         set => SetProperty(ref tradeInPerson, value);
+    }
+
+    // The game read from its own window, not from the screen (Settings.CaptureGameWindow).
+    public bool CaptureGameWindow
+    {
+        get => captureGameWindow;
+        set => SetProperty(ref captureGameWindow, value);
     }
 
     public bool ExtendedDiagnostics
@@ -456,6 +467,7 @@ public sealed class SettingsViewModel : ObservableObject
             StartWithWindows = StartWithWindows,
             ExtendedDiagnostics = ExtendedDiagnostics,
             TradeInPerson = TradeInPerson,
+            CaptureGameWindow = CaptureGameWindow,
             LiveTradePrice = LiveTradePrice,
             CheckForUpdates = CheckForUpdates,
             AutoIntervalSeconds = everyKept,

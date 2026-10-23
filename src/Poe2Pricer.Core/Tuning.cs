@@ -188,9 +188,12 @@ public static class Tuning
         // Chosen; a closed window shows the scene, where no cell matches.
         public const double StillThere = .25;
 
-        // A dialog dims the whole window: at least WindowDimmed of the stored cells are darker
-        // than DimmedBelow at once. Measured: under the dialog every cell, mostly about .30 and
-        // at most .55; a tooltip covers at most half the cells.
+        // A dialog may dim the whole window: at least WindowDimmed of the stored cells are
+        // darker than DimmedBelow at once. Measured: under the dialog every cell, mostly about
+        // .30 and at most .55; a tooltip covers at most half the cells. Not every client dims:
+        // on the author's (23.10.2026, Large, 1080 and 2160) the cells kept their brightness with
+        // the dialog open, so the dialog is searched on every follow regardless
+        // (FavoursGameWindow).
         public const double WindowDimmed = .9;
         public const double DimmedBelow = .7;
 
@@ -297,10 +300,27 @@ public static class Tuning
         // 1); shorter OCR lines are ignored. Chosen.
         public const int DistancePerLength = 8;
         public const int MinimumKeyLength = 3;
+
+        // The lettering of a tooltip is at least this bright on its brightest channel, and
+        // nothing behind a tooltip is: the game dims what lies under one to about .31 (white
+        // 251 as 79, Occluders.MarginUndimmed). TextPrep.Undimmed keeps only such pixels.
+        // Measured 22.10.2026 on 30 tooltip pictures: as a third reading after the binarised
+        // and the plain one it fills values in 12, and takes none away.
+        public const int Undimmed = Occluders.MarginUndimmed;
     }
 
     // OccluderDetector: game popups over the Favours grid (tooltips, notifications, dialog, the
     // "ALT Inspect"/"SHIFT Compare" hints) and tooltips beside the remnant list. px at 1440.
+    // How much larger the game draws its lettering at a UI Text Size other than the standard
+    // (Options → UI; GameConfig.TextScale). Measured 22.10.2026 on the tribute dialog of the
+    // Ritual window (Occluders.DialogApartSlack); the stack numbers and tier marks on items grow
+    // with it too.
+    public static class TextSizes
+    {
+        public const double Large = 1.15;
+        public const double ExtraLarge = 1.30;
+    }
+
     public static class Occluders
     {
         // Template thresholds. Measured: the ends of an item title bar fit at least .93 where
@@ -381,14 +401,22 @@ public static class Tuning
         public const int HintTop = 5;
         public const int HintBottom = 21;
 
-        // Confirmation dialog: from the CANCEL button about 440 px left, 140 px up, 60 px right,
-        // 40 px down (measured), with a generous margin to the right and below.
+        // Confirmation dialog: its panel from the top left of the CANCEL button, measured
+        // 22.10.2026 at the standard text size on the German client, whose text is the widest
+        // (584 left, 116 up, 277 right, 72 down; English 413 left, 238 right), with margin.
         // DialogCap: the ends of the button that carry no lettering (DialogButton).
         public const int DialogCap = 16;
-        public const int DialogLeft = 460;
+        public const int DialogLeft = 600;
         public const int DialogUp = 160;
-        public const int DialogRight = 230;
+        public const int DialogRight = 290;
         public const int DialogDown = 90;
+        // The dialog grows with the game's UI Text Size (its lettering grows, and the button and
+        // panel with it): the button's ends, their distance and the panel measures are scaled by
+        // GameConfig.TextScale. Measured 22.10.2026 on the German client at 2560×1440: the ends
+        // fit scaled by 1.15 at Large (.92) and 1.30 at Extra Large (.89), against .64 at most
+        // without a dialog. The distance between the ends is sharp to the pixel (one px off
+        // costs .10–.30), so DialogApartSlack px either way are tried as well.
+        public const int DialogApartSlack = 2;
 
         // Tooltips beside the remnant list: fixed width (labels sit at the left edge); the bottom
         // is where the dimming of the scene ends (OccluderDetector.DimmingEnd). Looked at: from
@@ -417,6 +445,17 @@ public static class Tuning
         public const int MarginTo = 25;
         public const double MarginBright = 40;
         public const int MarginRows = 3;
+        // A bright row of the margin counts only when it is a line or undimmed: the game's
+        // lettering under the tooltip (stack numbers of the stash, large at UI Text Size Extra
+        // Large) shows through dimmed to about .31 — white 251 as 79 — and broken by dark
+        // columns, which raised the margin's mean just over MarginBright four rows long
+        // (xlarge_tablet_de: 41, columns 0/39/79). A border is continuous across the margin
+        // (its 25th percentile at least MarginContinuous: measured 18–38 at dim real bottoms
+        // over dark cells, 0 at the lettering), or it holds pixels brighter than anything
+        // dimmed (MarginUndimmed; the lettering below a bottom reads 251). Measured 22.10.2026
+        // on 34 tooltip pictures: no other bottom moves.
+        public const int MarginContinuous = 12;
+        public const int MarginUndimmed = 100;
 
         // Height of a title bar from the top of its end cap, for a tooltip whose inner margin
         // cannot be measured (OccluderDetector.TooltipsOver). Measured: one line 45 px, two
@@ -493,6 +532,35 @@ public static class Tuning
         public const double CoveredQuarterBelow = .4;
         public const int LabelParts = 3;
 
+        // Lettering the game draws on a slot (GameText): white glyphs (every channel at least
+        // TextWhite) with a black outline (every channel at most TextBlack) within TextOutline
+        // px, as the reroll digits (Favours.DigitWhite/DigitBlack). The tier mark stands on a
+        // dark backing that reaches about 4 px beyond its glyphs; TextSurround takes outline and
+        // backing (measured 22.10.2026 at UI Text Size Large and Extra Large, where the mark and
+        // its backing reach into the label strip; at the standard size they end above it).
+        public const int TextWhite = 200;
+        public const int TextBlack = 45;
+        public const int TextTint = 30;
+        public const int TextOutline = 2;
+        public const int TextSurround = 6;
+        // Where the game writes, as shares of the slot: the stack number reaches at most .6 of
+        // the width and .45 of the height from the top left ("1802" at Extra Large), the tier
+        // mark lies right of .3 and below .5 ("XVIII" at Extra Large: .33–.88, .61–.86). Measured
+        // 22.10.2026; with margin.
+        public const double NumberRight = .62;
+        public const double NumberBottom = .5;
+        public const double MarkLeft = .3;
+        public const double MarkTop = .5;
+
+        // Covered, with the lettering and its surround left out: the strip says so when at
+        // least EvidenceShare of its pixels (of a part, of the whole) remain — a popup darkens
+        // the ground between the letters as well; or the ring says so: its ground outside the
+        // lettering below RingCoveredBelow of the usual ground (the mark across the whole strip,
+        // "XVIII" at Extra Large, or a tooltip's bright button in the strip). Measured on that
+        // ring: free slots .96–1.07 of the usual at every text size, under a tooltip .11–.75.
+        public const double EvidenceShare = .3;
+        public const double RingCoveredBelow = .85;
+
         // Where a slot's label is drawn (LabelLayer: centred on the lower edge, inside the
         // slot), for the key hints that may lie on it.
         public const int LabelSpotWidth = 56;
@@ -520,6 +588,16 @@ public static class Tuning
         public const double Size = .9;
         public const int Shift = 3;
         public const double ColourWeight = 2;
+        // Of the art's own pixels (its alpha mask) at least this share must lie outside the
+        // lettering for the comparison to leave the lettering out; with less (art that looks
+        // like lettering) the whole art is compared as before. Chosen.
+        public const double MinimumArtShare = .25;
+        // Compared within the art and ArtEdge px of ground around it, the lettering left out.
+        // The edge is the silhouette, where arts differ; the ground further out makes every
+        // art look alike. Measured 22.10.2026 (art only / with 2 px / 4 px / 6 px): a rune on
+        // a tooltip-covered tab .25 / .36 / .41 / .42; Sacred Bloom .83 / .86 / .88 / .89 with
+        // the runner-up .38 / .57 / .65 / .69 — the lead shrinks with the ground taken in.
+        public const int ArtEdge = 2;
 
         // Preselection on 12×12 thumbnails before the full comparison.
         public const int PreselectCount = 24;
@@ -888,6 +966,17 @@ public static class Tuning
         public static readonly TimeSpan RequestSpacing = TimeSpan.FromSeconds(1);
         public static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(20);
 
+        // A picture of the game window counts as black (the capture delivered nothing: a
+        // window in exclusive fullscreen, a driver) when no pixel is brighter than this. Chosen: the
+        // game is never that dark across the whole window with the UI drawn.
+        public const int BlackCaptureBelow = 8;
+
+        // How long the game window may give no picture, or a black one while the screen shows
+        // the game, before the screen is read for the run (WindowsGameScreen): a client that
+        // has just started draws nothing for a moment, a loading screen is black, and the
+        // first comparison with the screen may still hold the overlay's own labels.
+        public static readonly TimeSpan WindowCaptureGrace = TimeSpan.FromSeconds(3);
+
         // An answer (prices, item art, rumour table, release) is read up to this size and
         // dropped beyond it: nothing the program asks for is anywhere near, and an endless
         // answer must not fill the memory or the disk.
@@ -896,6 +985,37 @@ public static class Tuning
         // Item art larger than this a side is not decoded: poe.ninja's is 48 to 256 pixels. The
         // size stands in the file's header and is checked before the decoder sets memory aside.
         public const int IconMaxEdge = 1024;
+    }
+
+    // NumberGlyphs: the number of a mod line read from the game's glyphs where the OCR left it
+    // out. Measured 23.10.2026 on 30 tooltip pictures (27 missing values, 104 values the OCR
+    // had read as a control, scratch textprobe).
+    public static class Glyphs
+    {
+        // A glyph counts where its picture matches at least this (CCoeffNormed): true digits
+        // scored .91 to 1.00, wrong ones .72 at most; a letter "I" scores .86 as a "1".
+        public const double Match = .85;
+
+        // Two matches this far overlapping (share of the narrower) are one glyph: the better wins.
+        public const double Overlap = .4;
+
+        // A match is a peak when nothing scores higher within this many pixels.
+        public const int PeakReach = 2;
+
+        // The gap reaches this far beyond the OCR word boxes (reference pixels, popup 1): the
+        // brackets are 25 high against 15 to 18 for the digits, and a bracket cut at the top
+        // loses its match (gaps 3 beyond the boxes: 8 of 27 read; 7: all 27).
+        public const int Above = 7;
+        public const int Beside = 3;
+
+        // A number block's width in characters of the line ("32(30-40)%", at most 11), for a
+        // gap at a line's start or end; a word with at least StuckLetters letters next to its
+        // digits is the block with the following word stuck to it ("640,€lNCREASED").
+        public const int BlockChars = 11;
+        public const int StuckLetters = 3;
+
+        // A template's word is near an OCR word within this share of its letters.
+        public const int NearPart = 3;
     }
 
     public static class Waystones

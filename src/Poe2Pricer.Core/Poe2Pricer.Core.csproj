@@ -2,6 +2,8 @@
   <PropertyGroup>
     <!-- Only for drawing rumour lines from the font (glyph outlines, RumourLineArt). -->
     <UseWPF>true</UseWPF>
+    <!-- WindowCapture calls Direct3D through its vtables (function pointers). -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <!-- The WPF SDK drops these two from the implicit usings. -->

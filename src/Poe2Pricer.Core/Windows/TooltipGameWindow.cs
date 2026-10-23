@@ -74,10 +74,15 @@ public sealed class TooltipGameWindow(Pipeline pipeline, ITradePrices? prices = 
     }
 
     // The title first (two lines of text, cheap): only a waystone's or a tablet's tooltip is
-    // read further. The body is read twice: binarised, because the tooltip is half transparent
-    // over the stash and without a threshold the OCR reads the tab list and the map behind it
-    // into the lines; and plain, because the threshold now and then swallows a number or a
-    // word the plain reading keeps. The binarised reading leads, the plain one fills its gaps.
+    // read further. The body is read three times: binarised, because the tooltip is half
+    // transparent over the stash and without a threshold the OCR reads the tab list and the
+    // map behind it into the lines; plain, because the threshold now and then swallows a
+    // number or a word the plain reading keeps; and undimmed (TextPrep), because the stash's
+    // tier marks and stack numbers show through the tooltip dimmed, pass the threshold beside a
+    // line and garble it, and the plain reading reads them too (the author's diagnoses
+    // 21.10.2026). The binarised reading leads, each later one fills the gaps of the ones
+    // before (Merge); on its own, the undimmed one loses lines in a few pictures (measured
+    // 22.10.2026 on 30: 8 better, 4 worse — as the third, 12 better, none worse).
     internal async Task<Reading?> ReadAsync(Mat bgr, Box box, double popup)
     {
         int width = Math.Min(box.Width, Px(Tune.MaxWidth, popup));
@@ -94,7 +99,7 @@ public sealed class TooltipGameWindow(Pipeline pipeline, ITradePrices? prices = 
         lock (rejecting)
             if (rejected.TryGetValue(key, out double seen) && seen == look)
                 return null;
-        var title = await Pipeline.Titles.ReadRegionAsync(bgr, titleArea);
+        var title = await Pipeline.Titles.ReadLinesAsync(bgr, titleArea);
         // The title's pieces in reading order, also read together: a magic item's one title line
         // comes in two pieces now and then (WaystoneTooltip.Parse).
         string whole = string.Join(" ", Lines(title));
@@ -111,28 +116,69 @@ public sealed class TooltipGameWindow(Pipeline pipeline, ITradePrices? prices = 
             return null;
         }
         var body = new Rect(box.X, box.Y, width, Px(Tune.BodyHeight, popup));
-        var binarised = Lines(await Pipeline.Titles.ReadRegionAsync(bgr, body, binarize: true));
-        var plain = Lines(await Pipeline.Titles.ReadRegionAsync(bgr, body));
+        var readings = new List<OcrLine[]>();
+        foreach (var prep in new[] { TextPrep.Binarised, TextPrep.Plain, TextPrep.Undimmed })
+            readings.Add(await Pipeline.Titles.ReadLinesAsync(bgr, body, prep: prep));
+        var texts = readings.Select(Lines).ToArray();
         if (waystone)
         {
-            var reading = WaystoneTooltip.Parse(binarised);
-            var second = WaystoneTooltip.Parse(plain);
+            WaystoneReading? reading = null;
+            foreach (var parsed in texts.Select(WaystoneTooltip.Parse))
+                if (parsed is not null)
+                    reading = reading is null ? parsed : parsed.Tier == reading.Tier ? reading.Merge(parsed) : reading;
             if (reading is null)
-                return second is null ? null : new(second, null);
-            return new(second is not null && second.Tier == reading.Tier ? reading.Merge(second) : reading, null);
+                return null;
+            if (reading.Mods.Any(m => m.Mod.HasValue && m.Value is null))
+            {
+                var mods = reading.Mods.ToList();
+                for (int i = 0; i < mods.Count; i++)
+                    if (mods[i].Mod.HasValue && mods[i].Value is null && GlyphValue(bgr, popup, readings, mods[i].Mod.Text, mods[i].Mod.De, mods[i].Mod.Max, line => WaystoneMods.Match(line) is { } f && f.Mod.Text == mods[i].Mod.Text) is { } filled)
+                        mods[i] = mods[i] with { Value = filled.Value, Line = mods[i].Line + " [" + filled.Glyphs + "]" };
+                reading = reading with { Mods = mods };
+            }
+            return new(reading, null);
         }
         else
         {
-            var reading = TabletTooltip.Parse(binarised);
-            var second = TabletTooltip.Parse(plain);
+            TabletReading? reading = null;
+            foreach (var parsed in texts.Select(TabletTooltip.Parse))
+                if (parsed is not null)
+                    reading = reading is null ? parsed : parsed.Kind == reading.Kind ? reading.Merge(parsed) : reading;
             if (reading is null)
-                return second is null ? null : new(null, second);
-            return new(null, second is not null && second.Kind == reading.Kind ? reading.Merge(second) : reading);
+                return null;
+            if (reading.Mods.Any(m => m.Mod.HasValue && m.Value is null))
+            {
+                var mods = reading.Mods.ToList();
+                for (int i = 0; i < mods.Count; i++)
+                    if (mods[i].Mod.HasValue && mods[i].Value is null && GlyphValue(bgr, popup, readings, mods[i].Mod.Text, mods[i].Mod.De, mods[i].Mod.Max, line => TabletMods.Match(line, reading.Kind) is { } f && f.Mod.Text == mods[i].Mod.Text) is { } filled)
+                        mods[i] = mods[i] with { Value = filled.Value, Line = mods[i].Line + " [" + filled.Glyphs + "]" };
+                reading = reading with { Mods = mods };
+            }
+            return new(null, reading);
         }
     }
 
+    // The value of a mod whose line the OCR read without its number, from the game's glyphs
+    // in the gap the number must lie in (NumberGlyphs): the first line of any reading that
+    // names the mod gives the word boxes; the mod's text in the line's language says where
+    // the number stands. A value the glyphs cannot vouch for (shape, roll, size) stays unread.
+    private (int Value, string Glyphs)? GlyphValue(Mat bgr, double popup, IEnumerable<OcrLine[]> readings, string text, string? de, int? max, Func<string, bool> names)
+    {
+        var line = readings.SelectMany(r => r).FirstOrDefault(l => names(l.Text));
+        if (line is null)
+            return null;
+        string key = WaystoneMods.KeyOf(line.Text);
+        string template = de is not null && TitleReader.Distance(key, WaystoneMods.KeyOf(de)) < TitleReader.Distance(key, WaystoneMods.KeyOf(text)) ? de : text;
+        if (NumberGlyphs.Gap(template, line.Words, popup, bgr.Width, bgr.Height) is not { } gap || Pipeline.Glyphs.Read(bgr, gap, popup) is not { } glyphs)
+            return null;
+        int? value = WaystoneMods.ValueOf(glyphs);
+        if (value is { } v && text.Contains("-#"))
+            value = Math.Abs(v);
+        return WaystoneMods.Plausible(value, max, glyphs) is { } plausible ? (plausible, glyphs) : null;
+    }
+
     // Top to bottom; pieces of one row (the OCR splits a line now and then) left to right.
-    private static string[] Lines((string Text, double CenterY, double Left, double Right)[] lines) => lines.OrderBy(l => l.CenterY).ThenBy(l => l.Left).Select(l => l.Text).ToArray();
+    private static string[] Lines(OcrLine[] lines) => lines.OrderBy(l => l.CenterY).ThenBy(l => l.Left).Select(l => l.Text).ToArray();
 
     private static int Px(double reference, double popup) => (int)Math.Round(reference * popup);
 

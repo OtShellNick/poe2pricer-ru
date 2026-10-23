@@ -109,8 +109,10 @@ public static class Texts
 }
 
 // Something the user is told and the log notes: shown in the chosen language, logged in English.
+// An argument that is itself a Told (a word of the program, such as the name of a text size)
+// follows the language too.
 public sealed record Told(string Key, params object?[] Args)
 {
-    public string Shown => Texts.Get(Key, Args);
-    public string English => Texts.English(Key, Args);
+    public string Shown => Texts.Get(Key, Args.Select(a => a is Told t ? t.Shown : a).ToArray());
+    public string English => Texts.English(Key, Args.Select(a => a is Told t ? t.English : a).ToArray());
 }

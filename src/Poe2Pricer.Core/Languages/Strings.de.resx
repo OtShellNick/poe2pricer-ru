@@ -50,11 +50,11 @@
   <data name="TabRumours" xml:space="preserve">
     <value>Gerüchte</value>
   </data>
-  <data name="GroupLeague" xml:space="preserve">
-    <value>LIGA</value>
+  <data name="League" xml:space="preserve">
+    <value>Liga</value>
   </data>
   <data name="GroupDisplay" xml:space="preserve">
-    <value>ANZEIGE</value>
+    <value>PREISE UND ANZEIGE</value>
   </data>
   <data name="GroupHotkeys" xml:space="preserve">
     <value>TASTENKÜRZEL</value>
@@ -545,7 +545,16 @@ Einzelheiten: {1}</value>
     <value>Num</value>
   </data>
   <data name="GameTextSizeNotDefault" xml:space="preserve">
-    <value>Die UI-Textgröße des Spiels steht auf „{0}“. Das Programm ist auf Standard (medium) vermessen; bei dieser Größe liest es die Fenster der bisher eingesandten Bilder, zeigt ein Fenster aber Lücken, dort die Diagnose-Taste drücken und die Dateien melden.</value>
+    <value>UI-Textgröße „{0}“ ist weniger erprobt: Fehlt in einem Fenster etwas, {1} drücken und melden.</value>
+  </data>
+  <data name="TipCloseHint" xml:space="preserve">
+    <value>Bis zur nächsten Version ausblenden</value>
+  </data>
+  <data name="TextSize_large" xml:space="preserve">
+    <value>Groß</value>
+  </data>
+  <data name="TextSize_extra_large" xml:space="preserve">
+    <value>Extragroß</value>
   </data>
   <data name="OverlayNew" xml:space="preserve">
     <value>neu</value>
@@ -663,6 +672,18 @@ Einzelheiten: {1}</value>
   </data>
   <data name="TradeInPerson" xml:space="preserve">
     <value>inkl. Premium-Stash (online)</value>
+  </data>
+  <data name="CaptureGameWindow" xml:space="preserve">
+    <value>Nur das Spielfenster aufnehmen</value>
+  </data>
+  <data name="TipCaptureGameWindow" xml:space="preserve">
+    <value>Das Spiel wird aus seinem eigenen Fenster gelesen; die Preise bleiben dem Programm so von selbst verborgen, und Aufnahmeprogramme (NVIDIA-App, OBS, Game Bar) können den Desktop aufnehmen und zeigen die Preise. Aus: der Bildschirm wird gelesen, und die Preise sind aus jeder Aufnahme ausgeblendet. Braucht Windows 11; unter Windows 10 wird der Bildschirm gelesen. Das Fenster zu lesen ist auch der günstigere Weg (etwa 2 ms je Blick statt 8).</value>
+  </data>
+  <data name="CaptureFellBack" xml:space="preserve">
+    <value>Die Aufnahme des Spielfensters lieferte kein Bild; bis zum nächsten Start wird der Bildschirm gelesen. Aufnahmen zeigen solange keine Preise.</value>
+  </data>
+  <data name="CaptureUnavailable" xml:space="preserve">
+    <value>Dieses Windows kann das Spielfenster nicht ohne Rahmen aufnehmen (das braucht Windows 11); stattdessen wird der Bildschirm gelesen. Aufnahmen zeigen keine Preise.</value>
   </data>
   <data name="TipTradeInPerson" xml:space="preserve">
     <value>Welche Angebote der Trade-Seite für jeden Waystone- und Tablet-Preis zählen, live und in den Tabs. Standard nur Sofortkauf: was Ange aus Händler-Tabs verkauft, sofort gekauft, auch wenn der Verkäufer offline ist. Angehakt: dazu Items in Premium-Stash-Tabs, deren Verkäufer online ist (anschreiben, persönlich handeln). Verkäufer offline zählen nie: deren Angebote sind oft Monate alt und längst verkauft.</value>
@@ -789,6 +810,26 @@ Einzelheiten: {1}</value>
   </data>
   <data name="TipLiveTradePrice" xml:space="preserve">
     <value>Live-Preis am Tooltip eines Waystones oder Tablets: die Trade-Seite wird nach dem günstigsten gleichen Angebot gefragt, der Preis steht rechts an der Titelleiste. Aus: es wird nichts gefragt und am Tooltip nichts gezeichnet; die Taste „Live-Preis erzwingen“ fragt trotzdem.</value>
+  </data>
+  <data name="NoticeTitle" xml:space="preserve">
+    <value>VOR DEM ERSTEN START</value>
+  </data>
+  <data name="NoticeText" xml:space="preserve">
+    <value>poe2pricer ist ein Drittprogramm für Path of Exile 2. Bevor du es neben dem Spiel laufen lässt, solltest du wissen, was es tut.
+
+• Es liest das Bild des Spielfensters und zeichnet Preise darüber: von selbst, wenn eines der Fenster aufgeht, oder auf Alt+F, wie du es in den Einstellungen festlegst.
+• Es drückt keine Tasten und klickt nichts.
+• Es öffnet nicht den Prozess des Spiels, liest nicht seinen Speicher und ändert keine seiner Dateien. Die einzige Datei, die es liest, ist die Einstellungsdatei des Spiels, für Textgröße und Sprache.
+• Es verbindet sich nie mit den Spielservern. Seine Anfragen gehen an poe.ninja und poecdn (Preise und Item-Bilder), die Trade-Seite, die Gerüchte-Tabelle der Community (gnejs.app und ein öffentliches Google-Sheet) und GitHub.
+• Grinding Gear Games gibt kein Drittprogramm frei und kann nach eigenem Ermessen gegen jedes Konto vorgehen. Niemand kann versprechen, dass ein Programm geduldet bleibt. Du nutzt es auf eigenes Risiko.
+
+Was GGG zu Drittprogrammen gesagt hat, mit Quellen, und was das für dieses Programm bedeutet: Hilfe → „Drittprogramme und GGG“.</value>
+  </data>
+  <data name="NoticeRun" xml:space="preserve">
+    <value>Starten</value>
+  </data>
+  <data name="NoticeQuit" xml:space="preserve">
+    <value>Beenden</value>
   </data>
   <data name="UnsavedTitle" xml:space="preserve">
     <value>NICHT GESPEICHERT</value>

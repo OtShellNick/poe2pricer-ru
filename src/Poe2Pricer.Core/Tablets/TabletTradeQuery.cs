@@ -20,46 +20,50 @@ public static class TabletTradeQuery
     // profile (null): the tablet itself, its uses and every mod it has.
     public static JsonObject ForReading(TabletReading reading, TabletProfile? profile, int tolerance)
     {
-        var wanted = new List<(TabletMod Mod, int? Min)>();
-        var unwanted = new List<TabletMod>();
+        var wanted = new List<(TabletMod Mod, int? Min, bool WithTwin)>();
+        var unwanted = new List<(TabletMod Mod, int? Min, bool WithTwin)>();
         if (profile is null)
         {
             foreach (var m in reading.Mods)
-                wanted.Add((m.Mod, Lowered(m, null, tolerance)));
+                wanted.Add((m.Mod, Lowered(m, null, tolerance), true));
         }
         else
         {
-            // The "and" and the "or" rows alike: those the tablet has, each required.
+            // The "and" and the "or" rows alike: those the tablet has, each required. A row whose
+            // twin is a row of the same group stands for its own wording (TabletGroups.Paired).
+            var paired = profile.Groups.Paired();
             foreach (var rule in profile.RulesOf(GroupKind.And, GroupKind.Or))
-                if (reading.Mods.FirstOrDefault(m => rule.Names(m.Mod)) is { } own)
-                    wanted.Add((own.Mod, Lowered(own, rule.Min, tolerance)));
+                if (reading.Mods.FirstOrDefault(m => rule.Names(m.Mod, !paired.Contains(rule))) is { } own)
+                    wanted.Add((own.Mod, Lowered(own, rule.Min, tolerance), !paired.Contains(rule)));
             foreach (var rule in profile.RulesOf(GroupKind.Not))
-                if (rule.Mod is { } mod && !reading.Mods.Any(m => rule.Names(m.Mod)))
-                    unwanted.Add(mod);
+                if (rule.Mod is { } mod && !reading.Mods.Any(m => rule.Names(m.Mod, !paired.Contains(rule))))
+                    unwanted.Add((mod, null, !paired.Contains(rule)));
             // Nothing of the profile is left (no uses asked or read, no mod it names there):
             // that question finds the cheapest tablet of the kind. Asked for as itself instead.
             bool uses = profile.UsesMin is not null && reading.Uses is > 0;
             if (!uses && wanted.Count == 0 && unwanted.Count == 0)
                 return ForReading(reading, null, tolerance);
         }
-        return Build(reading.Kind, profile is null || profile.UsesMin is not null ? reading.Uses : null, [(GroupKind.And, wanted), (GroupKind.Not, unwanted.Select(m => (m, (int?)null)).ToList())]);
+        return Build(reading.Kind, profile is null || profile.UsesMin is not null ? reading.Uses : null, [(GroupKind.And, wanted), (GroupKind.Not, unwanted)]);
     }
 
     private static int? Lowered(TabletModReading own, int? fallback, int tolerance) =>
         own.Value is { } v ? Tolerance.Lower(Math.Abs(v), tolerance) : fallback;
 
     // Tablets as the profile asks for them: the profile price. null: the profile names no kind.
-    public static JsonObject? ForProfile(TabletProfile profile) =>
-        profile.KindOf() is { } kind
-            ? Build(kind, profile.UsesMin, profile.Groups.Select(g => (g.Kind, Rules(g.Kind == GroupKind.Not ? g.Rules.Select(r => r with { Min = null }).ToArray() : g.Rules))).ToList())
-            : null;
-
-    private static List<(TabletMod Mod, int? Min)> Rules(TabletModRule[] rules) => rules.Where(r => r.Mod is not null).Select(r => (r.Mod!, r.Min)).ToList();
+    public static JsonObject? ForProfile(TabletProfile profile)
+    {
+        if (profile.KindOf() is not { } kind)
+            return null;
+        var paired = profile.Groups.Paired();
+        return Build(kind, profile.UsesMin, profile.Groups.Select(g => (g.Kind, g.Rules.Where(r => r.Mod is not null).Select(r => (r.Mod!, g.Kind == GroupKind.Not ? null : r.Min, !paired.Contains(r))).ToList())).ToList());
+    }
 
     // groups: the profile's groups as lines with their minimum. The uses left are always
-    // required. A line with a twin the kind rolls (TabletMod.Twin): in an "and" group a group of
+    // required. A line with a twin the kind rolls (TabletMod.Twin), where the twin counts
+    // (WithTwin: not a row of the same group, TabletGroups.Paired): in an "and" group a group of
     // its own with either id, in an "or" or "not" group both ids in that group.
-    private static JsonObject Build(TabletKind kind, int? usesMin, List<(GroupKind Kind, List<(TabletMod Mod, int? Min)> Lines)> groups)
+    private static JsonObject Build(TabletKind kind, int? usesMin, List<(GroupKind Kind, List<(TabletMod Mod, int? Min, bool WithTwin)> Lines)> groups)
     {
         var filters = new JsonObject
         {
@@ -72,9 +76,9 @@ public static class TabletTradeQuery
         foreach (var (groupKind, lines) in groups)
         {
             var group = new List<StatFilter?>();
-            foreach (var (mod, min) in lines)
+            foreach (var (mod, min, withTwin) in lines)
             {
-                var twin = Twin(mod, kind) is { } t ? Stat(t, min) : null;
+                var twin = withTwin && Twin(mod, kind) is { } t ? Stat(t, min) : null;
                 if (groupKind == GroupKind.And && twin is not null && Stat(mod, min) is { } own)
                     either.Add([own, twin]);
                 else

@@ -47,11 +47,11 @@
   <data name="TabRumours" xml:space="preserve">
     <value>Rumours</value>
   </data>
-  <data name="GroupLeague" xml:space="preserve">
-    <value>LEAGUE</value>
+  <data name="League" xml:space="preserve">
+    <value>League</value>
   </data>
   <data name="GroupDisplay" xml:space="preserve">
-    <value>DISPLAY</value>
+    <value>PRICES AND DISPLAY</value>
   </data>
   <data name="GroupHotkeys" xml:space="preserve">
     <value>HOTKEYS</value>
@@ -542,7 +542,16 @@ Details: {1}</value>
     <value>Num Lock</value>
   </data>
   <data name="GameTextSizeNotDefault" xml:space="preserve">
-    <value>UI Text Size in the game is "{0}". The program is measured at the default (medium); at this size it reads the windows in the pictures sent so far, but if a window shows gaps, press the diagnostics key there and report the files.</value>
+    <value>UI Text Size "{0}" is less tested: if a window shows gaps, press {1} and report it.</value>
+  </data>
+  <data name="TipCloseHint" xml:space="preserve">
+    <value>Hide until the next version</value>
+  </data>
+  <data name="TextSize_large" xml:space="preserve">
+    <value>Large</value>
+  </data>
+  <data name="TextSize_extra_large" xml:space="preserve">
+    <value>Extra Large</value>
   </data>
   <data name="OverlayNew" xml:space="preserve">
     <value>new</value>
@@ -660,6 +669,18 @@ Details: {1}</value>
   </data>
   <data name="TradeInPerson" xml:space="preserve">
     <value>incl. premium stash (online)</value>
+  </data>
+  <data name="CaptureGameWindow" xml:space="preserve">
+    <value>Capture the game window only</value>
+  </data>
+  <data name="TipCaptureGameWindow" xml:space="preserve">
+    <value>The game is read from its own window, so the prices stay out of the program's view by themselves and recording software (NVIDIA app, OBS, Game Bar) can record the desktop and shows the prices. Off: the screen is read and the prices are hidden from every recording. Needs Windows 11; on Windows 10 the screen is read. Reading the window is also the cheaper way (about 2 ms a look instead of 8).</value>
+  </data>
+  <data name="CaptureFellBack" xml:space="preserve">
+    <value>Capturing the game window gave no picture; reading the screen instead until the next start. Recordings won't show the prices meanwhile.</value>
+  </data>
+  <data name="CaptureUnavailable" xml:space="preserve">
+    <value>This Windows can't capture the game window without a frame around it (that needs Windows 11); reading the screen instead. Recordings won't show the prices.</value>
   </data>
   <data name="TipTradeInPerson" xml:space="preserve">
     <value>Which offers on the trade site count for every waystone and tablet price, live and in the tabs. By default only Instant Buyout: what Ange sells from merchant tabs, bought at once even while the seller is offline. Ticked: also items in premium stash tabs whose seller is online (whisper and trade in person). Offline sellers never count: their listings are often months old and long sold.</value>
@@ -786,6 +807,26 @@ Details: {1}</value>
   </data>
   <data name="TipLiveTradePrice" xml:space="preserve">
     <value>Live price at the tooltip of a waystone or tablet: the trade site is asked for the cheapest offer like it, and the price stands at the right end of the title bar. Off: nothing is asked and nothing drawn at the tooltip; the key "Force live price" asks all the same.</value>
+  </data>
+  <data name="NoticeTitle" xml:space="preserve">
+    <value>BEFORE THE FIRST START</value>
+  </data>
+  <data name="NoticeText" xml:space="preserve">
+    <value>poe2pricer is a third-party tool for Path of Exile 2. Before you run it beside the game, know what it does.
+
+• It reads the picture of the game window and draws prices over it: by itself when one of the windows opens, or on Alt+F, as you set it in Settings.
+• It presses no keys and clicks nothing.
+• It does not open the game's process, read its memory or change its files. The one file it reads is the game's settings file, for text size and language.
+• It never connects to the game servers. Its requests go to poe.ninja and poecdn (prices and item art), the trade site, the community rumour table (gnejs.app and a public Google sheet) and GitHub.
+• Grinding Gear Games approves no third-party tool and may act against any account at its discretion. Nobody can promise that a tool stays tolerated. You run it at your own risk.
+
+What GGG has said about third-party tools, with the sources, and what that means for this program: Help → "Third-party tools and GGG".</value>
+  </data>
+  <data name="NoticeRun" xml:space="preserve">
+    <value>Run</value>
+  </data>
+  <data name="NoticeQuit" xml:space="preserve">
+    <value>Quit</value>
   </data>
   <data name="UnsavedTitle" xml:space="preserve">
     <value>UNSAVED CHANGES</value>

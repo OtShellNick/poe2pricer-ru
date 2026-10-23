@@ -45,7 +45,7 @@ public sealed class StashIdentifier
     private static readonly double[] Sizes = Tune.Sizes;
     private const int Shift = Tune.Shift;
 
-    private sealed record Picture(Mat Bgr, Mat Mask, double[] Colour, float[] Thumb);
+    private sealed record Picture(Mat Bgr, Mat Mask, float[] Thumb);
 
     // While item art is still being fetched (first start, new items), a slot that needs it is
     // not named: "?" instead of a guess, and nothing about it is remembered. Art poe.ninja
@@ -53,6 +53,7 @@ public sealed class StashIdentifier
     public const string Pending = "icons loading";
 
     private readonly Dictionary<(string, int), Picture?> arts = [];
+    private static readonly Mat Edge = Cv2.GetStructuringElement(MorphShapes.Ellipse, new Size(2 * Tune.ArtEdge + 1, 2 * Tune.ArtEdge + 1));
     private readonly Dictionary<string, (string? Name, string By)> known = [];
     private readonly object sync = new();
     private PriceBook? knownFor; // the price book `known` was read with
@@ -178,27 +179,60 @@ public sealed class StashIdentifier
 
     private static int Size(StashSlot slot, double f) => (int)(Math.Min(slot.Bounds.Width, slot.Bounds.Height) * f);
 
-    // Best over the sizes and ±Shift px: correlation minus the weighted colour difference.
+    // Best over the sizes and ±Shift px: correlation minus the weighted colour difference. The
+    // game's lettering on the slot (stack number, tier mark; GameText) is no part of the art
+    // and is left out of both — it grows with the UI Text Size and hid enough of the art to
+    // fail the check (measured 22.10.2026: Vaal Orb .40 / .35 / .14 at medium / Large / Extra
+    // Large with the lettering in, .60–.67 without; Breach Splinter .31 / .06 → .76 / .69).
     public double Score(Mat bgr, StashSlot slot, string name)
     {
         double best = double.NegativeInfinity;
         int cx = slot.Bounds.X + slot.Bounds.Width / 2,
             cy = slot.Bounds.Y + slot.Bounds.Height / 2;
+        var picture = new Rect(0, 0, bgr.Width, bgr.Height);
+        var box = slot.Bounds.Rect();
+        if (!picture.Contains(box))
+            return best;
+        using var slotRoi = new Mat(bgr, box);
+        using var lettering = GameText.Surround(slotRoi);
         foreach (var f in Sizes)
         {
             int s = Size(slot, f);
             if (Art(name, s) is not { } art)
                 continue;
             var area = new Rect(cx - s / 2 - Shift, cy - s / 2 - Shift, s + 2 * Shift, s + 2 * Shift);
-            if (area.X < 0 || area.Y < 0 || area.Right > bgr.Width || area.Bottom > bgr.Height)
+            if (!picture.Contains(area))
                 continue;
+            // The lettering at the art's place in the slot (the ±Shift px lie within its surround).
+            var place = new Rect(cx - s / 2 - box.X, cy - s / 2 - box.Y, s, s);
+            if (place.X < 0 || place.Y < 0 || place.Right > box.Width || place.Bottom > box.Height)
+                continue;
+            using var letteringAt = new Mat(lettering, place);
+            using var keep = new Mat();
+            Cv2.BitwiseNot(letteringAt, keep);
+            using var both = new Mat();
+            Cv2.BitwiseAnd(art.Mask, keep, both);
+            // Art that looks like lettering itself keeps the whole comparison (Tune.MinimumArtShare).
+            bool lettered = Cv2.CountNonZero(both) >= Cv2.CountNonZero(art.Mask) * Tune.MinimumArtShare;
             using var roi = new Mat(bgr, area);
             using var scores = new Mat();
-            Cv2.MatchTemplate(roi, art.Bgr, scores, TemplateMatchModes.CCoeffNormed);
+            // Compared within the art and its edge then (Tune.ArtEdge), not the ground around.
+            if (lettered)
+            {
+                using var edged = new Mat();
+                Cv2.Dilate(art.Mask, edged, Edge);
+                using var compared = new Mat();
+                Cv2.BitwiseAnd(edged, keep, compared);
+                Cv2.MatchTemplate(roi, art.Bgr, scores, TemplateMatchModes.CCoeffNormed, compared);
+            }
+            else
+                Cv2.MatchTemplate(roi, art.Bgr, scores, TemplateMatchModes.CCoeffNormed);
             Cv2.MinMaxLoc(scores, out _, out double corr, out _, out Point at);
             using var cell = new Mat(roi, new Rect(at.X, at.Y, s, s));
-            var colour = MeanColour(cell, art.Mask);
-            double diff = Math.Abs(colour[0] - art.Colour[0]) + Math.Abs(colour[1] - art.Colour[1]) + Math.Abs(colour[2] - art.Colour[2]);
+            var within = lettered ? both : art.Mask;
+            var colour = MeanColour(cell, within);
+            var artColour = MeanColour(art.Bgr, within);
+            double diff = Math.Abs(colour[0] - artColour[0]) + Math.Abs(colour[1] - artColour[1]) + Math.Abs(colour[2] - artColour[2]);
             best = Math.Max(best, corr - Tune.ColourWeight * diff);
         }
         return best;
@@ -228,7 +262,7 @@ public sealed class StashIdentifier
                         (byte)(p.Item2 * a + Ground.Item2 * (1 - a))));
                     mask.Set(y, x, (byte)(p.Item3 > Tune.AlphaVisible ? 255 : 0));
                 }
-                art = new(bgrArt, mask, MeanColour(bgrArt, mask), ThumbOf(bgrArt));
+                art = new(bgrArt, mask, ThumbOf(bgrArt));
             }
             if (art is not null)
                 arts[(name, size)] = art; // missing art may still arrive

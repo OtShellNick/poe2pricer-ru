@@ -256,7 +256,9 @@ public sealed class StashTabReader
         var spec = tabs.First(t => t.Spec.Kind == window.Kind).Spec;
         var slots = new StashSlot[spec.Slots.Length];
         var strips = new double[slots.Length];
+        var rings = new double[slots.Length];
         var grounds = new List<double>();
+        var picture = new Rect(0, 0, bgr.Width, bgr.Height);
         for (int i = 0; i < spec.Slots.Length; i++)
         {
             var s = spec.Slots[i];
@@ -265,21 +267,38 @@ public sealed class StashTabReader
             var inner = new Rect(cx - s.W / 2 + Tune.SlotInset, cy - s.H / 2 + Tune.SlotInset, s.W - 2 * Tune.SlotInset, s.H - 2 * Tune.SlotInset);
             var (blue, ground) = RingGround(bgr, inner);
             bool present = blue >= Tune.MinimumBlue && Bright(bgr, inner) >= Tune.MinimumBright;
-            // The lower side of the ring, where the label goes.
-            strips[i] = Darkest(bgr, new Rect(inner.X, inner.Bottom - Ring, inner.Width, Ring));
+            // The lower side of the ring, where the label goes, and the ring itself, both without
+            // the game's lettering (GameText): at a larger UI Text Size the tier mark's backing
+            // reaches into the strip and would count as a popup.
+            var seen = inner.Intersect(picture);
+            if (seen.Width > 2 * Ring && seen.Height > 2 * Ring)
+            {
+                using var roi = new Mat(bgr, seen);
+                using var lettering = GameText.Surround(roi);
+                strips[i] = Darkest(roi, new Rect(0, roi.Height - Ring, roi.Width, Ring), lettering);
+                rings[i] = RingBrightness(roi, lettering);
+            }
+            else
+                (strips[i], rings[i]) = (double.MaxValue, -1);
             if (present)
                 grounds.Add(ground);
             slots[i] = new(i, s.Name, new Box(cx - s.W / 2, cy - s.H / 2, s.W, s.H), present, blue, s.Free, s.Name is null ? null : StashIdentifier.ByTable, s.Alternatives);
         }
         // Covered: where the label goes, a part of it is much darker than the ground of this
         // tab's filled slots. A popup darkens what lies under it; the ground behind every item
-        // is the same.
+        // is the same. Or the whole slot is darker: the ring's ground outside the lettering below
+        // Tune.RingCoveredBelow of the usual — a popup over the slot whose bright writing or
+        // buttons leave the strip without its say (a controller tooltip's "Use" button, measured
+        // on tooltip_currency_ctrl_01: strip bright, ring at .11).
         // Measured against the tab's own slots, so it holds at every size of the picture (the
         // thin frame line below the slot, compared with the template, does not: resizing
         // changes it).
         grounds.Sort();
         double usual = grounds.Count > 0 ? grounds[grounds.Count / 2] : 0;
-        return slots.Select((slot, i) => slot with { Covered = slot.Present && strips[i] < usual }).ToArray();
+        return slots.Select((slot, i) => slot with
+        {
+            Covered = slot.Present && (strips[i] < usual || rings[i] >= 0 && rings[i] < usual * Tune.RingCoveredBelow),
+        }).ToArray();
     }
 
     // 95th percentile of max(R, G, B) inside `area`.
@@ -332,27 +351,57 @@ public sealed class StashTabReader
     // may lie under a popup (the darkest of LabelParts parts, by its median), or all of it
     // under one with bright text on it (the darkest quarter of all its pixels: the text is
     // bright, what lies between the letters is not).
-    private static double Darkest(Mat bgr, Rect strip)
+    // MaxValue: the strip too narrow, or the lettering leaves too little of the strip as a whole
+    // (Tune.EvidenceShare) — a part with enough left would decide alone otherwise, and under a
+    // tooltip the few pixels between its letters can be bright (measured on
+    // socket1_ctrl_tooltip_p125_h2160: four slots under the tooltip looked free that way).
+    private static double Darkest(Mat roi, Rect strip, Mat lettering)
     {
-        strip = strip.Intersect(new Rect(0, 0, bgr.Width, bgr.Height));
-        if (strip.Width < Tune.LabelParts || strip.Height <= 0)
+        if (strip.Width < Tune.LabelParts || strip.Height <= 0 || strip.Y < 0)
+            return double.MaxValue;
+        using var stripLettering = new Mat(lettering, strip);
+        if (strip.Width * strip.Height - Cv2.CountNonZero(stripLettering) < strip.Width * strip.Height * Tune.EvidenceShare)
             return double.MaxValue;
         int part = strip.Width / Tune.LabelParts;
-        double darkestPart = Enumerable.Range(0, Tune.LabelParts).Min(k => Percentile(bgr, new Rect(strip.X + k * part, strip.Y, part, strip.Height), 50));
-        return Math.Min(darkestPart / Tune.CoveredBelow, Percentile(bgr, strip, 25) / Tune.CoveredQuarterBelow);
+        double darkestPart = Enumerable.Range(0, Tune.LabelParts).Min(k => Percentile(roi, new Rect(strip.X + k * part, strip.Y, part, strip.Height), 50, lettering));
+        double quarter = Percentile(roi, strip, 25, lettering);
+        return Math.Min(darkestPart == double.MaxValue ? darkestPart : darkestPart / Tune.CoveredBelow, quarter == double.MaxValue ? quarter : quarter / Tune.CoveredQuarterBelow);
     }
 
-    // A percentile of the brightest channel over `area`.
-    private static double Percentile(Mat bgr, Rect area, int percent)
+    // The ground in the ring of `roi` outside the lettering: median of the brightest channel;
+    // -1 without any.
+    private static double RingBrightness(Mat roi, Mat lettering)
+    {
+        var ground = new List<byte>();
+        for (int y = 0; y < roi.Height; y++)
+        for (int x = 0; x < roi.Width; x++)
+        {
+            if (x >= Ring && x < roi.Width - Ring && y >= Ring && y < roi.Height - Ring || lettering.At<byte>(y, x) != 0)
+                continue;
+            var p = roi.At<Vec3b>(y, x);
+            if (ItemGround.Any(p))
+                ground.Add(Math.Max(p.Item0, Math.Max(p.Item1, p.Item2)));
+        }
+        ground.Sort();
+        return ground.Count > 0 ? ground[ground.Count / 2] : -1;
+    }
+
+    // A percentile of the brightest channel over `area` of `roi`, outside the lettering; MaxValue
+    // when less than EvidenceShare of the area remains.
+    private static double Percentile(Mat roi, Rect area, int percent, Mat lettering)
     {
         var values = new List<byte>(area.Width * area.Height);
         for (int y = area.Top; y < area.Bottom; y++)
         for (int x = area.Left; x < area.Right; x++)
         {
-            var p = bgr.At<Vec3b>(y, x);
+            if (lettering.At<byte>(y, x) != 0)
+                continue;
+            var p = roi.At<Vec3b>(y, x);
             values.Add(Math.Max(p.Item0, Math.Max(p.Item1, p.Item2)));
         }
+        if (values.Count < area.Width * area.Height * Tune.EvidenceShare)
+            return double.MaxValue;
         values.Sort();
-        return values.Count > 0 ? values[Math.Min(values.Count - 1, values.Count * percent / 100)] : 0;
+        return values[Math.Min(values.Count - 1, values.Count * percent / 100)];
     }
 }

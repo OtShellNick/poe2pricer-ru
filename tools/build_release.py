@@ -74,8 +74,8 @@ def main():
     for folder in (fd, sc, inst):
         shutil.rmtree(folder, ignore_errors=True)
     extra = [f"-p:Version={version}"] if len(sys.argv) > 1 else []
-    run([DOTNET, "publish", APP, "-c", "Release", "-o", windows_path(fd), "--nologo", "-v", "q", *extra])
-    run([DOTNET, "publish", APP, "-c", "Release", "-r", "win-x64", "--self-contained", "true", "-o", windows_path(sc), "--nologo", "-v", "q", *extra])
+    run([DOTNET, "publish", APP, "-c", "Release", "-o", windows_path(fd), "-p:RestoreLockedMode=true", "--nologo", "-v", "q", *extra])
+    run([DOTNET, "publish", APP, "-c", "Release", "-r", "win-x64", "--self-contained", "true", "-o", windows_path(sc), "-p:RestoreLockedMode=true", "--nologo", "-v", "q", *extra])
     for folder in (fd, sc):
         leftover = [p for p, _, files in os.walk(folder) for f in files if "ffmpeg" in f.lower()]
         if leftover:

@@ -33,8 +33,9 @@ public sealed record TabletProfile
     {
         if (UsesMin is { } uses)
             yield return (reading.Uses ?? 0) >= uses;
-        bool Has(TabletModRule rule) => reading.Mods.Any(m => rule.Names(m.Mod) && (rule.Min is not { } min || m.Value is { } v && Tolerance.Reaches(Math.Abs(v), min, tolerance)));
-        foreach (var met in Groups.Conditions(Has, rule => reading.Mods.Any(m => rule.Names(m.Mod))))
+        var paired = Groups.Paired();
+        bool Has(TabletModRule rule) => reading.Mods.Any(m => rule.Names(m.Mod, !paired.Contains(rule)) && (rule.Min is not { } min || m.Value is { } v && Tolerance.Reaches(Math.Abs(v), min, tolerance)));
+        foreach (var met in Groups.Conditions(Has, rule => reading.Mods.Any(m => rule.Names(m.Mod, !paired.Contains(rule)))))
             yield return met;
     }
 
@@ -57,7 +58,30 @@ public sealed record TabletModRule(string Text, int? Min = null)
     [System.Text.Json.Serialization.JsonIgnore]
     public TabletMod? Mod => TabletMods.All.FirstOrDefault(m => m.Text == Text);
 
-    public bool Names(TabletMod mod) => mod.Text == Text || mod.Twin?.Text == Text;
+    // Whether the row names a mod: its own text, and with withTwin the other wording of a twin
+    // pair too (TabletMod.Twin; on an Overseer Tablet the suffix at 1 reads like the prefix).
+    public bool Names(TabletMod mod, bool withTwin = true) => mod.Text == Text || withTwin && mod.Twin?.Text == Text;
+}
+
+public static class TabletGroups
+{
+    // The rows whose twin stands in the same group as a row of its own: an Overseer Tablet can
+    // carry the prefix "Map contains an additional Essence" and the suffix "Map contains #
+    // additional Essences" at once (OFFEN Z2, 23.10.2026). Such a row stands for its own
+    // wording alone, in the judgement at the tooltip, the search text and the trade query, so
+    // that a group asking for both is met only by a tablet with both. Elsewhere a row takes
+    // the twin too.
+    // The set holds the rows themselves (reference equality): a row of the same wording and
+    // minimum in another group is another row, and there the twin counts on (R6).
+    public static HashSet<TabletModRule> Paired(this IEnumerable<ModGroup<TabletModRule>> groups)
+    {
+        var paired = new HashSet<TabletModRule>(ReferenceEqualityComparer.Instance);
+        foreach (var group in groups)
+            foreach (var rule in group.Rules)
+                if (rule.Mod?.Twin is { } twin && group.Rules.Any(other => other.Text == twin.Text))
+                    paired.Add(rule);
+        return paired;
+    }
 }
 
 // The Tablets tab's settings: one profile per kind and the tolerance (per cent;

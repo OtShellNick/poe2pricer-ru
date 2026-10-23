@@ -68,6 +68,29 @@ public sealed record Settings
     // the one request the program makes that is not for prices or rumour ratings.
     public bool CheckForUpdates { get; init; } = true;
 
+    // The game is read from its own window (WindowCapture: Windows.Graphics.Capture, which
+    // sends the game nothing), not from the screen: the overlay and every other window over the
+    // game are never in the picture, so the overlay need not be kept out of screen captures,
+    // and recordings (NVIDIA, OBS, Game Bar) show the prices. Needs Windows 11 (the capture
+    // border must come off); elsewhere, and after a missing or black picture while the screen
+    // shows the game, the screen is read for the run (WindowsGameScreen). Off: the screen is
+    // read and the overlay is hidden from every capture, as up to 1.2.0. Measured 23.10.2026 on
+    // an RTX 4070 Ti with HDR: the same colours as the screen, the stash read alike from both
+    // pictures, 2 ms for a part of the window where the screen takes 8.
+    public bool CaptureGameWindow { get; init; } = true;
+
+    // The notice before the first start (what the program does and does not do, that no tool
+    // is approved by GGG) was shown and answered with "Run": never again, not after an update
+    // either. "Quit" leaves no mark, so the next start asks again. A file from before the
+    // notice existed shows it once at the first start after the update.
+    public bool NoticeShown { get; init; }
+
+    // The hints the user closed with their "✕" (MainViewModel.CloseHint), each as
+    // "<version> <hint>", e.g. "1.2.0 textsize extra_large", ";" between several: a closed
+    // hint stays away until the next version of the program, and another hint (another text
+    // size, the capture line) comes all the same. Empty: none closed.
+    public string HiddenHint { get; init; } = "";
+
     // The language of the program window, the status line and the tray (Texts.Languages);
     // log and diagnostics are English whatever stands here.
     public string Language { get; init; } = Texts.Default;

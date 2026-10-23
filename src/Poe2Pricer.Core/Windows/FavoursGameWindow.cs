@@ -151,7 +151,7 @@ public sealed class FavoursGameWindow(Pipeline pipeline) : IGameWindow
     private async Task<Open> ReadAsync(GameCapture.Frame frame, FavoursGrid grid)
     {
         var reading = Task.Run(() => pipeline.Scan(frame.Image, grid));
-        var found = await Beside(reading, () => pipeline.Occluders.Detect(frame.Image, grid, frame.Popup));
+        var found = await Beside(reading, () => pipeline.Occluders.Detect(frame.Image, grid, frame.Popup, frame.TextSize));
         var scan = await reading;
         var popups = Placed(found, frame, scan);
         var blocked = Blocked(scan, popups);
@@ -388,7 +388,7 @@ public sealed class FavoursGameWindow(Pipeline pipeline) : IGameWindow
             // The button was covered when the window was read: its number is taken as soon as
             // no popup lies on it. A roll before that cannot be told.
             if (Number is null)
-                now = now with { Number = Mark(frame.Image, known, Pipeline.Occluders.Detect(frame.Image, known, frame.Popup)) };
+                now = now with { Number = Mark(frame.Image, known, Pipeline.Occluders.Detect(frame.Image, known, frame.Popup, frame.TextSize)) };
             return now.ReadFreed(frame, picture, looks, context);
         }
 
@@ -429,7 +429,7 @@ public sealed class FavoursGameWindow(Pipeline pipeline) : IGameWindow
             Occluder[] popups = [];
             if (wanted.Any(c => looks[c] is null))
             {
-                popups = Placed(Pipeline.Occluders.Detect(frame.Image, Scan.Grid!, frame.Popup), frame, Scan);
+                popups = Placed(Pipeline.Occluders.Detect(frame.Image, Scan.Grid!, frame.Popup, frame.TextSize), frame, Scan);
                 if (gone.Count == 0 && wanted.All(c => looks[c] is null) && Boxes(popups).SequenceEqual(Popups))
                     return this with { Seen = (frame, popups) };
             }
@@ -485,13 +485,21 @@ public sealed class FavoursGameWindow(Pipeline pipeline) : IGameWindow
                     ? Scan.Items.FirstOrDefault(i => i.Bounds.Holds(at.X, at.Y))
                     : null;
             // The popups' outlines are searched again (~0.25 s) only for what they are still
-            // needed: the dialog's place, and the tooltip that names a greyed-out omen under the
-            // mouse or cursor. Otherwise the hints beside the mouse are enough.
+            // needed: the tooltip that names a greyed-out omen under the mouse or cursor, and
+            // everything while the window is dimmed. Otherwise the hints beside the mouse and
+            // the dialog are enough: the dialog is cheap (two small templates), and it does not
+            // always dim the window — on the author's client it did not at all (23.10.2026, Large
+            // at 1080 and 2160: the cells kept their brightness with the dialog open), so the
+            // dimming is no gate for it (OFFEN F45: a dialog found by the first look only).
             var popups = Seen is { } seen && ReferenceEquals(seen.Frame, frame) ? seen.Popups : null;
             if (popups is null)
             {
                 bool naming = (selected ?? pointed) is { } under && Unnamed(under);
-                popups = dimmed || naming ? Pipeline.Occluders.Detect(frame.Image, grid, frame.Popup) : Pipeline.Occluders.Hints(frame.Image, grid);
+                popups = dimmed || naming
+                    ? Pipeline.Occluders.Detect(frame.Image, grid, frame.Popup, frame.TextSize)
+                    : Pipeline.Occluders.Dialog(frame.Image, frame.TextSize) is { } dialog
+                        ? [dialog, .. Pipeline.Occluders.Hints(frame.Image, grid)]
+                        : Pipeline.Occluders.Hints(frame.Image, grid);
             }
 
             // A label goes when its place is covered: darkened like under a tooltip, replaced

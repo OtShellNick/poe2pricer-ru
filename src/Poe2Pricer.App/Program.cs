@@ -15,6 +15,9 @@ namespace Poe2Pricer.App;
 // poe2pricer --render-settings <out.png>   Einstellungsfenster als Bild (Prüfung ohne Bildschirm;
 //   POE2PRICER_TAB=1: Tab Rumours). Vergleich mit dem Sollbild: tools/fenster_vergleich.py.
 // poe2pricer --render <in.png> <out.png> [<vorher.png> ...]
+//                                  (POE2PRICER_GAME_LANGUAGE=de, POE2PRICER_GAME_TEXTSIZE=large /
+//                                  extra_large, POE2PRICER_GAME_POPUP=1.25: wie der Client stand,
+//                                  als das Bild entstand)
 //                                  Vorschau ohne Spiel: erkennt ein Testbild, holt Preise und
 //                                  zeichnet die Beschriftungen wie das Overlay in eine Datei.
 //                                  vorher: Bilder, die das Fenster davor gezeigt hat (in dieser
@@ -77,12 +80,34 @@ public static class Program
         }
     }
 
+    // The notice's text is long; this wide it reads as a page, not a column.
+    private const double NoticeWidth = 500;
+
     private static int Run(string[] args, EventWaitHandle? showRequest)
     {
         // Before anything saves: no settings file yet means the first start.
         bool firstStart = !Settings.Stored;
         var settings = Poe2Pricer.Ui.HotKey.Usable(Settings.Load(out var settingsProblem), out var replacedKeys);
         Texts.Language = settings.Language;
+        // The notice before the first start, before anything else runs or installs: what the
+        // program does and does not do, and that GGG approves no tool. "Run" is remembered in
+        // the file as it stands (Settings.NoticeShown); "Quit" is not, and the next start asks
+        // again.
+        // (A file that could not be read gives the standard settings: the notice was shown for
+        // that file once, and "Run" could not be stored either way — not asked again, R13.)
+        if (args.Length == 0 && !settings.NoticeShown && settingsProblem is null)
+        {
+            if (Poe2Pricer.Ui.Views.AskWindow.Ask(null, Texts.Get("NoticeTitle"), Texts.Get("NoticeText"), NoticeWidth, Texts.Get("NoticeRun"), Texts.Get("NoticeQuit")) != 0)
+                return 0;
+            try
+            {
+                (Settings.LoadForSave() with { NoticeShown = true }).Save();
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+            {
+                FileLog.Write($"Notice: not remembered ({e.Message})");
+            }
+        }
         if (args.Length == 0 && !TextRecognition.Ensure())
             return 1;
         var ui =Path.Combine(AppContext.BaseDirectory, "data", "ui");
@@ -118,10 +143,16 @@ public static class Program
             // POE2PRICER_WARNINGS: the window with two lasting warnings (how the lines look).
             if (Environment.GetEnvironmentVariable("POE2PRICER_WARNINGS") is { Length: > 0 })
             {
-                shownModel.Warn("textsize", new("GameTextSizeNotDefault", "large"));
+                shownModel.Warn("textsize", new("GameTextSizeNotDefault", new Poe2Pricer.Core.Told("TextSize_extra_large"), Poe2Pricer.Ui.HotKey.Shown(settings.DiagnoseKey)), hint: "textsize extra_large");
                 shownModel.Warn("gameconfig", new("GameSettingsNotFound", @"C:\Users\Name\Documents\My Games\Path of Exile 2\poe2_production_Config.ini"));
             }
             var w = new MainWindow(shownModel, Path.Combine(AppContext.BaseDirectory, "poe2pricer.ico"));
+            // POE2PRICER_NOTICE: the notice before the first start (AskWindow).
+            if (Environment.GetEnvironmentVariable("POE2PRICER_NOTICE") is { Length: > 0 })
+            {
+                WindowPicture.Save(Poe2Pricer.Ui.Views.AskWindow.Picture(Texts.Get("NoticeTitle"), Texts.Get("NoticeText"), NoticeWidth, Texts.Get("NoticeRun"), Texts.Get("NoticeQuit")), args[1]);
+                return 0;
+            }
             // POE2PRICER_ASK: the question for a profile with changes not saved (AskWindow).
             if (Environment.GetEnvironmentVariable("POE2PRICER_ASK") is { Length: > 0 } asked)
             {
@@ -159,6 +190,29 @@ public static class Program
         // the drawing is done (it takes a few seconds).
         _ = drawing.ContinueWith(_ => engine.RumoursChanged(), TaskScheduler.Default);
         var model = new MainViewModel(settings, [], rumourBook);
+        // The game read from its own window or from the screen (Settings.CaptureGameWindow): the
+        // overlay keeps out of screen captures only while the screen is read. A black picture of
+        // the window falls back to the screen for the run: a line of the window and the log say so.
+        void ApplyCapture(Settings s)
+        {
+            screen.GameWindowOnly = s.CaptureGameWindow;
+            overlay.ExcludeFromCapture(!s.CaptureGameWindow || screen.FellBack);
+        }
+        ApplyCapture(settings);
+        Poe2Pricer.Core.WindowCapture.Log = FileLog.Write;
+        screen.CaptureFellBack += reason =>
+        {
+            // Out of captures at once, on the thread that falls back: the next glance reads the
+            // screen within milliseconds and must not see the labels (R7). The line and the log
+            // can wait for the UI thread.
+            overlay.ExcludeFromCapture(true);
+            app.Dispatcher.BeginInvoke(() =>
+            {
+            var told = new Poe2Pricer.Core.Told(reason == Poe2Pricer.Core.FallBackReason.Unavailable ? "CaptureUnavailable" : "CaptureFellBack");
+            FileLog.Write(told.English + (reason == Poe2Pricer.Core.FallBackReason.Unavailable ? $" ({Poe2Pricer.Core.WindowCapture.Unavailable})" : ""));
+            model.Warn("capture", told, hint: reason == Poe2Pricer.Core.FallBackReason.Unavailable ? "capture unavailable" : "capture black");
+            });
+        };
         // "Price" on the Waystones tab: the cheapest waystone the profile describes, in the
         // unit of the settings; without poe.ninja's rates there is nothing to reckon it in.
         // "Refresh price" on the Waystones and Tablets tabs: the cheapest item the profile
@@ -399,6 +453,7 @@ public static class Program
             Texts.Language = s.Language;
             gameConfig.Use(s.GameConfigFile);
             engine.Apply(s);
+            ApplyCapture(s);
             Bind(s);
             Autostarted(s);
             if (s.CheckForUpdates && !updatesChecked)
@@ -531,17 +586,35 @@ public static class Program
         // changed in the game's options after the start shows up with the next prices drawn.
         string toldTextSize = GameConfig.StandardTextSize;
         // A text size other than the default is a hint on a line of the window, not a tray
-        // notice: at large and extra large the windows were read (issue #1, 20.10.2026).
+        // notice and not red: the windows are found there, but not every one is measured
+        // (OFFEN G8: tier marks in the stash, the tribute dialog), so it stays "not supported".
+        // One short line with the size in the window's words and the diagnostics key as set.
+        string diagnoseKey = settings.DiagnoseKey;
+        // The size as the game's options name it (ClientStrings OptionsAccessibilityScale*); a
+        // value the game may add later stands as it is in its settings file.
+        Poe2Pricer.Core.Told TextSizeTold(string size) =>
+            new("GameTextSizeNotDefault", size switch
+            {
+                "large" => new Poe2Pricer.Core.Told("TextSize_large"),
+                "extra_large" => new Poe2Pricer.Core.Told("TextSize_extra_large"),
+                _ => size,
+            }, Poe2Pricer.Ui.HotKey.Shown(diagnoseKey));
         void CheckTextSize()
         {
             string now = gameConfig.TextSize;
             if (!gameConfig.TextSizeSupported && now != toldTextSize)
-                FileLog.Write(new Poe2Pricer.Core.Told("GameTextSizeNotDefault", now).English);
+                FileLog.Write(TextSizeTold(now).English);
             toldTextSize = now;
-            model.Warn("textsize", gameConfig.TextSizeSupported ? null : new("GameTextSizeNotDefault", now));
+            model.Warn("textsize", gameConfig.TextSizeSupported ? null : TextSizeTold(now), hint: "textsize " + now);
         }
         CheckTextSize();
-        model.Settings.Saved += _ => CheckTextSize();
+        model.Settings.Saved += s =>
+        {
+            diagnoseKey = s.DiagnoseKey;
+            CheckTextSize();
+        };
+        // The key's name is in the window's language ("Alt+Umschalt+F"): told again on a switch.
+        Texts.Changed += CheckTextSize;
         engine.Draw += _ => app.Dispatcher.BeginInvoke(CheckTextSize);
         if (showRequest is not null)
         {
@@ -609,7 +682,12 @@ public static class Program
         using var ninja = new NinjaClient();
         var book = ninja.PricesAsync(settings.League ?? NinjaClient.DefaultLeague(ninja.LeaguesAsync().GetAwaiter().GetResult())).GetAwaiter().GetResult();
         pipeline.Icons.EnsureAsync(book.Images.Select(p => (p.Key, p.Value.Path))).GetAwaiter().GetResult();
-        using var shot = GameCapture.Stored(frame);
+        // The client's language and UI Text Size when the picture was taken, as the test world
+        // takes them from testdata/languages.json and textsizes.json.
+        string gameLanguage = Environment.GetEnvironmentVariable("POE2PRICER_GAME_LANGUAGE") is { Length: > 0 } lang ? lang : GameLanguage.English;
+        string textSize = Environment.GetEnvironmentVariable("POE2PRICER_GAME_TEXTSIZE") is { Length: > 0 } size ? size : GameConfig.StandardTextSize;
+        double popup = Environment.GetEnvironmentVariable("POE2PRICER_GAME_POPUP") is { Length: > 0 } scale ? double.Parse(scale, System.Globalization.CultureInfo.InvariantCulture) : GameConfig.StandardPopup;
+        using var shot = GameCapture.Stored(frame, popup: popup, language: gameLanguage, textSize: textSize);
         // A waystone's or tablet's tooltip is priced as the overlay prices it: one question to the
         // trade site, with the live price on (pictures for the guide).
         var context = new LookContext(RumourBook.LoadCached(), settings with { LiveTradePrice = true }, Console.WriteLine);
@@ -621,10 +699,10 @@ public static class Program
         foreach (var file in before.Append(input))
         {
             using var image = Cv2.ImRead(file);
-            using var seen = GameCapture.Stored(image);
+            using var seen = GameCapture.Stored(image, popup: popup, language: gameLanguage, textSize: textSize);
             if (open is not null)
             {
-                using var glanced = GameCapture.Stored(image, area: open.GlanceArea);
+                using var glanced = GameCapture.Stored(image, area: open.GlanceArea, popup: popup, language: gameLanguage, textSize: textSize);
                 open = open.Glance(glanced.Image, book, context) switch
                 {
                     Glance.Gone => null,
@@ -649,7 +727,7 @@ public static class Program
         for (int i = 0; i < 60 && picture.Labels.Any(l => l.Mark == "…"); i++)
         {
             Thread.Sleep(500);
-            using var glanced = GameCapture.Stored(frame, area: picture.Next.GlanceArea);
+            using var glanced = GameCapture.Stored(frame, area: picture.Next.GlanceArea, popup: popup, language: gameLanguage, textSize: textSize);
             if (picture.Next.Glance(glanced.Image, book, context) is Glance.Relabel relabel)
                 picture = relabel.Next.LabelAsync(shot, Task.FromResult(book), context).GetAwaiter().GetResult();
         }

@@ -157,6 +157,11 @@ public partial class MainWindow : Window
     }
 
     // The Settings tab sets the smallest size; switching tabs keeps the window's size.
+    // The pages are at least this high: the height the Settings tab had with its League box
+    // (1.2.0), kept when the box went (23.10.2026) — the room below the last box takes the
+    // status line and a warning, and the Waystones tab with a profile fits without rolling.
+    private const double LeastPageHeight = 609;
+
     public void FixSize()
     {
         general.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
@@ -165,7 +170,7 @@ public partial class MainWindow : Window
             // DesiredSize includes the page's own margin; MinWidth/MinHeight must not, or the
             // margin counts twice (an extra gap below the last box).
             page.MinWidth = Math.Max(general.DesiredSize.Width - general.Margin.Left - general.Margin.Right, 640);
-            page.MinHeight = general.DesiredSize.Height - general.Margin.Top - general.Margin.Bottom;
+            page.MinHeight = Math.Max(general.DesiredSize.Height - general.Margin.Top - general.Margin.Bottom, LeastPageHeight);
         }
     }
 

@@ -1,6 +1,6 @@
 # poe2pricer
 
-Price overlay for Path of Exile 2. It reads the game window from the screen and writes prices
+Price overlay for Path of Exile 2. It reads the picture of the game window and writes prices
 from poe.ninja next to what it recognises. It presses no keys, clicks nothing and sends nothing
 about you anywhere. What it does request: prices from poe.ninja and the item images they refer
 to from web.poecdn.com, the community ratings of the island rumours from Gnejs PoE Tools and a
@@ -46,10 +46,10 @@ the newest release from github.com.
   Expedition, Delirium, Ritual, Irradiated, Overseer, Abyss, Temple): uses left at least this
   many, and the kind's mods in groups.
 - **Live price at the tooltip** of a waystone or tablet under the mouse or cursor, switched on
-  in Settings → Display: the price on the trade site, asked in the words of the closest
+  in Settings → Prices and display: the price on the trade site, asked in the words of the closest
   profile with the item's own values (or exactly as the item is, without a profile), at the
   right end of the tooltip's title bar. Counted are Instant Buyout listings (with "incl.
-  premium stash (online)" in Settings → Display also sellers who are online); with four or more
+  premium stash (online)" in Settings → Prices and display also sellers who are online); with four or more
   listings the second cheapest, so that one price fixer does not count. `Alt+D` asks for the
   item exactly as it is.
 - **Automatic**: with the automatic scan on, prices appear by themselves when one of these
@@ -91,8 +91,9 @@ the newest release from github.com.
    (replaced by every update), the updater `Update.exe` and a starter `poe2pricer.exe` that
    always starts the current version; the Start menu entry does the same. Apart from that, the program writes to the registry only the entry that
    starts it with Windows, if you tick that.
-3. At the first start the program checks whether Windows has its **English (United States)
-   text recognition**. If it is missing, the program offers to install it: Windows asks for
+3. The first start begins with a notice: what the program does and does not do, and that
+   GGG approves no third-party tool; "Run" goes on, "Quit" ends it. Then the program checks
+   whether Windows has its **English (United States) text recognition**. If it is missing, the program offers to install it: Windows asks for
    administrator rights and downloads the language feature; that takes 3 to 10 minutes. If
    Windows has an update waiting for a restart, the program asks you to restart Windows first.
 
@@ -135,19 +136,18 @@ All three keys can be changed in the settings window.
 
 ## Requirements
 
-- Windows 10 version 2004 (build 19041) or later, 64-bit.
+- Windows 10 version 2004 (build 19041) or later, 64-bit. Reading the game from its own window
+  (prices in recordings) needs Windows 11; Windows 10 reads the screen.
 - The Windows text recognition for English (United States); see above.
 - Path of Exile 2 in **English or German**. In other game languages only the Ritual window and
   the stash tabs are read (they work on pictures, not on text).
 - Game window with an aspect ratio of 16:10 or wider; any height (measured from 1080 to 2160
   pixels); any Popup Size setting of the game; any **UI Text Size** (large and extra large
-  checked on pictures at 3440×1440, [issue #1](https://github.com/saxe78/poe2pricer/issues/1)).
+  checked on two players' pictures at 1080, 1440, 2160 and 3440, every window;
+  [issue #1](https://github.com/saxe78/poe2pricer/issues/1)).
 
 ## Known limits
 
-- Larger UI Text Size settings are checked on one player's pictures (3440×1440, issue #1): all
-  four windows read there. The program still notes the setting at the start; if a window shows
-  gaps, a diagnosis helps.
 - The compare view of the game (Ctrl held, tooltips side by side) draws tooltips at about 85 %
   size; they are not recognised. Release Ctrl before you press the key.
 - Waystone and tablet tooltips are read with the Windows text recognition through the
@@ -169,7 +169,7 @@ All three keys can be changed in the settings window.
 
 **No prices appear.** The window must be one of those above, the game in English or German
 (the Ritual window and the stash tabs work in any language). Waystone and tablet tooltips need
-the live price switched on in Settings → Display, and the "Stash" switch of the automatic scan
+the live price switched on in Settings → Prices and display, and the "Stash" switch of the automatic scan
 (or `Alt+F`). Press `Alt+F` once; with the automatic scan off, that is the only way. The log in
 `%LOCALAPPDATA%\poe2pricer\log.txt` says what the program saw ("hidden: …" lines name the
 reason).
@@ -185,6 +185,17 @@ feature "Text recognition" ticked; or, as administrator,
 `dism /Online /Add-Capability /CapabilityName:Language.OCR~~~en-US~0.0.1.0`. If Windows reports
 that it needs a restart to finish, restart it through Settings → Windows Update → Restart now:
 a restart from the Start menu may put the pending work off again.
+
+**The game stutters while poe2pricer runs.** The automatic scan looks at the game a few times
+a second. Raise the two scan intervals in Settings → Auto-scan, or untick the windows you do
+not need there; `Alt+F` still works with all of them off. A look costs about 2 ms with
+"Capture the game window only" on and 8 ms with it off.
+
+**A recording shows no prices, or the NVIDIA app refuses to record the desktop.** With
+"Capture the game window only" on (Windows 11), the price labels are part of every recording.
+On Windows 10, or with the switch off, the labels are hidden from captures, which the NVIDIA
+app treats like protected video: switch off its desktop capture (Alt+Z → settings → Video
+capture) to record the game alone.
 
 **The overlay stays while the game is gone.** The overlay hides when the game window is not in
 front. If it stays, press `Alt+F`.
@@ -210,12 +221,13 @@ in your browser (the program itself requests nothing for that).
 ## Trust
 
 What the program does and does not do, for anyone weighing whether to run it. The source is
-here, about 17,000 lines of C#; the files that talk to the network are
+here, about 20,000 lines of C#; the files that talk to the network are
 `src/Poe2Pricer.Core/Market/*.cs`, `src/Poe2Pricer.Core/Rumours.cs` and
 `src/Poe2Pricer.App/Updates.cs`.
 
-- It reads the screen (the client area of the game window, by GDI) and draws over it. It
-  presses no keys, clicks nothing and touches no other process. The one game file it reads is
+- It reads the game window (its client area, handed over by the desktop compositor through
+  Windows.Graphics.Capture, which sends the game nothing; or, with "Capture the game window
+  only" off or on Windows 10, the same area of the screen by GDI) and draws over it. It presses no keys, clicks nothing and touches no other process. The one game file it reads is
   the game's own settings file, for the popup size, the text size and the client's language.
 - It sends nothing about you. Its requests go to a fixed set of hosts, all HTTPS: poe.ninja (prices), web.poecdn.com (item art, only paths below that host whatever the
   price answer names), poe.gnejs.app and docs.google.com (rumour ratings; the sheet download is
@@ -249,6 +261,45 @@ here, about 17,000 lines of C#; the files that talk to the network are
   name) and what was read. "Extended diagnostics" (off by default) adds a few pictures of
   windows the program had trouble with.
 
+## Third-party tools and GGG
+
+poe2pricer is a third-party tool, and Grinding Gear Games approves none. What they have said
+about such tools, in their words:
+
+- The policy, relayed by Bex_GGG in 2020: "You may not run programs that interact with the
+  Path of Exile game client. It's okay to run things that are entirely external to the game."
+  ([source](https://devtrackers.gg/pathofexile/p/cdea4d78-psa-waves-of-players-being-banned-for-use-of-third-party-tool-poe-overlay),
+  a mirror of the Reddit thread)
+- Support, Sian_GGG, November 2024: "we cannot comment on the legality of third-party tools,
+  as we aren't able to thoroughly and accurately check exactly how they work", with the advice
+  to refrain from "any programs that automates or does more than one action with a keystroke
+  or mouse click as well as anything that interacts with the game client to provide an
+  advantage over other players or provide information that isn't normally visible."
+  ([source](https://www.pathofexile.com/forum/view-thread/3584808))
+- The [Terms of Use](https://www.pathofexile.com/legal/terms-of-use-and-privacy-policy),
+  clause 7, forbid modifying the client or its data, "automated software or bots" in relation
+  to the services, and connecting to the servers through anything but the game client.
+
+Where poe2pricer stands to that, so you can judge for yourself:
+
+- It sends no input to the game: no key, no click, nothing on a timer. The "one action per
+  key press" rule is about inputs, and this tool makes none, whether a scan runs by itself or
+  on `Alt+F`.
+- It reads the game's picture through the desktop compositor (Windows.Graphics.Capture) or
+  from the screen (GDI). Neither sends the game a message, opens its process or reads its
+  memory.
+- It never connects to the game servers. Its requests go to poe.ninja, the trade website
+  (within the limits the site states, under a User-Agent that names the program), poecdn, the
+  rumour sources and GitHub, see "Trust".
+- It shows prices from outside the game, as every price checker does. That is the
+  "information that isn't normally visible" part, and it applies to all of them alike.
+
+No one can promise that GGG keeps tolerating price overlays; the Terms let them act without
+notice. The one documented action against such a tool, in 2020, concerned a tool that flooded
+the trade site with millions of failed requests, not the reading of the screen. The switches
+for the scans and the hotkeys are in Settings, and the program says all this once, before its
+first start.
+
 ## Build from source
 
 Needs the .NET 10 SDK on Windows 10 version 2004 or later.
@@ -267,6 +318,10 @@ dotnet publish src/Poe2Pricer.App -c Release -r win-x64 --self-contained true -o
 
 The setup is packed from that folder with [Velopack](https://velopack.io)'s `vpk` tool
 (`dotnet tool install -g vpk`); `tools/build_release.py` does publish, zips and setup in one go.
+
+The inputs of a build are fixed: `global.json` names the SDK version, and each project's
+`packages.lock.json` the package versions with their hashes. The release workflow restores in
+locked mode (`-p:RestoreLockedMode=true`), so it fails rather than take another version.
 
 `poe2pricer.exe --render <picture> <output>` draws the overlay onto a screenshot (this is how
 the pictures above were made).
@@ -290,12 +345,15 @@ and at every Popup Size of the game.
 .NET 10, WPF (overlay and settings window), Windows Forms (tray icon), OpenCvSharp (template
 matching), Windows.Media.Ocr (text recognition), the Windows Imaging Component (decoding the
 item art), CommunityToolkit.Mvvm, Velopack (setup and self-update), the poe.ninja API, a Win32
-keyboard hook of its own. Screen capture by GDI.
+keyboard hook of its own. Window capture by Windows.Graphics.Capture (Direct3D 11 through
+its vtables, no interop package), screen capture by GDI.
 
 ## Data from the game
 
 `data/catalog` (item pictures and names), `data/ui` (pieces of the game's interface used as
-templates), `data/names` (German item names), `data/waystones` and `data/tablets` (the mod lines
+templates; `data/ui/glyphs` holds the digits, brackets and per cent sign of its tooltip
+lettering, cut from screenshots, for a number the text recognition leaves out), `data/names`
+(German item names), `data/waystones` and `data/tablets` (the mod lines
 in English and German, with the trade site's ids; `tools/waystone_mods.py`,
 `tools/tablet_mods.py`) and the rumour texts are material of Grinding Gear Games, taken from the game files or from poe2db.tw and web.poecdn.com. The pictures above are
 cut-outs of the game with the overlay drawn on. See `THIRD_PARTY_NOTICES.md` for this and for
@@ -317,6 +375,12 @@ the licences of the libraries and fonts used.
 
 poe2pricer was written with an AI coding assistant (Claude by Anthropic). The design, the
 measurements on game pictures, the decisions and the testing in the game are the author's.
+
+**Contributing.** Pull requests are welcome and are merged after the next release, rebased
+onto it: main on GitHub moves only with releases, so a branch taken from it stays a valid base
+until then. Open an issue first and say what you plan, so the work isn't done twice or against
+something that is about to change. Say who or what wrote the code or the translation; it goes
+into the acknowledgements.
 
 ## Licence
 

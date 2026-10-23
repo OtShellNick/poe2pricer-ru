@@ -15,7 +15,7 @@ public sealed class AskWindow : Window
 {
     private int chosen = -1;
 
-    private AskWindow(Window? owner, string caption, string text, string[] answers)
+    private AskWindow(Window? owner, string caption, string text, double width, string[] answers)
     {
         var look = PricerTheme.Load();
         Resources.MergedDictionaries.Add(look);
@@ -37,7 +37,7 @@ public sealed class AskWindow : Window
         SnapsToDevicePixels = true;
         Background = (Brush)look["Back"];
         Foreground = (Brush)look["Text"];
-        Content = Body(look, caption, text, answers, i =>
+        Content = Body(look, caption, text, width, answers, i =>
         {
             chosen = i;
             Close();
@@ -50,20 +50,29 @@ public sealed class AskWindow : Window
     }
 
     // answers: from the main one (Enter) to the one that changes nothing (Esc, closing).
-    // Returns the index of the answer.
-    public static int Ask(Window? owner, string caption, string text, params string[] answers)
+    // Returns the index of the answer. width: of the text; the usual question fits 400, the
+    // notice before the first start wants more.
+    public static int Ask(Window? owner, string caption, string text, params string[] answers) =>
+        Ask(owner, caption, text, TextWidth, answers);
+
+    public static int Ask(Window? owner, string caption, string text, double width, params string[] answers)
     {
-        var window = new AskWindow(owner, caption, text, answers);
+        var window = new AskWindow(owner, caption, text, width, answers);
         window.ShowDialog();
         return window.chosen < 0 ? answers.Length - 1 : window.chosen;
     }
 
+    private const double TextWidth = 400;
+
     // The question as a picture, without a screen (poe2pricer --render-settings with
     // POE2PRICER_ASK; how it looks before it is shown to anyone).
-    public static BitmapSource Picture(string caption, string text, params string[] answers)
+    public static BitmapSource Picture(string caption, string text, params string[] answers) =>
+        Picture(caption, text, TextWidth, answers);
+
+    public static BitmapSource Picture(string caption, string text, double width, params string[] answers)
     {
         var look = PricerTheme.Load();
-        var body = Body(look, caption, text, answers, _ => { });
+        var body = Body(look, caption, text, width, answers, _ => { });
         body.Resources = look;
         System.Windows.Documents.TextElement.SetFontFamily(body, new FontFamily("Segoe UI"));
         System.Windows.Documents.TextElement.SetFontSize(body, 13);
@@ -82,7 +91,7 @@ public sealed class AskWindow : Window
 
     // The window's frame as the program window's: the dark ground, a line round it, inside a
     // box with the corner fittings.
-    private static Border Body(ResourceDictionary look, string caption, string text, string[] answers, Action<int> answered)
+    private static Border Body(ResourceDictionary look, string caption, string text, double width, string[] answers, Action<int> answered)
     {
         var buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 18, 0, 0) };
         // The main answer at the right end, the others before it in their order.
@@ -97,7 +106,7 @@ public sealed class AskWindow : Window
             {
                 Children =
                 {
-                    new TextBlock { Text = text, TextWrapping = TextWrapping.Wrap, Width = 400, Foreground = (Brush)look["Text"] },
+                    Paragraphs(text, width, (Brush)look["Text"]),
                     buttons,
                 },
             },
@@ -110,6 +119,38 @@ public sealed class AskWindow : Window
             Padding = new Thickness(10),
             Child = box,
         };
+    }
+
+    // The text as paragraphs (blank line between them), each a block with room after it; a
+    // paragraph of lines starting with "• " becomes a list with hanging indent, one row a
+    // line. A text without blank lines is one block, as before.
+    private static StackPanel Paragraphs(string text, double width, Brush brush)
+    {
+        var panel = new StackPanel { Width = width };
+        var paragraphs = text.Replace("\r\n", "\n").Split("\n\n", StringSplitOptions.RemoveEmptyEntries);
+        for (int p = 0; p < paragraphs.Length; p++)
+        {
+            double after = p < paragraphs.Length - 1 ? 10 : 0;
+            var lines = paragraphs[p].Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            if (lines.All(l => l.StartsWith("• ")))
+            {
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    var row = new Grid { Margin = new Thickness(0, 0, 0, i < lines.Length - 1 ? 5 : after) };
+                    row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(16) });
+                    row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                    var bullet = new TextBlock { Text = "•", Foreground = brush, LineHeight = 19 };
+                    var body = new TextBlock { Text = lines[i][2..], TextWrapping = TextWrapping.Wrap, Foreground = brush, LineHeight = 19 };
+                    Grid.SetColumn(body, 1);
+                    row.Children.Add(bullet);
+                    row.Children.Add(body);
+                    panel.Children.Add(row);
+                }
+            }
+            else
+                panel.Children.Add(new TextBlock { Text = string.Join('\n', lines), TextWrapping = TextWrapping.Wrap, Foreground = brush, LineHeight = 19, Margin = new Thickness(0, 0, 0, after) });
+        }
+        return panel;
     }
 
     private static Button Answer(ResourceDictionary look, string text, int index, string style, Action<int> answered, bool main = false, bool cancel = false)

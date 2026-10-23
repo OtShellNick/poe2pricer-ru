@@ -705,7 +705,7 @@ public sealed class RumourReader : IDisposable
     // sure: the lines (by their centre) that a reading named clearly.
     private async Task ReadOnceAsync(Mat bgr, RumourPanel panel, RumourBook book, List<RumourLine> lines, HashSet<double> sure, double scale, bool binarize)
     {
-        foreach (var (text, centerY, _, _) in await ocr.ReadRegionAsync(bgr, panel.Rows.Rect(), scale, binarize))
+        foreach (var (text, centerY, _, _) in await ocr.ReadRegionAsync(bgr, panel.Rows.Rect(), scale, binarize ? TextPrep.Binarised : TextPrep.Plain))
         {
             var key = RumourBook.Key(text);
             if (key.Length < Tune.MinimumKeyLength || key.Contains("rumour"))

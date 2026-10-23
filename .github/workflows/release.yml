@@ -28,9 +28,12 @@ jobs:
           # The token with write access is not left in .git/config while the build runs the
           # packages' own build steps; the release is made by gh with the token from env.
           persist-credentials: false
+      # The SDK version from global.json, not the newest 10.0.x: the same inputs for the same
+      # commit, with the package versions and hashes from the packages.lock.json files (restored
+      # in locked mode below, which fails instead of taking another version).
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
-          dotnet-version: '10.0.x'
+          global-json-file: global.json
 
       - name: Version from the tag
         shell: pwsh
@@ -43,9 +46,9 @@ jobs:
       - name: Publish
         shell: pwsh
         run: |
-          dotnet publish src/Poe2Pricer.App -c Release -o out/fd "-p:Version=$env:VERSION" --nologo
+          dotnet publish src/Poe2Pricer.App -c Release -o out/fd "-p:Version=$env:VERSION" -p:RestoreLockedMode=true --nologo
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          dotnet publish src/Poe2Pricer.App -c Release -r win-x64 --self-contained true -o out/sc "-p:Version=$env:VERSION" --nologo
+          dotnet publish src/Poe2Pricer.App -c Release -r win-x64 --self-contained true -o out/sc "-p:Version=$env:VERSION" -p:RestoreLockedMode=true --nologo
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           # OpenCvSharp's runtime package can bring an FFmpeg wrapper the program does not use.
           $ffmpeg = Get-ChildItem out -Recurse -File | Where-Object Name -match 'ffmpeg'

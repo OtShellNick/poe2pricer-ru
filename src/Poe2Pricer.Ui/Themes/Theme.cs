@@ -5,7 +5,8 @@ namespace Poe2Pricer.Ui;
 // Colours of the program window. The only source of the colour values: Palette lays them into
 // the resources as brushes, Themes/Theme.xaml names them from there.
 // Colour has a meaning, it is no decoration: brass (Accent) for what is
-// active, the main action, the focus and links; red (Warning) for a warning or an error; green
+// active, the main action, the focus and links, and for a hint that is no fault (the text-size
+// line above the foot, issue #1); red (Warning) for a warning or an error; green
 // (Ok) for "loaded" and "saved" in the status line; everything else in the neutral colours.
 public sealed record Theme(
     Color Back,

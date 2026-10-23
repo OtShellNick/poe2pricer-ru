@@ -61,6 +61,9 @@ public sealed class OccluderDetector : IDisposable
     private readonly Mat cancel;
     private readonly Mat cancelLeft;
     private readonly Mat cancelRight;
+    // The button's ends and their distance at a text scale (GameConfig.TextScale), by the scale
+    // in hundredths; the standard is the pieces as loaded.
+    private readonly Dictionary<int, (Mat Left, Mat Right, int Apart)> dialogSized = [];
     private readonly Mat[] hints;
 
     public double CapThreshold { get; init; } = Tune.CapThreshold;
@@ -115,7 +118,8 @@ public sealed class OccluderDetector : IDisposable
     // A measure of a tooltip at the game's standard size, at this popup size.
     private static int Px(int standard, double popup) => GameConfig.Scaled(standard, popup);
 
-    public Occluder[] Detect(Mat bgr, FavoursGrid grid, double popup = GameConfig.StandardPopup)
+    // textSize: the client's UI Text Size (Frame.TextSize); the tribute dialog grows with it.
+    public Occluder[] Detect(Mat bgr, FavoursGrid grid, double popup = GameConfig.StandardPopup, string textSize = GameConfig.StandardTextSize)
     {
         using var gray = new Mat();
         Cv2.CvtColor(bgr, gray, ColorConversionCodes.BGR2GRAY);
@@ -144,11 +148,29 @@ public sealed class OccluderDetector : IDisposable
                 y = Math.Max(0, cy - Tune.NotificationHalfHeight);
             found.Add(new("notification", new Box(x, y, cx + close.Width - x, cy + Tune.NotificationHalfHeight - y), score));
         }
-        var button = DialogButton(gray);
-        if (button.Score >= DialogThreshold)
-            found.Add(new("dialog", new Box(button.At.X - Tune.DialogLeft, button.At.Y - Tune.DialogUp, Tune.DialogLeft + Tune.DialogRight, Tune.DialogUp + Tune.DialogDown), button.Score));
+        if (DialogIn(gray, textSize) is { } dialog)
+            found.Add(dialog);
         found.AddRange(HintsIn(gray, grid.Bounds));
         return found.ToArray();
+    }
+
+    // The tribute dialog alone (its CANCEL button's ends, the panel from them); null: none.
+    // Cheap enough for every follow: two small templates over the frame.
+    public Occluder? Dialog(Mat bgr, string textSize = GameConfig.StandardTextSize)
+    {
+        using var gray = new Mat();
+        Cv2.CvtColor(bgr, gray, ColorConversionCodes.BGR2GRAY);
+        return DialogIn(gray, textSize);
+    }
+
+    private Occluder? DialogIn(Mat gray, string textSize)
+    {
+        double textScale = GameConfig.TextScale(textSize);
+        var button = DialogButton(gray, textScale);
+        if (button.Score < DialogThreshold)
+            return null;
+        int left = GameConfig.Scaled(Tune.DialogLeft, textScale), up = GameConfig.Scaled(Tune.DialogUp, textScale);
+        return new("dialog", new Box(button.At.X - left, button.At.Y - up, left + GameConfig.Scaled(Tune.DialogRight, textScale), up + GameConfig.Scaled(Tune.DialogDown, textScale)), button.Score);
     }
 
     // The dialog's right-hand button by its two ends, the width of the button apart: the frame
@@ -156,22 +178,67 @@ public sealed class OccluderDetector : IDisposable
     // on it ("CANCEL", "ABBRECHEN"). With the dialog open the pair fits almost perfectly, on a
     // Favours window without it about half at most. In stash pictures the pair fits other
     // buttons of the same build — it is searched only while the Favours window is open. At a
-    // larger UI Text Size the button grows and the pair no longer fits.
-    private (Point At, double Score) DialogButton(Mat gray)
+    // larger UI Text Size the button grows evenly with the lettering: the ends and their
+    // distance are scaled by the text scale (Tuning.Occluders.DialogApartSlack).
+    private (Point At, double Score) DialogButton(Mat gray, double textScale)
     {
-        int apart = cancel.Width - Tune.DialogCap;
-        if (gray.Width < cancel.Width || gray.Height < cancel.Height)
+        var (left, right, apart) = DialogCaps(textScale);
+        if (gray.Width < apart + Tune.DialogApartSlack + left.Width || gray.Height < left.Height)
             return default;
         using var leftScores = new Mat();
         using var rightScores = new Mat();
-        Cv2.MatchTemplate(gray, cancelLeft, leftScores, TemplateMatchModes.CCoeffNormed);
-        Cv2.MatchTemplate(gray, cancelRight, rightScores, TemplateMatchModes.CCoeffNormed);
-        using var leftHere = new Mat(leftScores, new Rect(0, 0, leftScores.Width - apart, leftScores.Height));
-        using var rightThere = new Mat(rightScores, new Rect(apart, 0, rightScores.Width - apart, rightScores.Height));
-        using var both = new Mat();
-        Cv2.Min(leftHere, rightThere, both);
-        Cv2.MinMaxLoc(both, out _, out double score, out _, out Point at);
-        return (at, score);
+        Cv2.MatchTemplate(gray, left, leftScores, TemplateMatchModes.CCoeffNormed);
+        Cv2.MatchTemplate(gray, right, rightScores, TemplateMatchModes.CCoeffNormed);
+        // The dialog's left button (ACCEPT) wears the same frame: of the places that fit on the
+        // button's row, the rightmost is the CANCEL button the measures are taken from (at
+        // 1920×1080 and Extra Large the left one fit better, .92 against .90).
+        (Point At, double Score) best = default;
+        for (int d = apart - Tune.DialogApartSlack; d <= apart + Tune.DialogApartSlack; d++)
+        {
+            using var leftHere = new Mat(leftScores, new Rect(0, 0, leftScores.Width - d, leftScores.Height));
+            using var rightThere = new Mat(rightScores, new Rect(d, 0, rightScores.Width - d, rightScores.Height));
+            using var both = new Mat();
+            Cv2.Min(leftHere, rightThere, both);
+            Cv2.MinMaxLoc(both, out _, out double score, out _, out Point at);
+            if (score < DialogThreshold)
+                continue;
+            // Another fit on the same row, further right: the found one blanked a button's width
+            // either side, the rest of the row searched again.
+            int rowTop = Math.Max(0, at.Y - left.Height / 2);
+            using var row = new Mat(both, new Rect(0, rowTop, both.Width, Math.Min(left.Height, both.Height - rowTop))).Clone();
+            int blankFrom = Math.Max(0, at.X - d);
+            Cv2.Rectangle(row, new Rect(blankFrom, 0, Math.Min(2 * d, row.Width - blankFrom), row.Height), Scalar.All(-1), -1);
+            Cv2.MinMaxLoc(row, out _, out double other, out _, out Point there);
+            if (other >= DialogThreshold && there.X > at.X)
+                at = new Point(there.X, rowTop + there.Y);
+            if (score > best.Score)
+                best = (at, score);
+        }
+        return best;
+    }
+
+    private (Mat Left, Mat Right, int Apart) DialogCaps(double textScale)
+    {
+        int key = (int)Math.Round(textScale * 100);
+        lock (sizing)
+        {
+            if (!dialogSized.TryGetValue(key, out var set))
+            {
+                if (key == 100)
+                    set = (cancelLeft, cancelRight, cancel.Width - Tune.DialogCap);
+                else
+                {
+                    var size = new Size(GameConfig.Scaled(cancelLeft.Width, textScale), GameConfig.Scaled(cancelLeft.Height, textScale));
+                    var left = new Mat();
+                    var right = new Mat();
+                    Cv2.Resize(cancelLeft, left, size, 0, 0, InterpolationFlags.Area);
+                    Cv2.Resize(cancelRight, right, size, 0, 0, InterpolationFlags.Area);
+                    set = (left, right, GameConfig.Scaled(cancel.Width - Tune.DialogCap, textScale));
+                }
+                dialogSized[key] = set;
+            }
+            return set;
+        }
     }
 
     // Only the keyboard hints ("ALT Inspect", "SHIFT Compare") beside the item under the mouse:
@@ -553,12 +620,16 @@ public sealed class OccluderDetector : IDisposable
         if (x1 <= x0)
             return top;
         int bright = 0;
+        var row = new byte[x1 - x0];
         for (int y = top + title; y < gray.Height; y++)
         {
             double sum = 0;
             for (int x = x0; x < x1; x++)
-                sum += gray.At<byte>(y, x);
-            bright = sum / (x1 - x0) > Tune.MarginBright ? bright + 1 : 0;
+                sum += row[x - x0] = gray.At<byte>(y, x);
+            // A line or undimmed, not the game's lettering showing through (Tune.MarginContinuous).
+            Array.Sort(row);
+            bool counts = sum / row.Length > Tune.MarginBright && (row[row.Length / 4] >= Tune.MarginContinuous || row[^1] >= Tune.MarginUndimmed);
+            bright = counts ? bright + 1 : 0;
             if (bright == Tune.MarginRows)
                 return y - Tune.MarginRows;
         }
@@ -675,5 +746,13 @@ public sealed class OccluderDetector : IDisposable
         cancel.Dispose();
         cancelLeft.Dispose();
         cancelRight.Dispose();
+        foreach (var (left, right, _) in dialogSized.Values)
+        {
+            if (!ReferenceEquals(left, cancelLeft))
+            {
+                left.Dispose();
+                right.Dispose();
+            }
+        }
     }
 }

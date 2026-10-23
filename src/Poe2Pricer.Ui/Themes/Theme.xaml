@@ -571,6 +571,32 @@
       </Setter.Value>
     </Setter>
   </Style>
+  <!-- The "✕" of a hint line above the foot (MainViewModel.CloseHint): brass like the hint,
+       lighter under the mouse; no red, closing a hint deletes nothing. -->
+  <Style x:Key="HintClose" TargetType="Button" BasedOn="{StaticResource RowDelete}">
+    <Setter Property="Foreground" Value="{StaticResource Accent}"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border x:Name="B" Background="Transparent" BorderBrush="Transparent" BorderThickness="1">
+            <Path x:Name="X" Data="M0,0 L8,8 M8,0 L0,8" StrokeThickness="1.2" Stroke="{TemplateBinding Foreground}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="X" Property="Stroke" Value="{StaticResource AccentHover}"/>
+              <Setter TargetName="B" Property="Background" Value="{StaticResource Hover}"/>
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter TargetName="B" Property="Background" Value="{StaticResource Field}"/>
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+              <Setter TargetName="B" Property="BorderBrush" Value="{StaticResource Accent}"/>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
   <!-- The tick beside the ✕: saves the row's owner (a waystone profile). -->
   <Style x:Key="RowTick" TargetType="Button">
     <Setter Property="Width" Value="20"/>
@@ -584,6 +610,41 @@
         <ControlTemplate TargetType="Button">
           <Border x:Name="B" Background="Transparent" BorderBrush="Transparent" BorderThickness="1">
             <Path Data="M0,4.5 L3,7.5 L9,1" StrokeThickness="1.6" Stroke="{TemplateBinding Foreground}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter Property="Foreground" Value="{StaticResource Accent}"/>
+              <Setter TargetName="B" Property="Background" Value="{StaticResource Hover}"/>
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter TargetName="B" Property="Background" Value="{StaticResource Field}"/>
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+              <Setter TargetName="B" Property="BorderBrush" Value="{StaticResource Accent}"/>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="B" Property="Opacity" Value="0.5"/>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- The small "refresh" sign of a row (the league row: prices anew): the Windows glyph in the
+       status line's green, brass under the mouse like the other row buttons. -->
+  <Style x:Key="RowRefresh" TargetType="Button">
+    <Setter Property="Width" Value="20"/>
+    <Setter Property="Height" Value="20"/>
+    <Setter Property="Foreground" Value="{StaticResource Ok}"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="HorizontalAlignment" Value="Left"/>
+    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border x:Name="B" Background="Transparent" BorderBrush="Transparent" BorderThickness="1">
+            <TextBlock Text="&#xE72C;" FontFamily="Segoe MDL2 Assets" FontSize="12" Foreground="{TemplateBinding Foreground}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
           </Border>
           <ControlTemplate.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
