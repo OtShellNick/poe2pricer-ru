@@ -7,7 +7,8 @@ with more words: https://github.com/saxe78/poe2pricer/releases
 
 ### Added
 - Russian program interface, including tooltips, status and tray messages, with Russian
-  plural forms. The game languages supported by recognition remain English and German.
+  plural forms. The game languages supported by recognition remain English and German
+  (contributed by OtShellNick, [#5](https://github.com/saxe78/poe2pricer/pull/5)).
 - Russian help guide with localized program screenshots, opening in the selected program
   language; English and German remain available in the guide's language switcher.
 
